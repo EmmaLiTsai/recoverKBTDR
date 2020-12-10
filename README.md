@@ -14,7 +14,7 @@ Contains:
       - Topic 4: Testing out arc equation (line 450);
  
  (2)manual_trace.csv - dive trace that I created and extracted x/y values with using
-                    ImageJ
+                    ImageJ; used in Tsai_DiveTrace.R file
  
  (3)testing_xscale_transformation.xlsx - math for the x-axis transformation, currently 
                     working on putting this math into code (12/10)
