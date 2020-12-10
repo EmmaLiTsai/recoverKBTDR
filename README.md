@@ -3,7 +3,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive traces from Kooyman-Bi
 
 Contains: 
 
- (1)Tsai_DiveTrace.R - contains all code I've been working on, separated into topics: 
+ (1) Tsai_DiveTrace.R - contains all code I've been working on, separated into topics: 
       
       - Topic 1: Transforming and decomposing dive trace (line 22);
       
@@ -13,11 +13,11 @@ Contains:
       
       - Topic 4: Testing out arc equation (line 450);
  
- (2)manual_trace.csv - dive trace that I created and extracted x/y values with using
+ (2) manual_trace.csv - dive trace that I created and extracted x/y values with using
                     ImageJ; used in Tsai_DiveTrace.R file
  
- (3)testing_xscale_transformation.xlsx - math for the x-axis transformation, currently 
+ (3) testing_xscale_transformation.xlsx - math for the x-axis transformation, currently 
                     working on putting this math into code (12/10)
  
- (4)sample images of actual dive traces 
+ (4) sample_divetraces.png - sample images of actual dive traces 
  
