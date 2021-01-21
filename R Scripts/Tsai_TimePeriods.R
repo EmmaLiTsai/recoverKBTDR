@@ -7,6 +7,8 @@
 # This document builds off the arc transformation .R file to also include work
 # on the time periods, depth scale, and spline smoothing. 
 #
+# Tracking this file via git 
+#
 # The final output of this script produces a fully recovered trace, but some 
 # small issues still need to be fixed: 
 # 
@@ -402,7 +404,7 @@ ggplot(trace, aes(x = time, y = smooth_y)) +
   geom_line(aes(time, y), color="gray", size=0.2) +
   geom_point(aes(color=deriv > 0)) +
   geom_line() + 
-  labs(x = "time (min)", y = "depth (m)", main = "WS_25_1981")
+  labs(x = "time (min)", y = "depth (m)", title = "WS_25_1981")
 
 
 # Looking good! Still need to tweak some things
@@ -410,7 +412,7 @@ ggplot(trace, aes(x = time, y = smooth_y)) +
   geom_line(aes(time, y), color="gray", size=0.2) + 
   geom_line() +
   theme_bw() + 
-  labs(x = "Time (min)", y = "Depth (m)", main = "WS_25_1981") + 
+  labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
   scale_x_continuous(position = "top") + 
   scale_y_reverse()
 
