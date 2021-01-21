@@ -7,6 +7,6 @@ Contains:
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots. Also contains a smaller sample trace. 
  
- (3) Results       - folder that contains results.
+ (3) Results       - folder that contains results for this project. 
  
  (4) dive_trace.R  - the master R file that contains polished code and the overall framework for recovering KBTDR dive traces.
