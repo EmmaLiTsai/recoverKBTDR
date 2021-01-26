@@ -127,6 +127,12 @@ trace <- mutate(trace, new_x = new_x, y=depth) %>%
   select(y, new_x) %>%
   arrange(new_x)
 
+# grouping trace by x value and summarizing by median y for easier spline 
+# smoothing
+trace <- group_by(trace, new_x) %>% summarize(y = median(y))
+# NOTE -- I keep getting the warning: 
+#     "Unknown or uninitialized column: y_val" but am unsure why or how to fix 
+#     it. 
 
 ################################################################################
 #   Function: split_smoothing(df, n = 40, spar = 0.4)
@@ -195,7 +201,7 @@ trace <- split_smoothing(trace)
 # the TDR for depth. 
 # also evident that the y-values at the beginning of the trace are off from the 
 # way I scanned the physical trace 
-ggplot(trace[1500:11000,], aes(x = new_x, y = smooth_y)) +
+ggplot(trace[2000:6000,], aes(x = new_x, y = smooth_y)) +
   geom_line(aes(new_x, y), color="gray", size=0.2) +
   geom_point(aes(color=deriv > 0)) +
   geom_line()
