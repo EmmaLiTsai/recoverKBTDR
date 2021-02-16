@@ -9,21 +9,38 @@
 #
 # Tracking this file via git 
 #
-# The final output of this script produces a fully recovered trace, but some 
+# The final output of this script produces a recovered trace, but some 
 # small issues still need to be fixed: 
+# 
+# TODO: Currently, I am working on reducing the "noise" at depth = 0, and 
+#       fixing the spline smoothing so that the smoothed line picks up when the 
+#       seal resurfaces for ~10 minutes during a bout of dives. This is the most 
+#       urgent task before I attempt the ones below. 
 # 
 # TODO: I need to double-check the depth transformation. The transformation 
 #       itself is easy, but I had to "center" the scan and I'm not confident 
 #       that I did it correctly. There is a software from NeruaScanner that can
 #       center the scan for me, but I want to see if I can do it in code. 
 # 
+#   UPDATE: I have centered the scan by using the timing dots in this update. 
+#       See code below. ET 2/15
+# 
 # TODO: some of the smoothed y_values seem to stray from the overall trend of
 #       the trace (i.e. picking up the other edge of the line). Maybe this could 
 #       be fixed by changing the spar value? 
-#
+# 
+#   UPDATE: This issue is somewhat fixed by grouping the data by x value and 
+#       the spline smoothing function that I created that breaks up the data 
+#       into chunks and applies smoothing over smaller degrees of freedom. 
+#       However, a new challenge emerges when trying to identify when the seal 
+#       surfaces within a bout of dives-- see to-do task number 1. ET 2/15
+#         
 # TODO: check the output of this code with the castellini (1992) bulletin. The 
 #       max depth for this trace seems to align, but confirm other dive
 #       parameters to ensure the quality of these methods. 
+#
+#   UPDATE: removed depth transformation section for now, will come back to this 
+#       once I tackle the noise and smoothing issues above. ET 2/15
 
 ################################################################################
 # Loading packages
@@ -53,24 +70,29 @@ MAX_DEPTH <- 800
 
 # this is data from an actual trace from 1981. 
 
+# UPDATE -- changed image processing workflow, so the file names changed ET 2/15
+
 # I plan to push the workflow that I've been using to process the scanned
 # images to GitHub in the future
-trace <- read.csv("./WS_25_1981_fulltrace_xy.csv", header = TRUE, 
+trace <- read.csv("./WS_25_correctY.csv", header = TRUE, 
                   stringsAsFactors = FALSE)
 
 # this csv contains the timing dots for the trace. I gathered these by maually 
 # clicking each time point with the "point" tool in ImageJ, but am looking for a 
 # macros that can do this with more accuracy. 
-time_dots <- read.csv("./WS_25_1981_timedots_guess.csv", header = TRUE, 
+time_dots <- read.csv("./WS_25_timingdots.csv", header = TRUE, 
                       stringsAsFactors = FALSE)
+
+# making this the new column value 
+trace$y_corr <- trace$y_corr_p2
 
 ################################################################################
 # Transforming the arc using the new approach
 # This code is from the Tsai_ArcFixing_NewApprach.R file 
 ################################################################################
 
-# removing an extra column
-trace <- select(trace, -c(Y))
+# removing extra columns
+trace <- select(trace, -c("Y", "y_corr_p2"))
 # changing the names to match the conventions I've been using 
 names(trace) <- c("x_val", "y_val")
 
@@ -81,36 +103,14 @@ names(trace) <- c("x_val", "y_val")
 trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) + (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
 
 # checking a slice to see if it works 
-ggplot(trace[1500:11000,], aes(x = new_x, y = y_val)) + geom_point()
+# ggplot(trace[1500:11000,], aes(x = new_x, y = y_val)) + geom_point()
 
 # Rounding the data since some values are too specific with the kind of 
 # precision that I'm working with
 trace$new_x <- round(trace$new_x, 2)
 
-################################################################################
-# Author: EmmaLi Tsai 
-# Topic: Testing out possible depth transformation method 
-# Date: 1/21/2021
-################################################################################
-
-# CAUTION -- THIS IS A WORK IN PROGRESS, STILL NEED TO ASSESS IF IT ACTUALLY 
-# WORKS, SEE TODO LIST ABOVE 
-
-# Transforming the y_val since the values at the beginning of the trace 
-# are off from the way I scanned it. 
-# There will always be noise at depth y = 0 from the way the device functions. 
-# The led arm is less "stiff" at depth = 0 since there is no tension on the arm 
-# at atmospheric pressure. 
-
-trace$new_y <- abs(trace$y_val + (trace$y_val - trace$y_val[1]))
-
-# scaling this to depth
-# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 Traces have 
-# depth calibration at the end of the trace, previous ones do not. 
-trace$depth <- ((trace$new_y * MAX_DEPTH) / max(trace$new_y))
-
-# plotting 
-ggplot(trace[1500:11000,], aes(x = new_x, y = depth)) + geom_point() + theme_bw()
+# changing the time_dots y value to negative due to origin placement in ImageJ
+time_dots$Y <- time_dots$Y * -1
 
 ################################################################################
 # Author: EmmaLi Tsai 
@@ -123,16 +123,13 @@ ggplot(trace[1500:11000,], aes(x = new_x, y = depth)) + geom_point() + theme_bw(
 # code... 
 
 # mutating off the transformed depth now 
-trace <- mutate(trace, new_x = new_x, y=depth) %>%
+trace <- mutate(trace, new_x = new_x, y=y_val) %>%
   select(y, new_x) %>%
   arrange(new_x)
 
 # grouping trace by x value and summarizing by median y for easier spline 
 # smoothing
 trace <- group_by(trace, new_x) %>% summarize(y = median(y))
-# NOTE -- I keep getting the warning: 
-#     "Unknown or uninitialized column: y_val" but am unsure why or how to fix 
-#     it. 
 
 ################################################################################
 #   Function: split_smoothing(df, n = 40, spar = 0.4)
@@ -200,7 +197,8 @@ trace <- split_smoothing(trace)
 # very large y-values at the end of the trace when the scientists calibrated
 # the TDR for depth. 
 # also evident that the y-values at the beginning of the trace are off from the 
-# way I scanned the physical trace 
+# way I scanned the physical trace - centering is needed 
+
 ggplot(trace[2000:6000,], aes(x = new_x, y = smooth_y)) +
   geom_line(aes(new_x, y), color="gray", size=0.2) +
   geom_point(aes(color=deriv > 0)) +
@@ -209,7 +207,7 @@ ggplot(trace[2000:6000,], aes(x = new_x, y = smooth_y)) +
 
 ################################################################################
 # Author: EmmaLi Tsai
-# Topic: Time periods-- New Approach 
+# Topic: Adding time dots to the trace data frame 
 # Date: 1/18/2021
 ################################################################################
 
@@ -257,7 +255,7 @@ add_timepoints_red <- function(df, time_dots){
       # coding for the special case in the trace before the first time 
       # dot was made. This still counts as a first time period. 
       time_points[i] = df$new_x[i]
-      time_points_y[i] = -1
+      time_points_y[i] = time_dots$Y[i]
     }
     
     min.index <- which.min(abs(df$new_x - time_dots$x_val[i]))
@@ -266,7 +264,7 @@ add_timepoints_red <- function(df, time_dots){
       if (z == min.index){
         # if the index row is the minimum index that was identified, 
         # add these two values to our vectors 
-        time_points_y[z] = -1
+        time_points_y[z] = time_dots$Y[i]
         time_points[z] = time_dots$x_val[i]
       }
     }
@@ -279,11 +277,11 @@ add_timepoints_red <- function(df, time_dots){
 # this produces a really long data frame that has 0's where the data point is 
 # not close to a time point. This was needed so I could easily add these as 
 # columns to the full data frame 
-add_timepoints_red(trace, time_dots)
+time_points <- add_timepoints_red(trace, time_dots)
 
 # adding it to trace data frame
-trace$time_points_x <- add_timepoints_red(trace, time_dots)$time_points
-trace$time_points_y <- add_timepoints_red(trace, time_dots)$time_points_y
+trace$time_points_x <- time_points$time_points
+trace$time_points_y <- time_points$time_points_y
 
 # just checking to see that all the time points were connected correctly
 just_timepoints <- trace[(trace$time_points_x!=0),]
@@ -405,24 +403,117 @@ trace$time <- running_time(trace, time_scales)
 # proving that it works: 
 trace[which(trace$time_points_x!=0),]
 
-# also proving with plotting 
-ggplot(trace, aes(x = time, y = smooth_y)) +
-  geom_line(aes(time, y), color="gray", size=0.2) +
-  geom_point(aes(color=deriv > 0)) +
-  geom_line() + 
-  labs(x = "time (min)", y = "depth (m)", title = "WS_25_1981")
 
+################################################################################
+# Author: EmmaLi Tsai
+# Topic:  Centering the scan!
+# Date:   2/1/2021
+################################################################################
+# The code below is still a work in progress... 
+# The function I made works, but there is definitely an easier way to do this! 
+# Centering was necessary since the trace was moving as I was feeding it into
+# the scanner. 
 
-# Looking good! Still need to tweak some things
-ggplot(trace, aes(x = time, y = smooth_y)) + 
-  geom_line(aes(time, y), color="gray", size=0.2) + 
-  geom_line() +
-  theme_bw() + 
-  labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
-  scale_x_continuous(position = "top") + 
-  scale_y_reverse()
+# what about moving the trace up so that the time points are at depth = 0?
+time_dots$y_val_corr <- abs(time_dots$Y)
 
+################################################################################
+#   Function: center_scan(df, time_dots)
+#   Author: EmmaLi Tsai 
+#   Date: 2/10/2021
+#
+#   This function takes the trace df and time_dots csv file to "center" the scan 
+#   of the trace. This step is necessary because the data are off centered as my
+#   hands were guiding the trace into the scanner. Essentially, this function 
+#   loops through the data frame and uses the distance the time points are from 
+#   y = 0 to move the smooth_y values up. For example, if the time point was 
+#   at y = - 0.2cm, all points within this time period would be shifted up 0.2cm 
+#   such that the time point would be at y = 0. This step was needed before
+#   reducing the noise of the trace at depth = 0. 
+#
+# 
+#   Input: 
+#       -   df          : a dataframe that contains x/y values of a dive trace 
+#       -   time_dots   : a dataframe that contains the x and y values of the 
+#                         time points. Another column should be added named 
+#                         "y_val_corr", which is the abs(Y). This was needed due
+#                         to the way ImageJ sets origins. 
+#
+#   Output: 
+#       -  The output of this function is two cbinded vectors: 
+#       -   center_y    : The smooth_y value in the trace data frame with the y 
+#                         value correction.
+#       -   center_y_   : column that is mainly there as a sanity check. Time 
+#           time_point    dots should have a value of 0 in this column, and any 
+#                         value between time dots is the value that was added 
+#                         to the smooth_y value in the trace. 
+# 
+################################################################################
 
+# THIS FUNCTION IS BASED ON THE SMOOTH_Y VALUE IN THE DF  
+center_scan <- function(df, time_dots){
+  # finding the outliers that I made while image processing 
+  outliers <- which(diff(time_dots$y_val_corr) > 0.1)
+  # creating a numeric vector to append new y values 
+  center_y <- numeric() 
+  # numeric vector to append time point values to ensure that the function is 
+  # working 
+  center_y_time_point <- numeric()
+  # looping through data frame 
+  for(i in 1:nrow(df)){
+    if(i == 1){
+      # special case of first index 
+      index <- 1
+    } else{
+      # index that I am working with for the time_dots dataframe is the time 
+      # period value in the trace df 
+      index <- df$time_period[i-1]
+    }
+    # special cases for outlier values that happened via image processing 
+    if (index %in% outliers){
+      center_y[i] <- df[i,]$smooth_y + time_dots[(index-1),]$y_val_corr 
+      center_y_time_point[i] <- df[i,]$time_points_y + time_dots[(index-1),]$y_val_corr 
+      
+    }
+    # center Y is the smooth_y value plus the time dots correction
+    center_y[i] <- df[i,]$smooth_y + time_dots[index,]$y_val_corr 
+    # center y time point is the time points value plus the y corrected 
+    center_y_time_point[i] <- df[i,]$time_points_y + time_dots[index,]$y_val_corr 
+    # center y time points SHOULD BE 0 for time points, since I am shifting 
+    # everything up/down so the time points are along depth = 0 to "center" the 
+    # scan
+  }
+  # returning the binded vectors 
+  return(cbind(center_y, center_y_time_point))
+}
 
+# running the function above 
+center_y <- center_scan(trace, time_dots)
+# adding this as a new row to the data frame 
+trace$center_y <- center_y[,1]
 
+# plotting to compare the center_y with the original time dots 
+# I subtracted 1 from the center_y value to make everything a bit closer to the 
+# depth = 0 axis: 
+ggplot(trace, aes(x = new_x, y = (center_y - 1))) + 
+  geom_point() + 
+  # adds time dots after transformation 
+  geom_point(data = time_dots, aes(x = x_val, y = (Y + y_val_corr) - 1)) + 
+  # adds time dots before transformation 
+  geom_point(data = time_dots, aes(x = x_val, y = Y), color = "grey") + 
+  # adding the trace before the transformation for comparison
+  geom_point(data = trace, aes(x = new_x, y = smooth_y), color = "grey") + 
+  theme_bw()
+
+# errors that you see when plotting are referring to the tail end of the 
+# trace, where the depth calibration occurred. These points happened after the
+# last time point, so I couldn't assign them an actual time. 
+
+################################################################################
+# Author: EmmaLi Tsai
+# Topic:  Removing noise at depth = 0
+# Date:   2/9/2021
+################################################################################
+
+# This is the section I am currently working on! 
 
