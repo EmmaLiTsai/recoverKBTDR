@@ -65,6 +65,9 @@ TIME_PERIOD <- 12
 # defining max depth for depth scale. THIS ALSO CHANGES ACROSS TRACES! 
 MAX_DEPTH <- 800
 
+# distance from trace to timing dots in cm-- this is used for centering the scan
+DIST_TIMEDOT <- 1.1
+
 ################################################################################
 # Read data
 
@@ -516,4 +519,108 @@ ggplot(trace, aes(x = new_x, y = (center_y - 1))) +
 ################################################################################
 
 # This is the section I am currently working on! 
+# First, I need to reduce the extra noise at lower depths:
+# I'm subtracting the distance of the trace from the timing dots to move 
+# everything back down 
+trace$center_y <- trace$center_y - DIST_TIMEDOT
+
+# Filtering by y value < 0.2. This was an arbitrary number that I picked just to 
+# explore this method a bit more 
+trace[which(trace$center_y < 0.2),]$center_y <- 0
+
+# what about looking at just the inflection points? 
+just_ip <- trace[which(trace$peak %in% c("TOP", "BOTTOM")), ]
+
+# plotting a sample
+ggplot(just_ip[450:700,], aes(x = time, y = center_y)) + 
+  geom_point(aes(color = peak)) + 
+  geom_line()
+
+# need to find a way to make depth = 0 for when peak == "top", but also keep the 
+# "wiggle" behavior... 
+
+# viewing a different bout 
+ggplot(trace[500:4000,], aes(x = time, y = center_y)) + geom_line() + 
+  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8) + 
+  geom_point(data = just_ip[20:87,], aes(x = time, y = center_y, color = peak))
+
+################################################################################
+#   Function: filter_top(df, just_ip)
+#   Author: EmmaLi Tsai 
+#   Date: 2/10/2021
+#
+#   This function is the first attempt at separating the "wiggles" within a dive
+#   and when the seal is bobbing at the surface during a bout of dives. This
+#   function was necessary because during a bout, the smoothing approach causes 
+#   depth = 0 to drift in the +y direction, and getting confused with wiggles 
+#   during a dive. It is basically a set of nested conditions to help discern 
+#   between the two behaviors. This is a still a work in progress-- I think 
+#   there is a better way to do this but I figured this would be a good 
+#   starting point?
+#
+# 
+#   Input: 
+#       -   df          : a dataframe that contains x/y values of a dive trace 
+#                         after centering and smoothing 
+#       -   just_ip     : a dataframe that contains the x and y values of the 
+#                         inflection points, so where peak == "TOP" or when 
+#                         peak == "BOTTOM". 
+#                      
+#   Output: 
+#       -  filtered_y   : numeric vector of the corrected centered y values
+# 
+################################################################################
+filter_top <- function(df, just_ip){
+  # defining numeric vector to store new y values 
+  filtered_y <- numeric() 
+  # stepping through each row in the data frame 
+  for (i in 1:nrow(df)){
+    # if the value of peak == "top" so when the seal is at the surface, and when 
+    # this value is not NA and time is not NA (time = NA happens after the last 
+    # time point, but this is just the depth calibration curve)
+    if (df$peak[i] == "TOP" && !(df$peak[i] %in% (NA)) && !(df$time[i] %in% (NA))){
+      # grab the index value that corresponds with this value in the just_ip 
+      # data frame. This was needed to bridge the connection between the two 
+      index <- which(just_ip$time == df$time[i])
+      # if the difference between this inflection point and the previous one is 
+      # significant, then make this value 0. I was hoping this would identify 
+      # when the seal was bobbing at the surface during a bout of dives. 
+      if (abs(just_ip[index,]$center_y - just_ip[(index-1),]$center_y) > 0.5){
+        filtered_y[i] <- 0
+        # if the y-value is greater than 1.5, then keep the original centered 
+        # y_value. I needed this condition in order to keep wiggles that 
+        # might've happened after a rather large depth change, but still within 
+        # a dive. 
+        if(df$center_y[i] > 1.5){
+          filtered_y[i] <- df$center_y[i]
+        } 
+      } 
+      # if these conditions are not met, then just place the center_y value to 
+      # the numeric vector. 
+      else{
+        filtered_y[i] <- df$center_y[i]
+      }
+      # same thing here, but out of the nested if statement 
+    } else{
+      filtered_y[i] <- df$center_y[i]
+    }
+  }
+  # returning the final numeric vector 
+  return(filtered_y)
+}
+# trying it out as a quick test 
+test <- filter_top(trace, just_ip)
+# adding it to the data frame 
+trace$test_filter <- test
+
+# plotting multiple bouts to assess if this function worked: 
+ggplot(trace[500:4000,], aes(x = time,y = test_filter)) + geom_line()
+
+ggplot(trace[19000:23000,], aes(x = time, y = test_filter)) + geom_line()  
+#  geom_point() + 
+#  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8)
+
+ggplot(trace[38300:43400,], aes(x = time, y = test_filter)) + geom_line() 
+#  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8)
+
 
