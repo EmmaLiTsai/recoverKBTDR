@@ -92,7 +92,7 @@ trace$y_corr <- trace$y_corr_p2
 ################################################################################
 
 # removing extra columns
-trace <- select(trace, -c("Y", "y_corr_p2"))
+trace <- select(trace, -c("Y", "y_corr"))
 # changing the names to match the conventions I've been using 
 names(trace) <- c("x_val", "y_val")
 
