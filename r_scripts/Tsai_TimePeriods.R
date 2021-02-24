@@ -41,7 +41,9 @@
 #
 #   UPDATE: removed depth transformation section for now, will come back to this 
 #       once I tackle the noise and smoothing issues above. ET 2/15
-
+#
+#   UPDATE: modified image processing by using "skeletonization" which helps the 
+#       smoothing functions capture more of the behavior at depth. 
 ################################################################################
 # Loading packages
 
@@ -73,21 +75,26 @@ DIST_TIMEDOT <- 1.1
 
 # this is data from an actual trace from 1981. 
 
-# UPDATE -- changed image processing workflow, so the file names changed ET 2/15
+# UPDATE -- changed image processing workflow, so the file names changed ET 2/24
 
 # I plan to push the workflow that I've been using to process the scanned
 # images to GitHub in the future
-trace <- read.csv("./WS_25_correctY.csv", header = TRUE, 
+trace <- read.csv("./skele_trace.csv", header = TRUE, 
                   stringsAsFactors = FALSE)
 
 # this csv contains the timing dots for the trace. I gathered these by maually 
 # clicking each time point with the "point" tool in ImageJ, but am looking for a 
 # macros that can do this with more accuracy. 
-time_dots <- read.csv("./WS_25_timingdots.csv", header = TRUE, 
+time_dots <- read.csv("./skele_timedots.csv", header = TRUE, 
                       stringsAsFactors = FALSE)
 
 # making this the new column value 
 trace$y_corr <- trace$y_corr_p2
+
+# some tidying for the time_dots file: 
+time_dots <- select(time_dots, -c("X.1"))
+
+names(time_dots) <- c("x_val", "Y")
 
 ################################################################################
 # Transforming the arc using the new approach
@@ -110,7 +117,7 @@ trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) + (trace$x_val + sqrt(RADIUS^2 -
 
 # Rounding the data since some values are too specific with the kind of 
 # precision that I'm working with
-trace$new_x <- round(trace$new_x, 2)
+trace$new_x <- round(trace$new_x, 3)
 
 # changing the time_dots y value to negative due to origin placement in ImageJ
 time_dots$Y <- time_dots$Y * -1
@@ -201,11 +208,14 @@ trace <- split_smoothing(trace)
 # the TDR for depth. 
 # also evident that the y-values at the beginning of the trace are off from the 
 # way I scanned the physical trace - centering is needed 
-
-ggplot(trace[2000:6000,], aes(x = new_x, y = smooth_y)) +
+ggplot(trace[1000:9000,], aes(x = new_x, y = smooth_y)) +
   geom_line(aes(new_x, y), color="gray", size=0.2) +
   geom_point(aes(color=deriv > 0)) +
   geom_line()
+
+# looking at a specific bout to see how well the smoothing performs
+ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() + 
+  geom_line(aes(x = new_x, y = smooth_y), color = "red", size = 1.1)
 
 
 ################################################################################
