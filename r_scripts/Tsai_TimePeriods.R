@@ -3,11 +3,12 @@
 # Topic: Time Periods, Depth, and Smoothing  
 # Date: 2021-1-18
 ################################################################################
-
-# This document builds off the arc transformation .R file to also include work
-# on the time periods, depth scale, and spline smoothing. 
+# 
 #
-# Tracking this file via git 
+# This document builds off the arc transformation .R file to also include work
+# on the time periods, depth scale, centering, and spline smoothing. The final 
+# graph is the closest fully recovered trace that I have made so far ET (2/24)
+#
 #
 # The final output of this script produces a recovered trace, but some 
 # small issues still need to be fixed: 
@@ -16,6 +17,10 @@
 #       fixing the spline smoothing so that the smoothed line picks up when the 
 #       seal resurfaces for ~10 minutes during a bout of dives. This is the most 
 #       urgent task before I attempt the ones below. 
+#  
+#   UPDATE: somewhat resolved? Smoothing issues are resolved, but I am currently
+#       checking the new method for removing noise at depth = 0. See last 
+#       section of this document. ET 2/24
 # 
 # TODO: I need to double-check the depth transformation. The transformation 
 #       itself is easy, but I had to "center" the scan and I'm not confident 
@@ -34,6 +39,9 @@
 #       into chunks and applies smoothing over smaller degrees of freedom. 
 #       However, a new challenge emerges when trying to identify when the seal 
 #       surfaces within a bout of dives-- see to-do task number 1. ET 2/15
+# 
+#   UPDATE: This has been resolved. I changed the image processing workflow to 
+#       skeletonize the trace, which greatly improved smoothing.  ET 2/24
 #         
 # TODO: check the output of this code with the castellini (1992) bulletin. The 
 #       max depth for this trace seems to align, but confirm other dive
@@ -93,7 +101,6 @@ trace$y_corr <- trace$y_corr_p2
 
 # some tidying for the time_dots file: 
 time_dots <- select(time_dots, -c("X.1"))
-
 names(time_dots) <- c("x_val", "Y")
 
 ################################################################################
@@ -213,7 +220,8 @@ ggplot(trace[1000:9000,], aes(x = new_x, y = smooth_y)) +
   geom_point(aes(color=deriv > 0)) +
   geom_line()
 
-# looking at a specific bout to see how well the smoothing performs
+# looking at a specific bout to see how well the smoothing performs... this is 
+# greatly improved from the previous image processing methods I was using. 
 ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() + 
   geom_line(aes(x = new_x, y = smooth_y), color = "red", size = 1.1)
 
@@ -416,7 +424,6 @@ trace$time <- running_time(trace, time_scales)
 # proving that it works: 
 trace[which(trace$time_points_x!=0),]
 
-
 ################################################################################
 # Author: EmmaLi Tsai
 # Topic:  Centering the scan!
@@ -505,132 +512,62 @@ center_y <- center_scan(trace, time_dots)
 # adding this as a new row to the data frame 
 trace$center_y <- center_y[,1]
 
-# plotting to compare the center_y with the original time dots 
-# I subtracted 1 from the center_y value to make everything a bit closer to the 
-# depth = 0 axis: 
-ggplot(trace, aes(x = new_x, y = (center_y - 1))) + 
-  geom_point() + 
-  # adds time dots after transformation 
-  geom_point(data = time_dots, aes(x = x_val, y = (Y + y_val_corr) - 1)) + 
-  # adds time dots before transformation 
-  geom_point(data = time_dots, aes(x = x_val, y = Y), color = "grey") + 
-  # adding the trace before the transformation for comparison
-  geom_point(data = trace, aes(x = new_x, y = smooth_y), color = "grey") + 
-  theme_bw()
-
-# errors that you see when plotting are referring to the tail end of the 
-# trace, where the depth calibration occurred. These points happened after the
-# last time point, so I couldn't assign them an actual time. 
+# great! so now that scan should be centered across the trace. 
 
 ################################################################################
 # Author: EmmaLi Tsai
-# Topic:  Removing noise at depth = 0
-# Date:   2/9/2021
+# Topic:  Removing noise at depth = 0 and depth scale
+# Date:   2/24/2021
 ################################################################################
 
-# This is the section I am currently working on! 
-# First, I need to reduce the extra noise at lower depths:
-# I'm subtracting the distance of the trace from the timing dots to move 
-# everything back down 
+# this is the section I am currently working on! 
+
+# ok so now removing the noise should be much easier, right? 
 trace$center_y <- trace$center_y - DIST_TIMEDOT
 
-# Filtering by y value < 0.2. This was an arbitrary number that I picked just to 
-# explore this method a bit more 
-trace[which(trace$center_y < 0.2),]$center_y <- 0
+# this is a quick way-- i will build on this code but just wanted to assess this 
+# method. 
+trace[which(trace$center_y < 0),]$center_y <- 0
 
-# what about looking at just the inflection points? 
-just_ip <- trace[which(trace$peak %in% c("TOP", "BOTTOM")), ]
-
-# plotting a sample
-ggplot(just_ip[450:700,], aes(x = time, y = center_y)) + 
-  geom_point(aes(color = peak)) + 
-  geom_line()
-
-# need to find a way to make depth = 0 for when peak == "top", but also keep the 
-# "wiggle" behavior... 
-
-# viewing a different bout 
-ggplot(trace[500:4000,], aes(x = time, y = center_y)) + geom_line() + 
-  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8) + 
-  geom_point(data = just_ip[20:87,], aes(x = time, y = center_y, color = peak))
-
-################################################################################
-#   Function: filter_top(df, just_ip)
-#   Author: EmmaLi Tsai 
-#   Date: 2/10/2021
-#
-#   This function is the first attempt at separating the "wiggles" within a dive
-#   and when the seal is bobbing at the surface during a bout of dives. This
-#   function was necessary because during a bout, the smoothing approach causes 
-#   depth = 0 to drift in the +y direction, and getting confused with wiggles 
-#   during a dive. It is basically a set of nested conditions to help discern 
-#   between the two behaviors. This is a still a work in progress-- I think 
-#   there is a better way to do this but I figured this would be a good 
-#   starting point?
-#
+# looking at different bouts to assess how this method worked
+# bout one 
+# ggplot(trace[1000:9000,], aes(x = time, y = center_y)) + geom_line()
 # 
-#   Input: 
-#       -   df          : a dataframe that contains x/y values of a dive trace 
-#                         after centering and smoothing 
-#       -   just_ip     : a dataframe that contains the x and y values of the 
-#                         inflection points, so where peak == "TOP" or when 
-#                         peak == "BOTTOM". 
-#                      
-#   Output: 
-#       -  filtered_y   : numeric vector of the corrected centered y values
+# # bout two 
+# ggplot(trace[35000:45000,], aes(x = time, y = center_y)) + geom_line() 
 # 
-################################################################################
-filter_top <- function(df, just_ip){
-  # defining numeric vector to store new y values 
-  filtered_y <- numeric() 
-  # stepping through each row in the data frame 
-  for (i in 1:nrow(df)){
-    # if the value of peak == "top" so when the seal is at the surface, and when 
-    # this value is not NA and time is not NA (time = NA happens after the last 
-    # time point, but this is just the depth calibration curve)
-    if (df$peak[i] == "TOP" && !(df$peak[i] %in% (NA)) && !(df$time[i] %in% (NA))){
-      # grab the index value that corresponds with this value in the just_ip 
-      # data frame. This was needed to bridge the connection between the two 
-      index <- which(just_ip$time == df$time[i])
-      # if the difference between this inflection point and the previous one is 
-      # significant, then make this value 0. I was hoping this would identify 
-      # when the seal was bobbing at the surface during a bout of dives. 
-      if (abs(just_ip[index,]$center_y - just_ip[(index-1),]$center_y) > 0.5){
-        filtered_y[i] <- 0
-        # if the y-value is greater than 1.5, then keep the original centered 
-        # y_value. I needed this condition in order to keep wiggles that 
-        # might've happened after a rather large depth change, but still within 
-        # a dive. 
-        if(df$center_y[i] > 1.5){
-          filtered_y[i] <- df$center_y[i]
-        } 
-      } 
-      # if these conditions are not met, then just place the center_y value to 
-      # the numeric vector. 
-      else{
-        filtered_y[i] <- df$center_y[i]
-      }
-      # same thing here, but out of the nested if statement 
-    } else{
-      filtered_y[i] <- df$center_y[i]
-    }
-  }
-  # returning the final numeric vector 
-  return(filtered_y)
-}
-# trying it out as a quick test 
-test <- filter_top(trace, just_ip)
-# adding it to the data frame 
-trace$test_filter <- test
+# # bout three 
+# ggplot(trace[73000:88800,], aes(x = time, y = center_y)) + geom_line() 
+# 
+# # bout four 
+# ggplot(trace[138000:151000,], aes(x = time, y = center_y)) + geom_line()
 
-# plotting multiple bouts to assess if this function worked: 
-ggplot(trace[500:4000,], aes(x = time,y = test_filter)) + geom_line()
+# depth scale: 
 
-ggplot(trace[19000:23000,], aes(x = time, y = test_filter)) + geom_line()  
-#  geom_point() + 
-#  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8)
+# scaling this to depth
 
-ggplot(trace[38300:43400,], aes(x = time, y = test_filter)) + geom_line() 
-#  geom_line(aes(x = time, y = y), color = "grey", alpha = 0.8)
+# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
+# depth calibration at the end of the trace, previous ones do not. 
+trace$depth <- ((trace$center_y * MAX_DEPTH) / max(trace$center_y))
 
+# looking at different bouts 
+# bout one 
+# ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
+# 
+# # bout two 
+# ggplot(trace[35000:45000,], aes(x = time, y = depth)) + geom_line() 
+# 
+# # bout three 
+# ggplot(trace[73000:88800,], aes(x = time, y = depth)) + geom_line() 
+# 
+# # bout four 
+# ggplot(trace[138000:151000,], aes(x = time, y = depth)) + geom_line()
 
+# plotting again... this is close to what the final product should be. 
+ggplot(trace, aes(x = time, y = depth)) + 
+  geom_line(aes(time, y), color="gray", size=0.2) + 
+  geom_line() +
+  theme_bw() + 
+  labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
+  scale_x_continuous(position = "top") + 
+  scale_y_reverse()
