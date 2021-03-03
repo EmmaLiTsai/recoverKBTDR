@@ -62,10 +62,10 @@ library(dplyr)
 # Constants 
 
 # radius of the KBTDR arm when scaled up to the size of the physical traces 
-RADIUS <- 19.17
+RADIUS <- 20.6
 # height of the KBTDR pivot point when scaled up to the size of the physical 
 # trace
-CENTER_Y <- 11.5
+CENTER_Y <- 11.3
 
 # both the RADIUS and CENTER_Y should be constant across all KBTDR devices. 
 
