@@ -377,52 +377,76 @@ trace$time_period <- flag_timeperiod(trace)
 # Okay, now that I have a flag for the different time periods, time to see if I  
 # can create a running time with the time scales I created above. 
 
+# I noticed issues with time in previous approach. Here, I am trying a new on  
+# 3/3/2021 ET
+
+# just grabbing the time points on the trace: 
+just_tp <- trace[which(trace$time_points_x!=0),]
+
+# making a small data frame with time periods, start/end values, and scale 
+# factor:
+tp_df <- data.frame(tp = just_tp$time_period, 
+                    start_x = just_tp$new_x, 
+                    end_x = lead(just_tp$new_x))
+
+# creating the scale using the start/end time periods 
+tp_df$scale = TIME_PERIOD / (tp_df$end_x - tp_df$start_x)
 
 ################################################################################
-#   Function: running_time(df, time_scales)
+#   Function: running_time(trace, tp_df)
 #   Author: EmmaLi Tsai 
-#   Date: 1/21/2021
+#   Date: 3/3/2021
 #
-#   Function that creates a numeric vector that identifies the time for each row
-#   of a trace. This function was needed in order to make the time x-axis. 
+#   This simple function takes the trace and time periods data frame (with time
+#   period, start_x, end_x, and scale) to create a running time. I believe this 
+#   might be easier with a mutate function, but essentially this assesses the 
+#   distance a point is from the beginning of a time period and multiples that 
+#   distance by the scale I calculated in the tp_df data frame. 
 # 
 #   Input: 
-#       -   df          : a dataframe that contains x/y values of a dive trace 
-#       -   time_scales : a numeric vector that contains the time scale for a 
-#                         specific time period. Mathematical process for these 
-#                         values were described above. 
+#       -   trace       : a data frame that contains x/y values of a dive trace 
+#                         and time periods. 
+#       -   tp_df       : a data frame that contains the time period (tp), start
+#                         x (start_x), and end x (end_x) of that time period, as 
+#                         well as the scaling factor that I calculated (scale). 
+#                         This was basically a helper data frame to make this 
+#                         function very simple. 
 #
 #   Output: 
-#       -   time       : numeric vector that contains the running time for each
-#                        row of the trace. This can be added to the original 
-#                        trace data frame. 
+#       -   time        : numeric vector that contains all the running time 
+#                         calculations. This can later be attached to the trace 
+#                         data frame using cbind()
 # 
 ################################################################################
 
-running_time <- function(df, time_scales){
-  # creating a numeric time vector 
+running_time <- function(trace, tp_df){
+  # creating an empty numeric vector to store time values 
   time <- numeric()
-  # stepping through each row in the data frame 
-  for (i in 1:nrow(df)){
-    # if the index is = 1, this is the start time 
-    if (i == 1){
-      # time for this index will be 0
-      time[i] = 0 
-    } else {
-      # for all other indices, the time will be equal to the 
-      # time before, plus the correct time scale value 
-      time[i] = time[i-1] + time_scales[df$time_period[i-1]]
-    }
+  # looping through each row in the trace
+  for (i in 1:nrow(trace)){
+    # grabbing the index value that corresponds with that time period. I needed 
+    # this in order to use the tp_df (time_periods data frame) that we created 
+    # earlier 
+    index = trace$time_period[i]
+    # calculating the time for that data point. This basically just calculates 
+    # the distance between the data point and the beginning of the time period 
+    # and uses that distance with the time scale from tp_df to calculate the
+    # time for that point 
+    time[i] <- ((trace$new_x[i] - tp_df$start_x[index]) * tp_df$scale[index]) + ((tp_df$tp[index]-1)*12)
   }
-  # return the time numeric vector 
+  # returning the time numeric vector 
   return(time)
 }
-
-# adding this numeric vector to the trace df 
-trace$time <- running_time(trace, time_scales)
+# checking to see if it works: 
+time <- running_time(trace, tp_df)
+# adding it to trace df 
+trace$time <- time
 
 # proving that it works: 
 trace[which(trace$time_points_x!=0),]
+
+# plot of bout one to assess the quality of this method: 
+# ggplot(trace[500:9000,], aes(x = time, y = smooth_y)) + geom_line()
 
 ################################################################################
 # Author: EmmaLi Tsai
