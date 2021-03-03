@@ -84,15 +84,13 @@ DIST_TIMEDOT <- 1.1
 # this is data from an actual trace from 1981. 
 
 # UPDATE -- changed image processing workflow, so the file names changed ET 2/24
-
-# I plan to push the workflow that I've been using to process the scanned
-# images to GitHub in the future
+# see image processing methods in sample_data folder.
 trace <- read.csv("./skele_trace.csv", header = TRUE, 
                   stringsAsFactors = FALSE)
 
-# this csv contains the timing dots for the trace. I gathered these by maually 
-# clicking each time point with the "point" tool in ImageJ, but am looking for a 
-# macros that can do this with more accuracy. 
+# this csv contains the timing dots for the trace. I gathered these by using the 
+# wand selection tool in ImageJ to grab the time dot, and automatically 
+# calculating the centroid of this dot. 
 time_dots <- read.csv("./skele_timedots.csv", header = TRUE, 
                       stringsAsFactors = FALSE)
 
@@ -308,29 +306,20 @@ trace$time_points_y <- time_points$time_points_y
 just_timepoints <- trace[(trace$time_points_x!=0),]
 
 ################################################################################
-# Start of New Approach for x-axis Transformation
+# Approach for x-axis Transformation
 ################################################################################
 
-# This new approach transforms the x-axis into time, without worrying about the 
-# original x positions. It basically takes the time period (12 minutes in this 
-# case) and divides this by the number of rows between two time periods to find 
-# a time scale for that time period. I then made a running sum where each row 
-# time was created by adding the time scale value to the previous row. 
-
-# To do this, I first needed to find the indices of the time points for the
-# whole trace: 
+# Finding the indices of the time points for the whole trace: 
 time_points_index <- which(trace$time_points_x!=0)
 
 # I then took these values found the difference between the indices, which gave
 # me the number of rows between two time points. I divided the TIME_PERIOD by 
 # this number, which is defined at the top of this code. 
 
-# CAUTION- TIME PERIODS CHANGE BETWEEN TRACES 
 time_scales <- TIME_PERIOD / (diff(time_points_index))
 
 # I then created a flagging variable to identify the time period for each part 
-# of the trace. This was needed to make the cumulative time a bit easier to 
-# calculate. 
+# of the trace. 
 
 ################################################################################
 #   Function: flag_timeperiod(df)
