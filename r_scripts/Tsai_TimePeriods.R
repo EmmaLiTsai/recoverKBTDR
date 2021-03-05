@@ -212,16 +212,16 @@ trace <- split_smoothing(trace)
 # very large y-values at the end of the trace when the scientists calibrated
 # the TDR for depth. 
 # also evident that the y-values at the beginning of the trace are off from the 
-# way I scanned the physical trace - centering is needed 
-ggplot(trace[1000:9000,], aes(x = new_x, y = smooth_y)) +
-  geom_line(aes(new_x, y), color="gray", size=0.2) +
-  geom_point(aes(color=deriv > 0)) +
-  geom_line()
+# way I scanned the physical trace - centering is needed: 
+# ggplot(trace[1000:9000,], aes(x = new_x, y = smooth_y)) +
+#   geom_line(aes(new_x, y), color="gray", size=0.2) +
+#   geom_point(aes(color=deriv > 0)) +
+#   geom_line()
 
 # looking at a specific bout to see how well the smoothing performs... this is 
-# greatly improved from the previous image processing methods I was using. 
-ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() + 
-  geom_line(aes(x = new_x, y = smooth_y), color = "red", size = 1.1)
+# greatly improved from the previous image processing methods I was using: 
+# ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() + 
+#   geom_line(aes(x = new_x, y = smooth_y), color = "red", size = 1.1)
 
 
 ################################################################################
@@ -230,7 +230,8 @@ ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() +
 # Date: 1/18/2021
 ################################################################################
 
-# This script transforms the x-axis into time. 
+# This section merges the trace and time dots data frame. I had to create a 
+# function here to merge the two files based on the closest x values. 
 
 # rounding the x_value of the time dots since the measurements I made are
 # not as precise as 3 decimal places 
@@ -303,22 +304,13 @@ trace$time_points_x <- time_points$time_points
 trace$time_points_y <- time_points$time_points_y
 
 # just checking to see that all the time points were connected correctly
-just_timepoints <- trace[(trace$time_points_x!=0),]
+# just_timepoints <- trace[(trace$time_points_x!=0),]
 
 ################################################################################
 # Approach for x-axis Transformation
 ################################################################################
 
-# Finding the indices of the time points for the whole trace: 
-time_points_index <- which(trace$time_points_x!=0)
-
-# I then took these values found the difference between the indices, which gave
-# me the number of rows between two time points. I divided the TIME_PERIOD by 
-# this number, which is defined at the top of this code. 
-
-time_scales <- TIME_PERIOD / (diff(time_points_index))
-
-# I then created a flagging variable to identify the time period for each part 
+# First, I created a flagging variable to identify the time period for each part 
 # of the trace. 
 
 ################################################################################
@@ -432,7 +424,7 @@ time <- running_time(trace, tp_df)
 trace$time <- time
 
 # proving that it works: 
-trace[which(trace$time_points_x!=0),]
+# trace[which(trace$time_points_x!=0),]
 
 # plot of bout one to assess the quality of this method: 
 # ggplot(trace[500:9000,], aes(x = time, y = smooth_y)) + geom_line()
@@ -447,8 +439,10 @@ trace[which(trace$time_points_x!=0),]
 # Centering was necessary since the trace was moving as I was feeding it into
 # the scanner. 
 
-# what about moving the trace up so that the time points are at depth = 0?
-time_dots$y_val_corr <- abs(time_dots$Y)
+# This approach takes the y values of the time dots and moves them and the trace
+# above up/down such that the y-values are all y = DIST_TIMEDOT. This just 
+# "straightens" the trace by making the time dots into a straight line. 
+time_dots$y_val_corr <- (abs(time_dots$Y) - DIST_TIMEDOT)
 
 ################################################################################
 #   Function: center_scan(df, time_dots)
@@ -459,10 +453,11 @@ time_dots$y_val_corr <- abs(time_dots$Y)
 #   of the trace. This step is necessary because the data are off centered as my
 #   hands were guiding the trace into the scanner. Essentially, this function 
 #   loops through the data frame and uses the distance the time points are from 
-#   y = 0 to move the smooth_y values up. For example, if the time point was 
-#   at y = - 0.2cm, all points within this time period would be shifted up 0.2cm 
-#   such that the time point would be at y = 0. This step was needed before
-#   reducing the noise of the trace at depth = 0. 
+#   y = DIST_TIMEDOTS to move the smooth_y values up or down. For example, if 
+#   the time point was at y = - 0.2cm, all points within this time period would 
+#   be shifted down 0.9cm such that the time point would be at y = DIST_TIMEDOTS
+#   (in this trace it would be y = -1.1). This step was needed before reducing  
+#   the noise of the trace at depth = 0. 
 #
 # 
 #   Input: 
@@ -477,9 +472,9 @@ time_dots$y_val_corr <- abs(time_dots$Y)
 #       -   center_y    : The smooth_y value in the trace data frame with the y 
 #                         value correction.
 #       -   center_y_   : column that is mainly there as a sanity check. Time 
-#           time_point    dots should have a value of 0 in this column, and any 
-#                         value between time dots is the value that was added 
-#                         to the smooth_y value in the trace. 
+#           time_point    dots should have a value of DIST_TIMEDOTS in this 
+#                         column, and any value between time dots is the value 
+#                         that was added to the smooth_y value in the trace. 
 # 
 ################################################################################
 
@@ -512,9 +507,9 @@ center_scan <- function(df, time_dots){
     center_y[i] <- df[i,]$smooth_y + time_dots[index,]$y_val_corr 
     # center y time point is the time points value plus the y corrected 
     center_y_time_point[i] <- df[i,]$time_points_y + time_dots[index,]$y_val_corr 
-    # center y time points SHOULD BE 0 for time points, since I am shifting 
-    # everything up/down so the time points are along depth = 0 to "center" the 
-    # scan
+    # center y time points SHOULD BE DIST_TIMEDOTS for time points, since I am 
+    # shifting everything up/down so the time points are along  
+    # y = DIST_TIMEDOTS to "center" the scan 
   }
   # returning the binded vectors 
   return(cbind(center_y, center_y_time_point))
@@ -534,9 +529,6 @@ trace$center_y <- center_y[,1]
 ################################################################################
 
 # this is the section I am currently working on! 
-
-# ok so now removing the noise should be much easier, right? 
-trace$center_y <- trace$center_y - DIST_TIMEDOT
 
 # this is a quick way-- i will build on this code but just wanted to assess this 
 # method. 
@@ -584,3 +576,6 @@ ggplot(trace, aes(x = time, y = depth)) +
   labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
   scale_x_continuous(position = "top") + 
   scale_y_reverse()
+
+# warning message is from last point in the trace, where I couldn't assign a
+# time value. 
