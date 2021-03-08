@@ -58,8 +58,13 @@
 library(ggplot2)
 library(dplyr)
 
+# this was added to add dates and times... We might not need to add this in the
+# final package, but this information is necessary in order for the recovered 
+# trace to work well in dive stats packages
+library(lubridate)
+
 ################################################################################
-# Constants 
+# Global constants: 
 
 # radius of the KBTDR arm when scaled up to the size of the physical traces 
 RADIUS <- 20.6
@@ -67,7 +72,8 @@ RADIUS <- 20.6
 # trace
 CENTER_Y <- 11.3
 
-# both the RADIUS and CENTER_Y should be constant across all KBTDR devices. 
+
+# Constants below change based on the trace: 
 
 # defining the time period scale. THIS CHANGES ACROSS TRACES!
 TIME_PERIOD <- 12
@@ -77,6 +83,9 @@ MAX_DEPTH <- 800
 
 # distance from trace to timing dots in cm-- this is used for centering the scan
 DIST_TIMEDOT <- 1.1
+
+# start time and date for a trace, in ymd_hms format 
+START_TIME <- "1981:01:16 15:10:00"
 
 ################################################################################
 # Read data
@@ -579,3 +588,20 @@ ggplot(trace, aes(x = time, y = depth)) +
 
 # warning message is from last point in the trace, where I couldn't assign a
 # time value. 
+
+################################################################################
+# Author: EmmaLi Tsai
+# Topic:  Adding dates and times 
+# Date:   3/7/2021
+################################################################################
+
+# removing last row which had NA time value 
+trace <- trace[1:(nrow(trace)-1),]
+
+# creating date_time column using the lubridate package 
+trace$date_time <- ymd_hms(START_TIME, tz = "Antarctica/McMurdo") + 
+  minutes(as.integer(trace$time)) + 
+  seconds(as.integer((trace$time %% 1) * 60))
+
+# currently working on comparing the dive statistics from this recovered trace 
+# with the Castellini et al., 1992 bulletin using the diveMove() package
