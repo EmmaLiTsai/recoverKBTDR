@@ -78,8 +78,8 @@ CENTER_Y <- 11.3
 # defining the time period scale. THIS CHANGES ACROSS TRACES!
 TIME_PERIOD <- 12
 
-# defining max depth for depth scale. THIS ALSO CHANGES ACROSS TRACES! 
-MAX_DEPTH <- 800
+# defining pressure reading for depth scale. THIS ALSO CHANGES ACROSS TRACES! 
+MAX_PSI <- 800
 
 # distance from trace to timing dots in cm-- this is used for centering the scan
 DIST_TIMEDOT <- 1.1
@@ -535,13 +535,30 @@ trace$center_y <- center_y[,1]
 # Author: EmmaLi Tsai
 # Topic:  Removing noise at depth = 0 and depth scale
 # Date:   2/24/2021
+# MAJOR UPDATE: 3/23, ET
 ################################################################################
 
-# this is the section I am currently working on! 
+# depth scale: 
 
-# this is a quick way-- i will build on this code but just wanted to assess this 
-# method. 
-trace[which(trace$center_y < 0),]$center_y <- 0
+# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
+# depth calibration at the end of the trace, previous ones do not. 
+
+# the curve at the end corresponds to different pressures in psi. This needs to 
+# be converted to depth. 
+
+# calculating psi values: 
+trace$psi <- ((trace$center_y * MAX_PSI) / max(trace$center_y))
+
+# with each 1m increase in depth, there is a 1.4696psi increase in pressure in 
+# saltwater: 
+trace$depth <- trace$psi / (1.4696)
+
+# this is a quick way to reduce noise at depth = 0, this can be done in the 
+# diveMove package
+trace[which(trace$depth < 0),]$depth <- 0
+
+# plotting to look at the whole trace
+# ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
 # looking at different bouts to assess how this method worked
 # bout one 
@@ -556,13 +573,6 @@ trace[which(trace$center_y < 0),]$center_y <- 0
 # # bout four 
 # ggplot(trace[138000:151000,], aes(x = time, y = center_y)) + geom_line()
 
-# depth scale: 
-
-# scaling this to depth
-
-# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
-# depth calibration at the end of the trace, previous ones do not. 
-trace$depth <- ((trace$center_y * MAX_DEPTH) / max(trace$center_y))
 
 # looking at different bouts 
 # bout one 
@@ -595,13 +605,19 @@ ggplot(trace, aes(x = time, y = depth)) +
 # Date:   3/7/2021
 ################################################################################
 
-# removing last row which had NA time value 
+# removing last row which had NA time value-- I'm working currently working on 
+# this issue. With the arc removal, the calibration curve at the end gets 
+# moved over in the +x direction and past the last time point, so I couldn't 
+# determine time for the last couple of rows in the trace.
 trace <- trace[1:(nrow(trace)-1),]
 
 # creating date_time column using the lubridate package 
 trace$date_time <- ymd_hms(START_TIME, tz = "Antarctica/McMurdo") + 
   minutes(as.integer(trace$time)) + 
   seconds(as.integer((trace$time %% 1) * 60))
+
+# plotting: 
+# ggplot(trace, aes(x = date_time, y = depth)) + geom_line()
 
 # currently working on comparing the dive statistics from this recovered trace 
 # with the Castellini et al., 1992 bulletin using the diveMove() package
