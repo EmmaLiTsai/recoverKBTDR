@@ -1,42 +1,181 @@
+##
+## Run an example trace
+
 ################################################################################
-# Authors: EmmaLi Tsai, Dylan W. Schwilk
-# Creates scaled time by depth data from a Kooyman-Billups TDR dive trace
+library(ggplot2)
+library(dplyr)
+
+# this was added to add dates and times... We might not need to add this in the
+# final package, but this information is necessary in order for the recovered 
+# trace to work well in dive stats packages
+library(lubridate)
+
+#
+
+################################################################################
+# Read data
+
+# this is data from an actual trace from 1981. 
+
+# UPDATE -- changed image processing workflow, so the file names changed ET 2/24
+# see image processing methods in sample_data folder.
+trace <- read.csv("../sample_data/skele_trace.csv", header = TRUE, 
+                  stringsAsFactors = FALSE)
+
+# this csv contains the timing dots for the trace. I gathered these by using the 
+# wand selection tool in ImageJ to grab the time dot, and automatically 
+# calculating the centroid of this dot. 
+time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE, 
+                      stringsAsFactors = FALSE)
+
+# making this the new column value 
+trace$y_corr <- trace$y_corr_p2
+
+# some tidying for the time_dots file: 
+time_dots <- select(time_dots, -c("X.1"))
+names(time_dots) <- c("x_val", "Y")
+
+# removing extra columns
+trace <- select(trace, -c("Y", "y_corr"))
+# changing the names to match the conventions I've been using 
+names(trace) <- c("x_val", "y_val")
+
+
+
+
+
+
+
+# checking a slice to see if it works 
+# ggplot(trace[1500:11000,], aes(x = new_x, y = y_val)) + geom_point()
+
+# Rounding the data since some values are too specific with the kind of 
+# precision that I'm working with
+## DWS: Why is this necessary?
+trace$new_x <- round(trace$new_x, 3)
+
+# changing the time_dots y value to negative due to origin placement in ImageJ
+# Shouldn't this be in the data cleaning code?
+time_dots$Y <- time_dots$Y * -1
+
+# I think there may be a way to clean up the code in this section, maybe with 
+# some of the lapply functions? I'm trying to move away from my function-heavy 
+# code... 
+
+# mutating off the transformed depth now 
+trace <- mutate(trace, new_x = new_x, y=y_val) %>%
+  select(y, new_x) %>%
+  arrange(new_x)
+
+# grouping trace by x value and summarizing by median y for easier spline 
+# smoothing
+trace <- group_by(trace, new_x) %>% summarize(y = median(y))
+
+################################################################################
+#   Function: split_smoothing(df, n = 40, spar = 0.4)
+#   Author: EmmaLi Tsai 
+#   Date: 1/21/21
+#
+#   Function that breaks up the trace into different segments (default is set to
+#   n = 40) so spline smoothing works a bit better. This function was necessary 
+#   because smoothing at the scale of the whole trace resulted in poor 
+#   resolution of the rest of the trace, regardless of the spar value defined in 
+#   the smoothing function.
+#
+#   Input: 
+#       -   df          : a dataframe that contains x/y values of a dive trace 
+#       -   n = 40      : the number of chunks the user would like to use to 
+#                         divide the trace. Defualt is set to 40. 
+#       -   spar = 0.4  : spar value used for smoothing. 0.4 seems to be the 
+#                         resolution that I'd like, but this can always be 
+#                         changed later and is likely trace-dependent. 
+#
+#   Output: 
+#       -   trace_new    : data frame that contains the smoothed_y values after
+#                          spline smoothing across the whole trace.
+# 
 ################################################################################
 
-# STEPS
+## DWS: This is a huge design decision. Watch out about doing this sort of
+## thing to solve what should be minor improvements. I really don't like this.
+## What led you to this route? If you have a smoothing probelm (and shouldn't
+## that be a step after centering, etc?), then why not use established
+## smoothing approaches? What else did you try? Loess? inverse fourier
+## transform? kernel smoothing with ksmooth?
 
-# 1. Recenter and fix misalignment (both data inputs)
-# 2. transform coordinates by radius arm eqn
-# 3. Transform x axis according to time dots
-# 4. Smoothing
-# 6. Dive statistics, direciton flagging, etc.
+split_smoothing <- function(df, n = 40, spar = 0.4) {
+  # finding break points in the trace, can be modified using n 
+  split_rows <- round(seq(1, nrow(df), length.out = n))
+  # creating a data frame with the split points 
+  # this just makes it a little bit easier to work with in the loop 
+  split_rows_df <- data.frame(start_row = split_rows, 
+                              end_row = lead(split_rows, 1))
+  # had to remove the last row for looping purposes 
+  split_rows_df <- split_rows_df[-nrow(split_rows_df),]
+  
+  # I will rbind data frame results from the loop here: 
+  trace_new <- NULL
 
-
-###############################################################################
-# Global constants: 
-
-# radius of the KBTDR arm when scaled up to the size of the physical traces
-RADIUS <- 20.6
-# height of the KBTDR pivot point when scaled up to the size of the physical
-# trace
-CENTER_Y <- 11.3
-
-## Apply radius arm transformation
-transform_coordinates <- function(trace, time_dots) {
-  # applying my new equation, basically just the equation of a circle but takes
-  # the original x/y and calculates where the center of the circle would be
-  # (h), and uses this new center to find the x value when depth = 0. I did
-  # some algebra to fit this math into one line of code
-  trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) +
-    (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
-
-  ## TODO: scale X based on time dots
-
-  return(trace)
+  # creating a for loop 
+  for (i in 1:nrow(split_rows_df)){
+    # defining the segment of the trace 
+    trace <- df[(split_rows_df$start_row[i]:split_rows_df$end_row[i]),]
+    # new spline mod, with editable spar value that can be defined at the 
+    # function call 
+    spline.mod <- smooth.spline(trace$new_x, trace$y, spar = spar)
+    # the new segment of the trace 
+    trace <- mutate(trace, smooth_y = predict(spline.mod, trace$new_x)$y,
+                    deriv = predict(spline.mod, trace$new_x, deriv=1)$y,
+                    ascent = deriv < 0,
+                    deriv_diff=lag(sign(deriv)) - sign(deriv),
+                    peak = case_when(deriv_diff < 0 ~ "TOP",
+                                     deriv_diff > 0 ~ "BOTTOM"))
+    # rbinding results from this loop
+    trace_new <- rbind(trace_new, trace)
+  }
+  # returning new trace 
+  return(trace_new)
 }
 
+# calling the function 
+3trace <- split_smoothing(trace)
+
+# Graphing-- this is so cool!!! 
+# very large y-values at the end of the trace when the scientists calibrated
+# the TDR for depth. 
+# also evident that the y-values at the beginning of the trace are off from the 
+# way I scanned the physical trace - centering is needed: 
+ ggplot(trace[1000:9000,], aes(x = new_x, y = smooth_y)) +
+   geom_line(aes(new_x, y), color="gray", size=0.2) +
+   geom_point(aes(color=deriv > 0)) +
+   geom_line()
+
+# looking at a specific bout to see how well the smoothing performs... this is 
+# greatly improved from the previous image processing methods I was using: 
+ggplot(trace[1000:9000,], aes(x = new_x, y = y)) + geom_point() + 
+   geom_line(aes(x = new_x, y = smooth_y), color = "red", size = 1.1)
+
+
 ################################################################################
-#   Function: add_timepoints(df, time_dots)
+# Author: EmmaLi Tsai
+# Topic: Adding time dots to the trace data frame 
+# Date: 1/18/2021
+################################################################################
+
+# This section merges the trace and time dots data frame. I had to create a 
+# function here to merge the two files based on the closest x values. 
+
+# rounding the x_value of the time dots since the measurements I made are
+# not as precise as 3 decimal places 
+time_dots$x_val <- round(time_dots$x_val, 2)
+
+## DWS: Why?
+
+# connecting these time points to the trace data frame with the function I made 
+# before: 
+
+################################################################################
+#   Function: add_timepoints_red(df, time_dots)
 #   Author: EmmaLi Tsai 
 #   Date: 12/02/2020
 #
@@ -58,34 +197,37 @@ transform_coordinates <- function(trace, time_dots) {
 # 
 ################################################################################
 
-## add_timepoints_red <- function(df, time_dots){
-##   # defining some empty numeric vectors to store values
-##   time_points <- numeric(length = nrow(df))
-##   time_points_y <- numeric(length = nrow(df))
-##   # stepping through each row of the time points 
-##   for (i in 1:nrow(time_dots)){
-##     # finding the index in the df where the x_val is closest to the 
-##     # time point 
-##     if (i == 1){
-##       # coding for the special case in the trace before the first time 
-##       # dot was made. This still counts as a first time period. 
-##       time_points[i] = df$new_x[i]
-##       time_points_y[i] = time_dots$Y[i]
-##     }
+## DWS: Why? I do not understand why one would do this! Is this for testing
+## purposes?
+
+add_timepoints_red <- function(df, time_dots){
+  # defining some empty numeric vectors to store values
+  time_points <- numeric(length = nrow(df))
+  time_points_y <- numeric(length = nrow(df))
+  # stepping through each row of the time points 
+  for (i in 1:nrow(time_dots)){
+    # finding the index in the df where the x_val is closest to the 
+    # time point 
+    if (i == 1){
+      # coding for the special case in the trace before the first time 
+      # dot was made. This still counts as a first time period. 
+      time_points[i] = df$new_x[i]
+      time_points_y[i] = time_dots$Y[i]
+    }
     
-##     min.index <- which.min(abs(df$new_x - time_dots$x_val[i]))
-##     # stepping through the data frame to connect these two 
-##     for (z in 1:nrow(df)){
-##       if (z == min.index){
-##         # if the index row is the minimum index that was identified, 
-##         # add these two values to our vectors 
-##         time_points_y[z] = time_dots$Y[i]
-##         time_points[z] = time_dots$x_val[i]
-##       }
-##     }
-##   }
-##   return(data.frame(time_points = time_points, time_points_y = time_points_y))
-## }
+    min.index <- which.min(abs(df$new_x - time_dots$x_val[i]))
+    # stepping through the data frame to connect these two 
+    for (z in 1:nrow(df)){
+      if (z == min.index){
+        # if the index row is the minimum index that was identified, 
+        # add these two values to our vectors 
+        time_points_y[z] = time_dots$Y[i]
+        time_points[z] = time_dots$x_val[i]
+      }
+    }
+  }
+  return(data.frame(time_points = time_points, time_points_y = time_points_y))
+}
 
 # making sure it still works -- woo!!
 
@@ -147,6 +289,8 @@ flag_timeperiod <- function(df){
   return(time_flag)
 }
 
+## DWS: Why is this a loop?
+
 # adding it to trace df 
 trace$time_period <- flag_timeperiod(trace)
 
@@ -195,6 +339,9 @@ tp_df$scale = TIME_PERIOD / (tp_df$end_x - tp_df$start_x)
 # 
 ################################################################################
 
+## DWS: What is a "running time"?
+
+
 running_time <- function(trace, tp_df){
   # creating an empty numeric vector to store time values 
   time <- numeric()
@@ -210,6 +357,7 @@ running_time <- function(trace, tp_df){
     # time for that point 
     time[i] <- ((trace$new_x[i] - tp_df$start_x[index]) * tp_df$scale[index]) + ((tp_df$tp[index]-1)*12)
   }
+  ## DWS: Where is the numeric constant "12" from?
   # returning the time numeric vector 
   return(time)
 }
@@ -222,7 +370,7 @@ trace$time <- time
 # trace[which(trace$time_points_x!=0),]
 
 # plot of bout one to assess the quality of this method: 
-# ggplot(trace[500:9000,], aes(x = time, y = smooth_y)) + geom_line()
+ggplot(trace[500:9000,], aes(x = time, y = smooth_y)) + geom_line()
 
 ################################################################################
 # Author: EmmaLi Tsai
@@ -272,6 +420,13 @@ time_dots$y_val_corr <- (abs(time_dots$Y) - DIST_TIMEDOT)
 #                         that was added to the smooth_y value in the trace. 
 # 
 ################################################################################
+
+## DWS: Why is this done on smoothed values? That seems like it would introduce
+## error. I don't understand. Also, why a loop? isn't this a simple
+## transformation by group? Why even that? If the cause is misfed paper, than
+## this should be a single linear transformation. So calculate the tilt and
+## correct it. And do it first before smoothing.
+
 
 # THIS FUNCTION IS BASED ON THE SMOOTH_Y VALUE IN THE DF  
 center_scan <- function(df, time_dots){
