@@ -12,8 +12,8 @@ Contains:
 			  - dive_trace.R       -- contains more finalized code
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots. This 
-		     file also contains a .txt file that outlines the image processing methods used to create these sample files. 
+		     file also contains a .txt file that outlines the image processing methods used to create these sample files.
+
+ (3) Results       - folder that contains results for this project. 
  
- (3) Results       - folder the contains current results 
- 
- 
+
