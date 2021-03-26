@@ -10,7 +10,6 @@ library(dplyr)
 # trace to work well in dive stats packages
 library(lubridate)
 
-#
 
 ################################################################################
 # Read data
@@ -39,12 +38,6 @@ names(time_dots) <- c("x_val", "Y")
 trace <- select(trace, -c("Y", "y_corr"))
 # changing the names to match the conventions I've been using 
 names(trace) <- c("x_val", "y_val")
-
-
-
-
-
-
 
 # checking a slice to see if it works 
 # ggplot(trace[1500:11000,], aes(x = new_x, y = y_val)) + geom_point()
@@ -138,7 +131,7 @@ split_smoothing <- function(df, n = 40, spar = 0.4) {
 }
 
 # calling the function 
-3trace <- split_smoothing(trace)
+trace <- split_smoothing(trace)
 
 # Graphing-- this is so cool!!! 
 # very large y-values at the end of the trace when the scientists calibrated

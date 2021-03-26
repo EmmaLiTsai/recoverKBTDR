@@ -1,0 +1,34 @@
+Outline of Steps and Major Functions: 
+
+(1) File tidying and centering of the scan 
+	Here, I imagine that I will have a file tidying function to deal with default column 
+	names from ImageJ image processing. 
+
+	I also imagine another function that will center the scan using the y values of the 
+	timing dots. This includes creating a brief fuzzy merge with the trace and timing 
+	dots csv files. After this fuzzy merge, I plan to create y value correction 
+	values to shift the above trace up or down such that all time dots are along the 
+	same horizontal line. After this step, the trace file should be in good shape to 
+	continue with recovery. This is an extra processing step, and might not be included  
+	in the final code package. 
+
+(2) Transform coordinates by radius arm equation 
+	Here, I imagine a function that will apply the arc equation to the data. This should 
+ 	be a simple and straightforward function to remove the arc from these data. 
+
+(3) Transform x-axis to time with time dots
+	This step could be part of a larger function with step 2, but here I imagine a 
+	function that will cut the trace into different sections based on the time dot x
+	values. From this, I expect to assign an interval value based on the time period, 
+	and then use this interval value and the times associated with this period to 
+	transform to time. 
+ 
+(4) Transform y-axis from PSI to depth 
+	Here, I expect a simple function to use the psi scale at the end to transform the 
+	trace from PSI to depth. This should be a straightforward and simple equation. 
+
+(5) Smoothing 
+ 	This process should take the depth values from step 4 to simplify the trace using 
+	a form of smoothing method. Currently this is spline smoothing, but is subject to 
+ 	change. 
+	

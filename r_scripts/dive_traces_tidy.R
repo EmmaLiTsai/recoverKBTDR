@@ -9,7 +9,7 @@
 # 2. transform coordinates by radius arm eqn
 # 3. Transform x axis according to time dots
 # 4. Smoothing
-# 6. Dive statistics, direciton flagging, etc.
+# 6. Dive statistics, direction flagging, etc.
 
 
 ###############################################################################
@@ -21,7 +21,23 @@ RADIUS <- 20.6
 # trace
 CENTER_Y <- 11.3
 
-## Apply radius arm transformation
+# STEP ONE: Recenter and fix misalignment (both data inputs) #################
+
+# code here is absent because this is really more related to image processing 
+# methods, but I created code that would fix this step and center the scan in
+# the scan_tidying_functions.R file. This function tidys the trace and csv files 
+# that were created from the ImageJ defaults using two functions: 
+#   tidy_trace(trace) and tidy_timedots(time_dots)
+#
+# Here, I also centered the scan using the center_scan(trace, time_dots) 
+# function. This function did a fuzzy distance full merge using the "fuzzyjoin" 
+# package to use the y-values of the time dots to center the scan in the trace 
+# file. 
+
+# Functions found to complete this step were tested in step one of the 
+# testing_code.R file. 
+
+## STEP TWO: Apply radius arm transformation #################################
 transform_coordinates <- function(trace, time_dots) {
   # applying my new equation, basically just the equation of a circle but takes
   # the original x/y and calculates where the center of the circle would be
