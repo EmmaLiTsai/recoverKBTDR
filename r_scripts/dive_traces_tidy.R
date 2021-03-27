@@ -38,18 +38,54 @@ CENTER_Y <- 11.3
 # testing_code.R file. 
 
 ## STEP TWO: Apply radius arm transformation #################################
-transform_coordinates <- function(trace, time_dots) {
+transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   # applying my new equation, basically just the equation of a circle but takes
   # the original x/y and calculates where the center of the circle would be
   # (h), and uses this new center to find the x value when depth = 0. I did
   # some algebra to fit this math into one line of code
   trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) +
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
+ 
+   # ordering the file based on new_x value
+  trace <- trace[order(trace$new_x),]
 
-  ## TODO: scale X based on time dots
-
-  return(trace)
+  ## now: scale X based on time dots
+  
+  # creating a data frame with time periods and start/end points for the time 
+  # period... this will be used to cut the data 
+  tp_df <- data.frame(time_period = seq(1:nrow(time_dots)),
+                      start_x = time_dots$x_val, 
+                      end_x = lead(time_dots$x_val))
+  
+  # adding the scale value 
+  tp_df$scale = time_period_min / (tp_df$end_x - tp_df$start_x)
+  
+  # adding this as a time period variable to the trace 
+  trace$time_period <- cut(trace$new_x, breaks = c(tp_df$start_x), include.lowest = TRUE, 
+                           labels = tp_df$time_period[1:(nrow(tp_df) - 1)])
+  
+  # merging the trace file with the time points data frame
+  trace <- merge(trace, tp_df, all = TRUE)
+  
+  # removing NA's that were created-- this is the last bit of the trace that 
+  # continued gathering data after the last time point was assigned, so I 
+  # can't actually assign a time for them. 
+  trace <- na.omit(trace)
+  
+  # mutating to create the time scale. This mutate function first calculates 
+  # the difference between the new x value and the start x value of the time 
+  # period, and then multplies this by the scale value. I needed this value 
+  # to calculate time, which uses this scale value and relates this information 
+  # to the time period 
+  trace <- mutate(trace, 
+                  diff = new_x - start_x, 
+                  diff_with_scale = diff * scale, 
+                  time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
+ # returning final trace 
+   return(trace)
 }
+
+trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
 
 ################################################################################
 #   Function: add_timepoints(df, time_dots)

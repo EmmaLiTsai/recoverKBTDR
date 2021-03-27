@@ -40,6 +40,10 @@ tidy_timedots <- function(time_dots){
   names(time_dots) <<- c("x_val", "Y")
   # correcting for default y scale in ImageJ
   time_dots$Y <<- time_dots$Y * -1
+  # creating the first time dot, which is when the trace begins. There is no time 
+  # dot in the trace when it first starts gathering data, so I had to add one 
+  # here: 
+  time_dots <- rbind(c(0,time_dots$Y[1]), time_dots)
   # returning the final output 
   return(time_dots)
 }

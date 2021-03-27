@@ -44,10 +44,15 @@ ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() +
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 # warning message is from the last value of the trace, which produced an NA 
 # value
+trace <- center_trace
 
 
 # STEP TWO: Transform coordinates by arm equation #############################
-# in progress
+
+trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
+
+ggplot(trace, aes(x = time, y = y_val)) + geom_line()
+
 
 # STEP THREE: Transform x axis according to time dots ##########################
 # in progress 
