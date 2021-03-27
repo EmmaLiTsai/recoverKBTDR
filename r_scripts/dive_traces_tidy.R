@@ -25,7 +25,7 @@ RADIUS <- 20.6
 CENTER_Y <- 11.3
 
 ################################################################################
-# STEP ONE: Recenter and fix misalignment (both data inputs) #################
+# STEP ONE: Recenter and fix misalignment (both data inputs) ###################
 ################################################################################
 
 # Code here is absent because this is really more related to image processing 
@@ -43,7 +43,7 @@ CENTER_Y <- 11.3
 # testing_code.R file. 
 
 ################################################################################
-## STEP TWO AND THREE: Apply radius arm transformation and transform to time####
+## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
 ################################################################################
 
 transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
@@ -102,10 +102,15 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 # THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
 # psi calibration at the end of the trace, previous ones do not. 
 
+# This is a work in progress since I need to do a segmented calibration... the 
+# function below is not perfect, but I think I'll have to cut() again based on 
+# the depth interval and then scale using those values with a mutate()
+
 # depth scale function: 
 transform_todepth <- function(trace, max_psi = 800){
   # calculating psi values: 
   trace$psi <- ((trace$y_val * max_psi) / max(trace$y_val))
+  
   # with each 1m increase in depth, there is a 1.4696psi increase in pressure in 
   # saltwater: 
   trace$depth <- trace$psi / (1.4696)

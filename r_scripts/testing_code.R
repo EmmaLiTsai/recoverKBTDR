@@ -4,8 +4,11 @@
 ################################################################################
 
 # Basic structure of this file is to call functions in using the source() 
-# function and to investigate the product of those functions. This file can be
-# broken up into the main steps outlined for this project: 
+# function and to investigate the product of those functions, or use a loaded 
+# function from the dive_traces_tidy.R file to investigate the outputs. 
+
+# Similar to the dive_traces_tidy.R file, this file has been broken up into the 
+# main steps outlined for this project: 
 
 #   1. Recenter and fix misalignment (both data inputs)
 #   2. transform coordinates by radius arm eqn
@@ -64,6 +67,11 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
+
+# Here I am just trying something out: 
+trace$depth_interval <- cut(trace$y_val, breaks = c("-1","1.43", "3.49", "7.78", "12.7", "17.3"), 
+                            include.lowest = TRUE, labels = c("100", "200", "400", "600", "800"))
+
 
 # calling the function I created 
 trace <- transform_todepth(trace)
