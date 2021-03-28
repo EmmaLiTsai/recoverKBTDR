@@ -29,6 +29,9 @@ time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE,
 
 # some basic libraries for visualizing the output of some of these functions: 
 library(ggplot2)
+library(dplyr)
+# ^ where should these go in code? I have them here for tests, but some of my 
+# function require these packages 
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
