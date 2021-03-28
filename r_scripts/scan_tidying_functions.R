@@ -18,44 +18,49 @@
 #             while the trace was being fed into the scanner, and therefore 
 #             needed centering. 
 # 
+# TODO: some of the rows in the trace data frame get dropped in the fuzzyjoin 
+# process. 
+# 
+## Required libraries ##########################################################
+
+# to use the select() function 
+library(dplyr)
+# this was a library I found that could do fuzzy merges with numerical values: 
+library(fuzzyjoin)
 
 ## STEP ONE CODE ##############################################################
 # Code below achieves step 1 of the cleaning and file tidying process: 
-# however, I change the global variables in this process... is that bad 
-# practice?
 tidy_trace <- function(trace){
   # changing the corrected y-value
-  trace$y_corr <<- trace$y_corr_p2
+  trace$y_corr <- trace$y_corr_p2
   # selecting the correct columns and removing unnecessary ones 
-  trace <<- select(trace, -c("Y", "y_corr"))
+  trace <- select(trace, -c("Y", "y_corr"))
   # changing the name values 
-  names(trace) <<- c("x_val", "y_val")
+  names(trace) <- c("x_val", "y_val")
   # returning trace 
   return(trace)
 }
 tidy_timedots <- function(time_dots){
-  # selecting the correct columns for these data
-  time_dots <<- select(time_dots, -c("X.1"))
-  # changing names
-  names(time_dots) <<- c("x_val", "Y")
   # correcting for default y scale in ImageJ
-  time_dots$Y <<- time_dots$Y * -1
+  time_dots$Y <- time_dots$Y * -1
+  # selecting the correct columns for these data
+  time_dots <- select(time_dots, -c("X.1"))
   # creating the first time dot, which is when the trace begins. There is no time 
   # dot in the trace when it first starts gathering data, so I had to add one 
   # here: 
   time_dots <- rbind(c(0,time_dots$Y[1]), time_dots)
+  # changing names
+  names(time_dots) <- c("x_val", "Y")
   # returning the final output 
   return(time_dots)
 }
 
-tidy_timedots(time_dots)
-tidy_trace(trace)
+# applying the changes
+time_dots <- tidy_timedots(time_dots)
+trace <- tidy_trace(trace)
 
 # STEP TWO CODE ###############################################################
 # The code below centers the scan to achieve step two of this file. 
-
-# this was a library I found that could do fuzzy merges with numerical values: 
-library("fuzzyjoin")
 
 # this code centers the scan after doing an imperfect full merge: 
 center_scan <- function(trace, time_dots, dist_timedot = 1.1){
@@ -65,8 +70,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # x and y values of the trace (headers x_val.y and Y, respectively). 
   
   # I needed this in order to use the y values of the time dots to center the 
-  # scan.. there is a lag with this merging process since my max_dist = 3, but
-  # I don't think this is too much of an issue ...
+  # scan.. there is a lag with this merging process since my max_dist = 3
   fuzzy_merge_trace <- difference_full_join(trace, time_dots, by = c("x_val"), 
                                           max_dist = 3)
   

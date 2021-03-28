@@ -55,7 +55,8 @@ ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() +
 # warning message is from the last value of the trace, which produced an NA 
 # value
 trace <- center_trace
-
+# TODO: some of the values in the trace are getting dropped in the centering 
+# process, and I'm not fully sure why. 
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
@@ -63,26 +64,26 @@ trace <- center_trace
 
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
+# I get a warning that I created a NA factor, and this happens after my 
+# merge() 
 
 # plotting: 
 ggplot(trace, aes(x = time, y = y_val)) + geom_line()
+# times here align with the times I produced with my original code in the 
+# example_trace.R file. 
 
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
+# calling the function
+trace <- transform_psitodepth(trace)
 
-# Here I am just trying something out: 
-trace$depth_interval <- cut(trace$y_val, breaks = c("-1","1.43", "3.49", "7.78", "12.7", "17.3"), 
-                            include.lowest = TRUE, labels = c("100", "200", "400", "600", "800"))
-
-
-# calling the function I created 
-trace <- transform_todepth(trace)
-
-# plotting to look at the whole trace
+# plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
+# max depth value in the bulletin is 317, which is very close to the one 
+# calculated here 
 
-# looking at different bouts to assess how this method worked
+# looking at different bouts of dives to assess how this method worked
 # bout one 
 ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
 # 
@@ -109,5 +110,9 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
+library(lubridate)
+# calling the function 
+trace <- add_dates_times(trace)
+# plotting 
 ggplot(trace, aes(x = date_time, y = depth)) + geom_line()
 
