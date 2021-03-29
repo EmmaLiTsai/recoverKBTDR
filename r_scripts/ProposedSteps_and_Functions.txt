@@ -38,6 +38,9 @@ Outline of Steps and Major Functions:
 		The default is set to -1.1 cm below the trace. 
 
 (2-3) Transform coordinates by radius arm equation, and create time scale
+	
+	Functions from steps 2-6 will be in the dive_traces_tidy.R file, which contains all 
+	production code
 
 	Here, I imagine a function that will apply the arc equation to the data, and also
 	transform the x-axis from timing dots to time in minutes. 
