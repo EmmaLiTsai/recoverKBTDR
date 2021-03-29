@@ -112,13 +112,13 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 # function below is not perfect, but I think I'll have to cut() again based on 
 # the psi interval
 
-# depth interval values in cm and how they relate to depth: 
+# depth interval values in cm and how they relate to psi: 
 
-# 1.43 = 100m 
-# 3.49 = 200m 
-# 7.78 = 400m 
-# 12.7 = 600m
-# 17.3 = 800m 
+# 1.43 = 100psi
+# 3.49 = 200psi
+# 7.78 = 400psi
+# 12.7 = 600psi
+# 17.3 = 800psi
 
 # TODO: the function call is way too verbose and too specific. I have defaults 
 # in place for the cut function, but I don't like the way this is set up... 
