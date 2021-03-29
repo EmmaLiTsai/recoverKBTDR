@@ -30,6 +30,21 @@ library(fuzzyjoin)
 
 ## STEP ONE CODE ##############################################################
 # Code below achieves step 1 of the cleaning and file tidying process: 
+###############################################################################
+# Function: tidy_trace(trace)
+# Author:   EmmaLi Tsai
+# Date:     3/27/21
+# 
+# Function takes the default column names from ImageJ and image processing and
+# does some basic tidying so that the code is easier/cleaner to work with. This
+# involves selecting certain columns and changing name values. 
+# 
+# Input: 
+#   - trace   : raw csv file from ImageJ after image processing 
+#
+# Output: 
+#   - trace   : tidy csv file with correct columns and column names 
+###############################################################################
 tidy_trace <- function(trace){
   # changing the corrected y-value
   trace$y_corr <- trace$y_corr_p2
@@ -40,6 +55,25 @@ tidy_trace <- function(trace){
   # returning trace 
   return(trace)
 }
+###############################################################################
+# Function: tidy_timedots(time_dots)
+# Author:   EmmaLi Tsai
+# Date:     3/27/21
+# 
+# Function takes the default column names from ImageJ and image processing and
+# does some basic tidying so that the code is easier/cleaner to work with. This
+# involves selecting certain columns and changing name values, and fixing the 
+# y values after origin placement. This function also adds a new row to the 
+# time dots csv file such that the first value in the trace csv file becomes the 
+# first time dot-- this was needed for centering, time functions, and also was 
+# the way the previous group in the 90's analyzed these traces. 
+#
+# Input: 
+#   - time_dots   : raw csv file from ImageJ after image processing 
+#
+# Output: 
+#   - time_dots   : tidy csv file with correct columns and column names 
+###############################################################################
 tidy_timedots <- function(time_dots){
   # correcting for default y scale in ImageJ
   time_dots$Y <- time_dots$Y * -1
@@ -62,7 +96,32 @@ trace <- tidy_trace(trace)
 # STEP TWO CODE ###############################################################
 # The code below centers the scan to achieve step two of this file. 
 
-# this code centers the scan after doing an imperfect full merge: 
+###############################################################################
+# Function: center_scan(trace, time_dots, dist_timedot = 1.1)
+# Author:   EmmaLi Tsai
+# Date:     3/27/21
+# 
+# Function takes the trace and timedots csv files and uses the y values of the 
+# time dots to move the traces up/down to center the scan, such that all the 
+# y-values of the time dots are along y = -dist_timedot that the use defines in 
+# the function call. This function does a fuzzy full distance merge based on the 
+# x_val columns in the trace and time_dots data frame, and then calculates how 
+# much the y values of the trace would have to be corrected to center the scan. 
+# 
+# TODO: I am not confident in this fuzzy merge process... the new center_trace
+# value seems to drop values from the trace, and I am working on a way to 
+# fix this. 
+#
+# Input: 
+#   - trace        : tidy trace csv file 
+#   - time_dots    : tidy time_dots csv file
+#   - dist_timedot : the y-axis the user would like to use to center the scan. 
+#                    Default is set to 1.1cm from my own personal measurements. 
+#
+# Output: 
+#   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
+#                    x values of the scan. 
+###############################################################################
 center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
@@ -81,10 +140,12 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # centering the scan using the above y corrected values  
   fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
   
-  # removing duplicated values 
+  # removing duplicated values -- this happened when a point along a trace 
+  # was close to both time dots. 
   fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
  
-   # some final tidying 
+  # some final tidying -- this is removing unimportant columns resulting from 
+  # the merge and giving these columns meaningful names. 
   fuzzy_merge_trace <- fuzzy_merge_trace[,c(1,6)]
   names(fuzzy_merge_trace) <- c("x_val", "y_val")
   
