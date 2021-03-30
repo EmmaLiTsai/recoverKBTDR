@@ -113,6 +113,9 @@ ggplot(trace, aes(x = time, y = depth)) +
 library(lubridate)
 # calling the function 
 trace <- add_dates_times(trace)
+# ordering
+trace <- trace[order(trace$new_x),]
 # plotting 
-ggplot(trace, aes(x = date_time, y = depth)) + geom_line()
+ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
+# checking out a slice -- end time should be 1/23/1981 11:10:00 
 
