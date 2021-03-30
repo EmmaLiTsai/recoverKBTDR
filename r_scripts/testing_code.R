@@ -64,7 +64,7 @@ trace <- center_trace
 
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
-# I get a warning that I created a NA factor, and this happens after my 
+# TODO: I get a warning that I created a NA factor, and this happens after my 
 # merge() 
 
 # plotting: 
