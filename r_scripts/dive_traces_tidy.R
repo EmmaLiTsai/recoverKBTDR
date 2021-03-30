@@ -50,6 +50,43 @@ PSI_TO_DEPTH <- 1.4696
 ################################################################################
 
 # TODO: invalid factor level generated after the mutate(). I am unsure why. 
+###############################################################################
+# Function: transform_coordinates(trace, time_dots, time_period_min = 12)
+# Author:   EmmaLi Tsai
+# Date:     3/30/21
+# 
+# Function takes the trace and time dots csv files to complete two steps: 
+# 
+#   (2) - apply radius arm transformation using the geometry of the KBTDR device 
+#         which uses the globally defined constants above. This should be the 
+#         same across all KBTDR devices. 
+#
+#   (3) - transfomr the x axis from time using the timing dots. To do this, I 
+#         will create a helper data frame with the start and end points of a 
+#         time period and the corresponding scale value. This data frame may be 
+#         needed to help make the cut() function easier, where I would break 
+#         the trace up into sections that would identify which time period a 
+#         specific x value belongs to along a trace. Then, I expect I would do 
+#         some sort of merge() with the trace data frame and create some simple  
+#         equations that will use the distance a point is from the start point 
+#         of a time period and the scale value I made earlier to estimate the 
+#         time value of a specific point. This step will probably be a mutate().
+#       
+# Input: 
+#   - time_dots   : raw csv file from ImageJ after image processing, contains 
+#                   the x and y values of the time dots for a trace 
+# 
+#   - trace       : raw csv file from ImageJ after image processing, contains 
+#                   the x and y values of the trace
+#
+#   - time_period_min : minutes between each time period. Usually this is 12 
+#                   minutes. 
+#   
+# Output: 
+#   - trace      : csv file of the trace complete with time periods, and time 
+#                  of an x value in minutes from when the device started 
+#                  gathering data. 
+###############################################################################
 
 transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   # applying my new equation, basically just the equation of a circle but takes
@@ -108,11 +145,15 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 # THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
 # psi calibration at the end of the trace, previous ones do not. 
 
-# This is a work in progress since I need to do a segmented calibration... the 
-# function below is not perfect, but I think I'll have to cut() again based on 
-# the psi interval
+# This is a work in progress since I need to do a segmented calibration. 
+# My current plan would to cut() based on psi interval, which would help with 
+# categorizing different y values into categories of pressure. From this, I 
+# could then use the psi interval (in pressure) and the position of the psi 
+# interval (in cm) to calculate psi within each pressure category, and relate
+# this to depth. 
 
-# depth interval values in cm and how they relate to psi: 
+# depth interval values in cm and how they relate to psi for this specific 
+# trace:
 
 # 1.43 = 100psi
 # 3.49 = 200psi
@@ -122,11 +163,12 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 
 # TODO: the function call is way too verbose and too specific. I have defaults 
 # in place for the cut function, but I don't like the way this is set up... 
-# Is the a way in code to automatically create the breaks and labels in the 
-# function call?
+# Is the a way in code to automatically create the breaks and labels of the 
+# different psi intervals? At the moment, the user would have to manually 
+# key them in and these values change for every trace. 
 
 # Here I am just trying something out for the depth scale function... it is 
-# not perfect. 
+# not perfect and is very inefficient code. 
 transform_psitodepth <- function(trace, 
                               breaks = c("-5","1.43", "3.49", "7.78", "12.7", "17.3", "22"), 
                               labels = c('100:1.43', '200:3.49', '400:7.78', '600:12.7', '800:17.3', '900:22')) {
@@ -145,6 +187,7 @@ transform_psitodepth <- function(trace,
   # and psi_position (y_value)
   trace <- trace %>% rename("psi_interval" = X1, "psi_position" = X2)
   
+  # I needed numeric values to do calculations: 
   trace$psi_interval <- as.numeric(paste(trace$psi_interval))
   trace$psi_position <- as.numeric(paste(trace$psi_position))
   
@@ -176,6 +219,8 @@ transform_psitodepth <- function(trace,
 
 # creating date_time column using the lubridate package, this was needed in 
 # order to read this file in as a TDR object in the diveMove package: 
+
+# this could be tagged on to step 2 of this file? 
 
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   # adding dates and times from lubridate package 
