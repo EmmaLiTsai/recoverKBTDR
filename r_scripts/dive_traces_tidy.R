@@ -49,7 +49,6 @@ PSI_TO_DEPTH <- 1.4696
 ## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
 ################################################################################
 
-# TODO: invalid factor level generated after the mutate(). I am unsure why. 
 ###############################################################################
 # Function: transform_coordinates(trace, time_dots, time_period_min = 12)
 # Author:   EmmaLi Tsai
@@ -112,18 +111,15 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   tp_df$scale = time_period_min / (tp_df$end_x - tp_df$start_x)
   
   # adding this as a time period variable to the trace using the cut() function
-  trace$time_period <- cut(trace$new_x, breaks = c(tp_df$start_x), include.lowest = TRUE, 
+  trace$time_period <- cut(trace$new_x, 
+                           breaks = c(tp_df$start_x), 
+                           include.lowest = TRUE, 
                            labels = tp_df$time_period[1:(nrow(tp_df) - 1)])
   
   # merging the trace file with the time points data frame, which uses time 
   # periods as an ID variable: 
-  trace <- merge(trace, tp_df, all = TRUE)
-  
-  # removing NA's that were created-- this is the last bit of the trace that 
-  # continued gathering data after the last time point was assigned, so I 
-  # can't actually assign a time for them. 
-  trace <- na.omit(trace)
-  
+  trace <- merge(trace, tp_df, by = 'time_period', all.x = TRUE)
+
   # mutating to create the time scale. This mutate function first calculates 
   # the difference between the new x value and the start x value of the time 
   # period, and then multiplies this by the scale value. I needed this value 
@@ -186,7 +182,9 @@ transform_psitodepth <- function(trace,
 
   # splitting the label created by the cut function in to two separate columns 
   # since this made the calculations easier 
-  trace <- separate(trace, psi_interval_both, sep = ":", into = c("psi_interval", "psi_position"))
+  trace <- separate(trace, psi_interval_both, 
+                    sep = ":", 
+                    into = c("psi_interval", "psi_position"))
 
   # I needed numeric values to do calculations: 
   trace$psi_interval <- as.numeric(paste(trace$psi_interval))
@@ -225,6 +223,8 @@ transform_psitodepth <- function(trace,
 
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   # adding dates and times from lubridate package 
+  library(lubridate)
+  # calculating dates and times: 
   trace$date_time <- ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
     seconds(as.integer((trace$time %% 1) * 60))

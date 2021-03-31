@@ -123,7 +123,6 @@ trace <- tidy_trace(trace)
 #                    x values of the scan. 
 ###############################################################################
 center_scan <- function(trace, time_dots, dist_timedot = 1.1){
-  
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
   # it produces a data frame with x and y values of the trace and the connected
   # x and y values of the trace (headers x_val.y and Y, respectively). 
@@ -131,9 +130,9 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # I needed this in order to use the y values of the time dots to center the 
   # scan.. there is a lag with this merging process since my max_dist = 1.2
   # I used max_dist = 1.2 since the time dots are 1.2 cm apart. 
-  fuzzy_merge_trace <- difference_full_join(trace, time_dots, 
+  fuzzy_merge_trace <- difference_left_join(trace, time_dots, 
                                             by = c("x_val"), 
-                                            max_dist = 1.2)
+                                            max_dist = 2.5)
   
   # calculating how far the y time dot values are from the dist_timedot value. 
   # this was needed to move the x or y values up or down to center the scan 
@@ -144,7 +143,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   
   # removing duplicated values -- this happened when a point along a trace 
   # was close to both time dots, and the way this code is set up it will keep 
-  # the first duplciated value but remove the trailing ones. Since any errors 
+  # the first duplicated value but remove the trailing ones. Since any errors 
   # due to scanning would be gradual and the time dots are ~1.2 cm apart, I 
   # think this method should work. 
   fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]

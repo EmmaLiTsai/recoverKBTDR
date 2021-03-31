@@ -29,9 +29,8 @@ time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE,
 
 # some basic libraries for visualizing the output of some of these functions: 
 library(ggplot2)
-library(dplyr)
-# ^ where should these go in code? I have them here for tests, but some of my 
-# function require these packages 
+# ^ where should packages go in code? I have them here for tests, but some of my 
+# functions require other packages 
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
@@ -52,8 +51,6 @@ source("../r_scripts/scan_tidying_functions.R")
 ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() + 
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 
-# warning message is from the last value of the trace, which produced an NA 
-# value
 trace <- center_trace
 # TODO: some of the values in the trace are getting dropped in the centering 
 # process, and I'm not fully sure why. 
@@ -64,8 +61,6 @@ trace <- center_trace
 
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
-# TODO: I get a warning that I created a NA factor, and this happens after my 
-# merge() 
 
 # plotting: 
 ggplot(trace, aes(x = time, y = y_val)) + geom_line()
@@ -77,6 +72,9 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # calling the function
 trace <- transform_psitodepth(trace)
+
+# ordering
+trace <- trace[order(trace$new_x),]
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
@@ -110,11 +108,8 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
-library(lubridate)
 # calling the function 
 trace <- add_dates_times(trace)
-# ordering
-trace <- trace[order(trace$new_x),]
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
 # checking out a slice -- end time should be 1/23/1981 11:10:00 
