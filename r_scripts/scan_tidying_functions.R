@@ -107,8 +107,8 @@ trace <- tidy_trace(trace)
 # much the y values of the trace would have to be corrected to center the scan. 
 # 
 # TODO: I am not confident in this fuzzy merge process... the new center_trace
-# value seems to drop values from the trace, and I am working on a way to 
-# fix this. 
+# value seems to drop values from the trace, and I am working on investigating 
+# this. 
 #
 # Input: 
 #   - trace        : tidy trace csv file 
@@ -156,8 +156,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 # calling the function 
 center_trace <- center_scan(trace, time_dots)
 
-# TODO: Why is the fuzzy merge trace observations different from the original 
-# trace? They should be the same number of observations. 
 
 
 
