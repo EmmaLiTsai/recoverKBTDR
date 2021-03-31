@@ -42,7 +42,7 @@ PSI_TO_DEPTH <- 1.4696
 # package to use the y-values of the time dots to center the scan in the trace 
 # file. I am currently working on improving the methods for centering. 
 
-# Functions found to complete this step were tested in step one of the 
+# Functions to complete this step were tested in step one of the 
 # testing_code.R file. 
 
 ################################################################################
@@ -180,13 +180,14 @@ transform_psitodepth <- function(trace,
   trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
                                  include.lowest = TRUE, labels = labels)
   
+  # loading tidyr for separate(function)... still unsure about where to put
+  # load packages in code. 
+  library(tidyr)
+
   # splitting the label created by the cut function in to two separate columns 
   # since this made the calculations easier 
-  trace <- data.frame(trace, do.call(rbind, strsplit(as.character(trace$psi_interval_both), split = ":", fixed = TRUE)))
-  # renaming the extra columns that were created into psi_interval (100, 200, etc)
-  # and psi_position (y_value)
-  trace <- trace %>% rename("psi_interval" = X1, "psi_position" = X2)
-  
+  trace <- separate(trace, psi_interval_both, sep = ":", into = c("psi_interval", "psi_position"))
+
   # I needed numeric values to do calculations: 
   trace$psi_interval <- as.numeric(paste(trace$psi_interval))
   trace$psi_position <- as.numeric(paste(trace$psi_position))
@@ -233,3 +234,4 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
 
 # currently working on comparing the dive statistics from this recovered trace 
 # with the Castellini et al., 1992 bulletin using the diveMove() package
+
