@@ -17,9 +17,7 @@
 #     Step 2: Centering the scan. This was necessary because my hand was moving 
 #             while the trace was being fed into the scanner, and therefore 
 #             needed centering. 
-# 
-# TODO: some of the rows in the trace data frame get dropped in the fuzzyjoin 
-# process. 
+#
 # 
 ## Required libraries ##########################################################
 
@@ -128,8 +126,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # x and y values of the trace (headers x_val.y and Y, respectively). 
   
   # I needed this in order to use the y values of the time dots to center the 
-  # scan.. there is a lag with this merging process since my max_dist = 1.2
-  # I used max_dist = 1.2 since the time dots are 1.2 cm apart. 
+  # scan.. 
   fuzzy_merge_trace <- difference_left_join(trace, time_dots, 
                                             by = c("x_val"), 
                                             max_dist = 2.5)
@@ -158,7 +155,9 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 }
 # calling the function 
 center_trace <- center_scan(trace, time_dots)
-# Why is the fuzzy merge trace observations different from the original trace?
+
+# TODO: Why is the fuzzy merge trace observations different from the original 
+# trace? They should be the same number of observations. 
 
 
 
