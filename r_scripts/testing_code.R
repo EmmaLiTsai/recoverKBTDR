@@ -47,8 +47,11 @@ library(lubridate) # for dates and times
 # These functions can be found in the scan_tidying_functions.R file in the
 # r_scripts folder. 
 source("../r_scripts/scan_tidying_functions.R")
-
 # the output of this file is a centered trace with x and y values
+
+trace[!duplicated(trace[,1:2]),]
+# ^ this is the same as the number of observations produced after centering, so 
+# I think methods for centering should be okay?
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
