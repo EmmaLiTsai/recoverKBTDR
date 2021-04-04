@@ -28,9 +28,13 @@ time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE,
                       stringsAsFactors = FALSE)
 
 # some basic libraries for visualizing the output of some of these functions: 
-library(ggplot2)
-# ^ where should packages go in code? I have them here for tests, but some of my 
-# functions require other packages 
+# within functions, I have them tagged as :: so we know what functions come 
+# from what package. 
+library(ggplot2) # for visualizing 
+library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
+library(dplyr) # for select() and mutate()
+library(tidyr) # for separate()
+library(lubridate) # for dates and times 
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
@@ -112,5 +116,6 @@ ggplot(trace, aes(x = time, y = depth)) +
 trace <- add_dates_times(trace)
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
-# checking out a slice -- end time should be 1/23/1981 11:10:00 
+# checking out a slice -- end time should be 1/23/1981 11:10:00, 
+#which checks out! 
 

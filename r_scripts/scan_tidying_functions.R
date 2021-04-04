@@ -22,9 +22,9 @@
 ## Required libraries ##########################################################
 
 # to use the select() function 
-library(dplyr)
+# library(dplyr)
 # this was a library I found that could do fuzzy merges with numerical values: 
-library(fuzzyjoin)
+# library(fuzzyjoin)
 
 ## STEP ONE CODE ##############################################################
 # Code below achieves step 1 of the cleaning and file tidying process: 
@@ -47,7 +47,7 @@ tidy_trace <- function(trace){
   # changing the corrected y-value
   trace$y_corr <- trace$y_corr_p2
   # selecting the correct columns and removing unnecessary ones 
-  trace <- select(trace, -c("Y", "y_corr"))
+  trace <- dplyr::select(trace, -c("Y", "y_corr"))
   # changing the name values 
   names(trace) <- c("x_val", "y_val")
   # returning trace 
@@ -76,7 +76,7 @@ tidy_timedots <- function(time_dots){
   # correcting for default y scale in ImageJ
   time_dots$Y <- time_dots$Y * -1
   # selecting the correct columns for these data
-  time_dots <- select(time_dots, -c("X.1"))
+  time_dots <- dplyr::select(time_dots, -c("X.1"))
   # creating the first time dot, which is when the trace begins. There is no time 
   # dot in the trace when it first starts gathering data, so I had to add one 
   # here: 
@@ -127,7 +127,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   
   # I needed this in order to use the y values of the time dots to center the 
   # scan.. 
-  fuzzy_merge_trace <- difference_left_join(trace, time_dots, 
+  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots, 
                                             by = c("x_val"), 
                                             max_dist = 2.5)
   

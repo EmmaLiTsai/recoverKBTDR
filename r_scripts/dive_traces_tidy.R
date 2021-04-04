@@ -125,7 +125,7 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   # period, and then multiplies this by the scale value. I needed this value 
   # to calculate time, which uses this scale value and relates this information 
   # to the time period. 
-  trace <- mutate(trace, 
+  trace <- dplyr::mutate(trace, 
                   diff = new_x - start_x, 
                   diff_with_scale = diff * scale, 
                   time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
@@ -175,14 +175,10 @@ transform_psitodepth <- function(trace,
   # since I need both the psi and the position of the psi for these calculations
   trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
                                  include.lowest = TRUE, labels = labels)
-  
-  # loading tidyr for separate(function)... still unsure about where to put
-  # load packages in code. 
-  library(tidyr)
 
   # splitting the label created by the cut function in to two separate columns 
   # since this made the calculations easier 
-  trace <- separate(trace, psi_interval_both, 
+  trace <- tidyr::separate(trace, psi_interval_both, 
                     sep = ":", 
                     into = c("psi_interval", "psi_position"))
 
@@ -223,9 +219,7 @@ transform_psitodepth <- function(trace,
 
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   # adding dates and times from lubridate package 
-  library(lubridate)
-  # calculating dates and times: 
-  trace$date_time <- ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
+  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
     seconds(as.integer((trace$time %% 1) * 60))
   # returning the trace 
