@@ -165,9 +165,12 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 
 # Here I am just trying something out for the depth scale function... it is 
 # not perfect and is very inefficient code. 
-transform_psitodepth <- function(trace, 
-                              breaks = c("-5","1.43", "3.49", "7.78", "12.7", "17.3", "22"), 
-                              labels = c('100:1.43', '200:3.49', '400:7.78', '600:12.7', '800:17.3', '900:22')) {
+transform_psitodepth <- function(trace, psi_calibration) {
+  # defining the breaks 
+  breaks <- psi_calibration$psi_position
+  
+  # defining the labels
+  labels <- psi_calibration$psi_interval[1:6]
   
   # creating a psi and interval column together to make the calculations easier
   # the psi is in front of the corresponding y position with  ":" that will 

@@ -20,13 +20,16 @@
 ################################################################################
 # reading in example data: #####################################################
 ################################################################################
-
+# reading in trace
 trace <- read.csv("../sample_data/skele_trace.csv", header = TRUE, 
                   stringsAsFactors = FALSE)
-
+# reading in time dots 
 time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE, 
                       stringsAsFactors = FALSE)
 
+# new psi calibration file
+psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", header = TRUE, 
+                      stringsAsFactors = FALSE)
 # some basic libraries for visualizing the output of some of these functions: 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
@@ -78,7 +81,7 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
 # calling the function
-trace <- transform_psitodepth(trace)
+trace <- transform_psitodepth(trace, psi_calibration)
 
 # ordering
 trace <- trace[order(trace$new_x),]
@@ -86,7 +89,8 @@ trace <- trace[order(trace$new_x),]
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 # max depth value in the bulletin is 317, which is very close to the one 
-# calculated here 
+# calculated here of 320:
+max(trace[1:200000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked
 # bout one 
