@@ -236,6 +236,18 @@ transform_psitodepth <- function(trace, psi_calibration) {
 
 # testing code for this function can be found in the testing_code.R file 
 
+# This is a simple function for the 1978 and 1979 traces without a psi 
+# calibration curve at the end. I don't have the calibration records for these 
+# traces, so I'll have to calibrate depth using the max depths from the 
+# Castellini et al., 1992 bulletin. 
+transform_todepth <- function(trace, max_depth){
+  # calculating depth using the max depth the user defines and the max 
+  # value of the trace: 
+  trace$depth <- ((trace$y_val * max_depth) / max(trace$y_val))
+  # returning the trace 
+  return(trace)
+}
+
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
