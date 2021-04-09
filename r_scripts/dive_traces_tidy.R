@@ -148,23 +148,50 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 # interval (in cm) to calculate psi within each pressure category, and relate
 # this to depth. 
 
-# depth interval values in cm and how they relate to psi for this specific 
-# trace:
-
-# 1.43 = 100psi
-# 3.49 = 200psi
-# 7.78 = 400psi
-# 12.7 = 600psi
-# 17.3 = 800psi
-
-# TODO: the function call is way too verbose and too specific. I have defaults 
-# in place for the cut function, but I don't like the way this is set up... 
-# Is the a way in code to automatically create the breaks and labels of the 
-# different psi intervals? At the moment, the user would have to manually 
-# key them in and these values change for every trace. 
-
-# Here I am just trying something out for the depth scale function... it is 
-# not perfect and is very inefficient code. 
+###############################################################################
+# Function: transform_psitodepth(trace, psi_calibration)
+# Author:   EmmaLi Tsai
+# Date:     4/09/21
+# 
+# This function takes the trace csv file (containing x and y values of the 
+# trace) and a csv file (psi_calibration) containing the intervals and positions 
+# of the psi calibration curve at the end of the trace to determine the psi 
+# values of the trace. Essentially, this function creates breaks and labels out 
+# of the psi_calibration csv file to cut() the trace into different categories 
+# based on the y_val of a point. From these categories and the labels defined, 
+# this function then uses proportions to calculate the psi value of a specific 
+# point. These psi values can then be transformed to depth (in meters) using a 
+# simple calculation.  
+# 
+# This function also makes a first pass at "filtering" the data by making any 
+# point with a depth < 0 equal to depth = 0. This sometimes happened after 
+# centering the scan and extra "chatter" of the device at depth = 0. 
+# 
+# Input: 
+# 
+#   - trace       : raw csv file from ImageJ after image processing, contains 
+#                   the x and y values of the trace. 
+#
+#   - psi_calibration : csv file that contains two columns for the cut(): 
+#                           - psi_interval: the psi and y_val concatenated 
+#                                           together (i.e., 100:1.43) for the 
+#                                           100psi calibration that is 1.43 cm 
+#                                           above y = 0. 
+#                           - psi_position: the y_val to cut by. This should 
+#                                           column should be one row longer than 
+#                                           the psi_interval column, and start 
+#                                           with a lower y_val to encompass 
+#                                           points that may fall below y = 0. 
+#                                           (i.e., start with y_val -5 to 
+#                                           capture points with y_val = -0.01 so 
+#                                           it can fall in the 100:1.43 
+#                                           category)                                    
+#   
+# Output: 
+#   - trace      : csv file of the trace complete with the psi_interval and 
+#                  position a point fell into, the calculated psi value, and 
+#                  the calculated depth. 
+###############################################################################
 transform_psitodepth <- function(trace, psi_calibration) {
   # defining the breaks 
   breaks <- psi_calibration$psi_position
@@ -189,6 +216,7 @@ transform_psitodepth <- function(trace, psi_calibration) {
                     into = c("psi_interval", "psi_position"))
 
   # I needed numeric values to do calculations: 
+  # is there a way to do this more efficiently? 
   trace$psi_interval <- as.numeric(paste(trace$psi_interval))
   trace$psi_position <- as.numeric(paste(trace$psi_position))
   
