@@ -169,7 +169,10 @@ transform_psitodepth <- function(trace, psi_calibration) {
   # defining the breaks 
   breaks <- psi_calibration$psi_position
   
-  # defining the labels
+  # defining the labels-- had to select a specific number of observations since 
+  # the last observation is a "" since there is an unequal number of 
+  # psi_interval and psi_position rows. I needed to specify an unequal number 
+  # of rows since these columns will be used for the cut() function. 
   labels <- psi_calibration$psi_interval[1:6]
   
   # creating a psi and interval column together to make the calculations easier

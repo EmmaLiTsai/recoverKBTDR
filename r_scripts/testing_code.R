@@ -21,19 +21,23 @@
 # reading in example data: #####################################################
 ################################################################################
 # reading in trace
-trace <- read.csv("../sample_data/skele_trace.csv", header = TRUE, 
+trace <- read.csv("../sample_data/skele_trace.csv", 
+                  header = TRUE, 
                   stringsAsFactors = FALSE)
 # reading in time dots 
-time_dots <- read.csv("../sample_data/skele_timedots.csv", header = TRUE, 
+time_dots <- read.csv("../sample_data/skele_timedots.csv", 
+                      header = TRUE, 
                       stringsAsFactors = FALSE)
 
 # new psi calibration file
-psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", header = TRUE, 
-                      stringsAsFactors = FALSE)
+psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", 
+                            header = TRUE, 
+                            stringsAsFactors = FALSE)
+
 # some basic libraries for visualizing the output of some of these functions: 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
-library(ggplot2) # for visualizing 
+library(ggplot2) # for visualizing in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
 library(dplyr) # for select() and mutate()
 library(tidyr) # for separate()
@@ -62,8 +66,6 @@ ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() +
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 
 trace <- center_trace
-# TODO: some of the values in the trace are getting dropped in the centering 
-# process, and I'm not fully sure why. 
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
@@ -88,18 +90,18 @@ trace <- trace[order(trace$new_x),]
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
-# max depth value in the bulletin is 317, which is very close to the one 
-# calculated here of 320:
+# max depth value in the bulletin is 317 meters, which is very close to the one 
+# calculated here of 320 meters:
 max(trace[1:200000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked
 # bout one 
 ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
 # 
-# # bout two 
+# bout two 
 ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line() 
 # 
-# # bout three 
+# bout three 
 ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
 
 # plotting again... this is close to what the final product should be. 
@@ -121,8 +123,9 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 # calling the function 
 trace <- add_dates_times(trace)
+
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
-# checking out a slice -- end time should be 1/23/1981 11:10:00, 
-#which checks out! 
+# checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
+# defined by the 1990's team, which checks out!  
 
