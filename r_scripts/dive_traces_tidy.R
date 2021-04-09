@@ -244,6 +244,8 @@ transform_todepth <- function(trace, max_depth){
   # calculating depth using the max depth the user defines and the max 
   # value of the trace: 
   trace$depth <- ((trace$y_val * max_depth) / max(trace$y_val))
+  # basic filtering method 
+  trace[which(trace$depth < 0),]$depth <- 0
   # returning the trace 
   return(trace)
 }
