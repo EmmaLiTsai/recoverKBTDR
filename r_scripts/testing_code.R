@@ -58,13 +58,16 @@ source("../r_scripts/scan_tidying_functions.R")
 
 trace[!duplicated(trace[,1:2]),]
 # ^ this is the same as the number of observations produced after centering, so 
-# I think methods for centering should be okay?
+# I think methods for centering should be okay? Must be an bug with imageJ
+# selection tool from image processing
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
 ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() + 
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 
+# I could add this in the function call, but I kept it out so I could compare 
+# the output with the original trace csv file
 trace <- center_trace
 
 ################################################################################
@@ -124,16 +127,35 @@ ggplot(trace[1500:9800,], aes(x = new_x, y = depth)) + geom_line() +
   geom_smooth(method = 'locfit', method.args = list(deg=20, alpha = 0.1))
 
 # trying out kernel smoothing: 
-k_fit <- with(trace, ksmooth(time, depth, kernel = "box", bandwidth = 0.7))
-# looks okay-- I need to play around with different bandwidth 
-# values...
+k_fit <- with(trace, ksmooth(time, depth, kernel = "box", bandwidth = 1.5))
+# time values look off
 trace$ksmooth <- k_fit$y
 # plotting 
-ggplot(trace[1000:9000,], aes(x = time, y = ksmooth)) + geom_line()
+ggplot(trace[5000:9000,], aes(x = time, y = ksmooth)) + 
+  geom_line(color = "red") + 
+  geom_line(aes(x = time, y = depth))
+
+# spline smoothing: 
+s_fit <- smooth.spline(trace$time, trace$depth, spar = 0.3, nknots = 5900)
+# adding it to the trace df
+trace$ssmooth <- predict(s_fit, trace$time)$y
+# plotting
+ggplot(trace[3000:10000,], aes(x = time, y = depth)) + 
+  geom_point() +
+  geom_line(aes(x = time, y = ssmooth), color = "red", size = 1)
+# resolution is pretty good-- need to try out different number of knots and 
+# spar combinations... it would be nice if there was a way to mathematically 
+# determine appropriate number of knots & spar values based on the number of 
+# observations in a trace. 
+
+# Looking at the difference between the depth and smoothed values 
+# to make sure nothing weird is happening here: 
+ggplot(trace, aes(x = time, y = (depth - ssmooth))) + geom_line()
+
 
 # loess smoothing: 
 l_fit <- loess(time ~ depth, degree = 1, span = 0.1)
-# this takes so much longer to run 
+# this takes so much longer to run...
 trace$lsmooth <- l_fit$fitted
 # plotting 
 ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
