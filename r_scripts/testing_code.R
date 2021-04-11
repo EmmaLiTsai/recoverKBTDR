@@ -116,7 +116,27 @@ ggplot(trace, aes(x = time, y = depth)) +
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
 # in progress 
+# possible package to use? Trying out local fitting: 
+library(locfit)
+# smoothing method below doesn't work well as the trace 
+# progresses 
+ggplot(trace[1500:9800,], aes(x = new_x, y = depth)) + geom_line() + 
+  geom_smooth(method = 'locfit', method.args = list(deg=20, alpha = 0.1))
 
+# trying out kernel smoothing: 
+k_fit <- with(trace, ksmooth(time, depth, kernel = "box", bandwidth = 0.7))
+# looks okay-- I need to play around with different bandwidth 
+# values...
+trace$ksmooth <- k_fit$y
+# plotting 
+ggplot(trace[1000:9000,], aes(x = time, y = ksmooth)) + geom_line()
+
+# loess smoothing: 
+l_fit <- loess(time ~ depth, degree = 1, span = 0.1)
+# this takes so much longer to run 
+trace$lsmooth <- l_fit$fitted
+# plotting 
+ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
 
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
