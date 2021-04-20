@@ -24,6 +24,7 @@
 trace <- read.csv("../sample_data/skele_trace.csv", 
                   header = TRUE, 
                   stringsAsFactors = FALSE)
+
 # reading in time dots 
 time_dots <- read.csv("../sample_data/skele_timedots.csv", 
                       header = TRUE, 
@@ -87,9 +88,6 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # calling the function
 trace <- transform_psitodepth(trace, psi_calibration)
-
-# ordering
-trace <- trace[order(trace$new_x),]
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
@@ -165,7 +163,8 @@ ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
 ################################################################################
 # calling the function 
 trace <- add_dates_times(trace)
-
+# final ordering
+trace <- trace[order(trace$new_x),]
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 

@@ -44,12 +44,18 @@
 #   - trace   : tidy csv file with correct columns and column names 
 ###############################################################################
 tidy_trace <- function(trace){
-  # changing the corrected y-value
-  trace$y_corr <- trace$y_corr_p2
+  # changing the corrected y-value-- this was needed from the odd way ImageJ 
+  # handles origin placement, where values in the +x direction are negative
+  trace$y_corr <- case_when(trace$Y < 0 ~ abs(trace$Y),
+                            trace$Y > 0 ~ -(trace$Y), 
+                            trace$Y == 0 ~ (trace$Y))
+  
   # selecting the correct columns and removing unnecessary ones 
-  trace <- dplyr::select(trace, -c("Y", "y_corr"))
+  trace <- dplyr::select(trace, c("X", "y_corr"))
   # changing the name values 
   names(trace) <- c("x_val", "y_val")
+  # ordering the trace by increasing x value
+  trace <- trace[order(trace$x_val),]
   # returning trace 
   return(trace)
 }
@@ -74,9 +80,11 @@ tidy_trace <- function(trace){
 ###############################################################################
 tidy_timedots <- function(time_dots){
   # correcting for default y scale in ImageJ
-  time_dots$Y <- time_dots$Y * -1
+  time_dots$Y <- case_when(time_dots$Y < 0 ~ (time_dots$Y),
+                           time_dots$Y > 0 ~ -(time_dots$Y),
+                           time_dots$Y == 0 ~ (time_dots$Y))
   # selecting the correct columns for these data
-  time_dots <- dplyr::select(time_dots, -c("X.1"))
+  time_dots <- dplyr::select(time_dots, c("X", "Y"))
   # creating the first time dot, which is when the trace begins. There is no time 
   # dot in the trace when it first starts gathering data, so I had to add one 
   # here: 
