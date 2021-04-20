@@ -79,10 +79,9 @@ tidy_trace <- function(trace){
 #   - time_dots   : tidy csv file with correct columns and column names 
 ###############################################################################
 tidy_timedots <- function(time_dots){
-  # correcting for default y scale in ImageJ
-  time_dots$Y <- case_when(time_dots$Y < 0 ~ (time_dots$Y),
-                           time_dots$Y > 0 ~ -(time_dots$Y),
-                           time_dots$Y == 0 ~ (time_dots$Y))
+  # correcting for default y scale in ImageJ: 
+  time_dots$Y <- abs(time_dots$Y)
+  
   # selecting the correct columns for these data
   time_dots <- dplyr::select(time_dots, c("X", "Y"))
   # creating the first time dot, which is when the trace begins. There is no time 
@@ -128,7 +127,7 @@ trace <- tidy_trace(trace)
 #   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
 #                    x values of the scan. 
 ###############################################################################
-center_scan <- function(trace, time_dots, dist_timedot = 1.1){
+center_scan <- function(trace, time_dots, dist_timedot = 1.1, merge_dist = 2.5){
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
   # it produces a data frame with x and y values of the trace and the connected
   # x and y values of the trace (headers x_val.y and Y, respectively). 
@@ -137,11 +136,14 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # scan.. 
   fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots, 
                                             by = c("x_val"), 
-                                            max_dist = 2.5)
+                                            max_dist = merge_dist)
   
   # calculating how far the y time dot values are from the dist_timedot value. 
   # this was needed to move the x or y values up or down to center the scan 
-  fuzzy_merge_trace$y_val_corr <- (abs(fuzzy_merge_trace$Y) - dist_timedot)
+  # this has been fixed to account for when the time dots might be > 0! 
+  fuzzy_merge_trace$y_val_corr <- case_when(fuzzy_merge_trace$Y > 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
+                                            fuzzy_merge_trace$Y < 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
+                                            fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
   
   # centering the scan using the above y corrected values  
   fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
