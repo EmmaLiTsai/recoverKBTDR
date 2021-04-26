@@ -40,7 +40,7 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 # from what package. 
 library(ggplot2) # for visualizing in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
-library(dplyr) # for select() and mutate()
+library(dplyr) # for select(), mutate(), and case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 

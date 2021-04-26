@@ -46,7 +46,7 @@
 tidy_trace <- function(trace){
   # changing the corrected y-value-- this was needed from the odd way ImageJ 
   # handles origin placement, where values in the +x direction are negative
-  trace$y_corr <- case_when(trace$Y < 0 ~ abs(trace$Y),
+  trace$y_corr <- dplyr::case_when(trace$Y < 0 ~ abs(trace$Y),
                             trace$Y > 0 ~ -(trace$Y), 
                             trace$Y == 0 ~ (trace$Y))
   
@@ -141,7 +141,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1, merge_dist = 2.5){
   # calculating how far the y time dot values are from the dist_timedot value. 
   # this was needed to move the x or y values up or down to center the scan 
   # this has been fixed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- case_when(fuzzy_merge_trace$Y > 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
+  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y > 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
                                             fuzzy_merge_trace$Y < 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
                                             fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
   
