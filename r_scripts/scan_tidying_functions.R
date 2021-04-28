@@ -79,9 +79,6 @@ tidy_trace <- function(trace){
 #   - time_dots   : tidy csv file with correct columns and column names 
 ###############################################################################
 tidy_timedots <- function(time_dots){
-  # correcting for default y scale in ImageJ: 
-  time_dots$Y <- abs(time_dots$Y)
-  
   # selecting the correct columns for these data
   time_dots <- dplyr::select(time_dots, c("X", "Y"))
   # creating the first time dot, which is when the trace begins. There is no time 
