@@ -20,6 +20,16 @@
 ################################################################################
 # reading in example data: #####################################################
 ################################################################################
+
+# some basic libraries for visualizing the output of some of these functions: 
+# within functions, I have them tagged as :: so we know what functions come 
+# from what package. 
+library(ggplot2) # for visualizing in this file 
+library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
+library(dplyr) # for select(), mutate(), and case_when()
+library(tidyr) # for separate()
+library(lubridate) # for dates and times 
+
 # reading in trace
 trace <- read.csv("../sample_data/skele_trace.csv", 
                   header = TRUE, 
@@ -37,15 +47,6 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 # TODO: WARNING- sometimes .csv format will transform the psi_interval column 
 # (text format) to date format. I'm currently investigating a better way to 
 # manage and store these files so this doesn't happen. 
-
-# some basic libraries for visualizing the output of some of these functions: 
-# within functions, I have them tagged as :: so we know what functions come 
-# from what package. 
-library(ggplot2) # for visualizing in this file 
-library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
-library(dplyr) # for select(), mutate(), and case_when()
-library(tidyr) # for separate()
-library(lubridate) # for dates and times 
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
@@ -80,6 +81,7 @@ trace <- center_trace
 
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
+# any warning here would be from points that happened after the last time dot
 
 # plotting: 
 ggplot(trace, aes(x = time, y = y_val)) + geom_line()
