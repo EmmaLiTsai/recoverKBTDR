@@ -34,6 +34,9 @@ time_dots <- read.csv("../sample_data/skele_timedots.csv",
 psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", 
                             header = TRUE, 
                             stringsAsFactors = FALSE)
+# TODO: WARNING- sometimes .csv format will transform the psi_interval column 
+# (text format) to date format. I'm currently investigating a better way to 
+# manage and store these files so this doesn't happen. 
 
 # some basic libraries for visualizing the output of some of these functions: 
 # within functions, I have them tagged as :: so we know what functions come 
@@ -59,7 +62,7 @@ source("../r_scripts/scan_tidying_functions.R")
 
 trace[!duplicated(trace[,1:2]),]
 # ^ this is the same as the number of observations produced after centering, so 
-# I think methods for centering should be okay? Must be an bug with imageJ
+# I think methods for centering should be okay. Must be an bug with imageJ
 # selection tool from image processing
 
 # plotting the centered trace with the original trace to see how the script 
@@ -89,10 +92,13 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 # calling the function
 trace <- transform_psitodepth(trace, psi_calibration)
 
+# ordering
+trace <- trace[order(trace$new_x),]
+
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 # max depth value in the bulletin is 317 meters, which is very close to the one 
-# calculated here of 320 meters:
+# calculated here of 318.4 meters!:
 max(trace[1:200000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked
@@ -163,8 +169,7 @@ ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
 ################################################################################
 # calling the function 
 trace <- add_dates_times(trace)
-# final ordering
-trace <- trace[order(trace$new_x),]
+
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
