@@ -170,7 +170,7 @@ ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
 # calling the function 
-trace <- add_dates_times(trace)
+trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 
 ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
