@@ -228,7 +228,7 @@ transform_psitodepth <- function(trace, psi_calibration) {
   trace$depth <- trace$psi / PSI_TO_DEPTH
   
   # basic filtering method 
-  trace[which(trace$depth < 0),]$depth <- 0
+  # trace[which(trace$depth < 0),]$depth <- 0
   
   # returning the trace 
   return(trace)
@@ -245,7 +245,7 @@ transform_todepth <- function(trace, max_depth){
   # value of the trace: 
   trace$depth <- ((trace$y_val * max_depth) / max(trace$y_val))
   # basic filtering method 
-  trace[which(trace$depth < 0),]$depth <- 0
+  # trace[which(trace$depth < 0),]$depth <- 0
   # returning the trace 
   return(trace)
 }
