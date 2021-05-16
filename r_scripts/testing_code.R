@@ -18,7 +18,7 @@
 #   6. Dive statistics, direction flagging, etc.
 
 ################################################################################
-# reading in example data: #####################################################
+# Reading in example data: #####################################################
 ################################################################################
 
 # some basic libraries for visualizing the output of some of these functions: 
@@ -38,20 +38,21 @@ trace <- read.csv("../sample_data/skele_trace.csv",
 # reading in time dots 
 time_dots <- read.csv("../sample_data/skele_timedots.csv", 
                       header = TRUE, 
-                      stringsAsFactors = FALSE)
+                      stringsAsFactors = FALSE, 
+                      row.names = 1)
 
-# new psi calibration file
+# psi calibration file
 psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", 
                             header = TRUE, 
                             stringsAsFactors = FALSE)
-# TODO: WARNING- sometimes .csv format will transform the psi_interval column 
-# (text format) to date format. I'm currently investigating a better way to 
-# manage and store these files so this doesn't happen. 
+# CAUTION- sometimes psi_calibratrion csv files will transform the psi_interval 
+# column (text format) to another format when the csv file is opened. It seems 
+# to read in well with read.csv, but I'm currently investigating a better way to 
+# manage and store these files so this doesn't happen.
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
 ################################################################################
-
 # Not sure if these functions will be included in the final package, but these 
 # functions help with transforming and tidying the csv files from ImageJ. This 
 # code also centers the scan, which was necessary after scanning the traces. 
