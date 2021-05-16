@@ -88,7 +88,6 @@ PSI_TO_DEPTH <- 1.4696
 #                  gathering data. I kept all columns to ensure that the 
 #                  function was working properly. 
 ###############################################################################
-
 transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
  ## Start Step Two: Transform Coordinates by Radius Arc Eqns ################# 
   
@@ -254,7 +253,6 @@ transform_todepth <- function(trace, max_depth){
 # order to read this file in as a TDR object in the diveMove package: 
 
 # this could be tagged on to step 2 of this file? 
-
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   # adding dates and times from lubridate package 
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 

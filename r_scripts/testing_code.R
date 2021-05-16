@@ -21,14 +21,14 @@
 # Reading in example data: #####################################################
 ################################################################################
 
-# some basic libraries for visualizing the output of some of these functions: 
-# within functions, I have them tagged as :: so we know what functions come 
-# from what package. 
+# some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
 library(dplyr) # for select(), mutate(), and case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
+# within functions, I have them tagged as :: so we know what functions come 
+# from what package. 
 
 # reading in trace
 trace <- read.csv("../sample_data/skele_trace.csv", 
@@ -125,12 +125,12 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
-# in progress 
-# possible package to use? Trying out local fitting: 
+# section is in development:  
+
+# trying out local fitting: 
 library(locfit)
-# smoothing method below doesn't work well as the trace 
-# progresses 
-ggplot(trace[1500:9800,], aes(x = new_x, y = depth)) + geom_line() + 
+# smoothing method below doesn't work well as the trace progresses 
+ggplot(trace[1500:99800,], aes(x = new_x, y = depth)) + geom_line() + 
   geom_smooth(method = 'locfit', method.args = list(deg=20, alpha = 0.1))
 
 # trying out kernel smoothing: 
@@ -142,23 +142,28 @@ ggplot(trace[5000:9000,], aes(x = time, y = ksmooth)) +
   geom_line(color = "red") + 
   geom_line(aes(x = time, y = depth))
 
-# spline smoothing: 
+# trying out spline smoothing with knots, since spline smoothing is usually more 
+# computationally efficient: 
 s_fit <- smooth.spline(trace$time, trace$depth, spar = 0.3, nknots = 5900)
 # adding it to the trace df
 trace$ssmooth <- predict(s_fit, trace$time)$y
 # plotting
-ggplot(trace[3000:10000,], aes(x = time, y = depth)) + 
-  geom_point() +
+ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
+  geom_line() +
   geom_line(aes(x = time, y = ssmooth), color = "red", size = 1)
-# resolution is pretty good-- need to try out different number of knots and 
+# this method is pretty good-- need to try out different number of knots and 
 # spar combinations... it would be nice if there was a way to mathematically 
 # determine appropriate number of knots & spar values based on the number of 
-# observations in a trace. 
+# observations in a trace. From looking at the literature, this may involve 
+# generalized cross validation or AIC. 
+
+# This spline smoothing method is also used in the diveMove package, but these 
+# data need to be smoothed before they can be read in as a TDR object in this 
+# package. 
 
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - ssmooth))) + geom_line()
-
 
 # loess smoothing: 
 l_fit <- loess(time ~ depth, degree = 1, span = 0.1)

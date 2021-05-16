@@ -7,6 +7,7 @@
 # All of these preliminary steps are necessary in order to continue with the 
 # recovery process. 
 
+################################################################################
 # Outline of tidying steps: 
 # 
 #     Step 1: Tidy the trace and time_dots file headers, names, and y-values due 
@@ -18,15 +19,11 @@
 #             while the trace was being fed into the scanner, and therefore 
 #             needed centering. 
 #
-# 
-## Required libraries ##########################################################
+# ##############################################################################
 
-# dplyr: to use the select() function: 
-# fuzzyjoin: can do fuzzy merges with numerical values: 
-
-## STEP ONE CODE ##############################################################
+## STEP ONE #################################################################### 
 # Code below achieves step 1 of the cleaning and file tidying process: 
-###############################################################################
+################################################################################
 # Function: tidy_trace(trace)
 # Author:   EmmaLi Tsai
 # Date:     3/27/21
@@ -115,7 +112,8 @@ trace <- tidy_trace(trace)
 # 
 # This function was needed to ensure that any drift in the trace would be from 
 # the TDR and not from scanning. This drift is common with modern TDRs and can 
-# be easily handled with the diveMove package. 
+# be easily handled with the diveMove package with zero offset correction 
+# filters (see Luque & Fried, 2011). 
 #
 # Input: 
 #   - trace        : tidy trace csv file 
