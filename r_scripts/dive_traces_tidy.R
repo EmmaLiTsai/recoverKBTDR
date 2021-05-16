@@ -55,7 +55,7 @@ PSI_TO_DEPTH <- 1.4696
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
 # 
-# Function takes the trace and time dots csv files to complete two steps: 
+# Function takes the tidy trace and time dots files to complete two steps: 
 # 
 #   (2) - apply radius arm transformation using the geometry of the KBTDR device 
 #         which uses the globally defined constants above. This should be the 
@@ -63,32 +63,35 @@ PSI_TO_DEPTH <- 1.4696
 #
 #   (3) - transform the x axis from time using the timing dots. To do this, I 
 #         will create a helper data frame with the start and end points of a 
-#         time period and the corresponding scale value. This data frame may be 
+#         time period and the corresponding scale value. This data frame is  
 #         needed to help make the cut() function easier, where I would break 
 #         the trace up into sections that would identify which time period a 
-#         specific x value belongs to along a trace. Then, I expect I would do 
-#         some sort of merge() with the trace data frame and create some simple  
-#         equations that will use the distance a point is from the start point 
-#         of a time period and the scale value I made earlier to estimate the 
-#         time value of a specific point. This step will probably be a mutate().
-#       
-# Input: 
-#   - time_dots   : raw csv file from ImageJ after image processing, contains 
-#                   the x and y values of the time dots for a trace 
+#         specific x value belongs to along a trace. Then, I do a merge() with 
+#         the trace data frame. Using this merged data frame, I do a mutate() 
+#         for some simple calculations that will use the distance a point is 
+#         from the start point of a time period and the scale value I made 
+#         earlier to estimate the time value of a specific point. 
 # 
-#   - trace       : raw csv file from ImageJ after image processing, contains 
-#                   the x and y values of the trace
+# Input: 
+#   - time_dots   : tidy time_dots data frame, contains the x and y values of  
+#                   the time dots for a trace 
+# 
+#   - trace       : tidy trace data frame, contains the x and y values of the 
+#                   trace
 #
-#   - time_period_min : minutes between each time period. Usually this is 12 
-#                   minutes. 
+#   - time_period_min : minutes between each time period. This is 12 minutes for 
+#                   most traces. 
 #   
 # Output: 
-#   - trace      : csv file of the trace complete with time periods, and time 
+#   - trace      : trace data frame complete with time periods, and time 
 #                  of an x value in minutes from when the device started 
-#                  gathering data. 
+#                  gathering data. I kept all columns to ensure that the 
+#                  function was working properly. 
 ###############################################################################
 
 transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
+ ## Start Step Two: Transform Coordinates by Radius Arc Eqns ################# 
+  
   # applying my new equation, basically just the equation of a circle but takes
   # the original x/y and calculates where the center of the circle would be
   # (h), and uses this new center to find the x value when depth = 0. I did
@@ -96,7 +99,8 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) +
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
  
-   # ordering the file based on new_x value
+  # ordering the file based on new_x value-- this is needed to create accurate 
+  # time periods in step 3
   trace <- trace[order(trace$new_x),]
 
   ## Starting Step Three: scale X based on time dots ###########################
@@ -113,7 +117,7 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   
   # adding this as a time period variable to the trace using the cut() function
   trace$time_period <- cut(trace$new_x, 
-                           breaks = c(tp_df$start_x), 
+                           breaks = tp_df$start_x, 
                            include.lowest = TRUE, 
                            labels = tp_df$time_period[1:(nrow(tp_df) - 1)])
   
@@ -140,21 +144,15 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 ################################################################################
 
 # THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
-# psi calibration at the end of the trace, previous ones do not. 
-
-# This is a work in progress since I need to do a segmented calibration. 
-# My current plan would to cut() based on psi interval, which would help with 
-# categorizing different y values into categories of pressure. From this, I 
-# could then use the psi interval (in pressure) and the position of the psi 
-# interval (in cm) to calculate psi within each pressure category, and relate
-# this to depth. 
+# psi calibration at the end of the trace, previous ones do not. I have two 
+# functions here to handle both. 
 
 ###############################################################################
 # Function: transform_psitodepth(trace, psi_calibration)
 # Author:   EmmaLi Tsai
 # Date:     4/09/21
 # 
-# This function takes the trace csv file (containing x and y values of the 
+# This function takes the tidy trace file (containing x and y values of the 
 # trace) and a csv file (psi_calibration) containing the intervals and positions 
 # of the psi calibration curve at the end of the trace to determine the psi 
 # values of the trace. Essentially, this function creates breaks and labels out 
@@ -164,20 +162,16 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 # point. These psi values can then be transformed to depth (in meters) using a 
 # simple calculation.  
 # 
-# This function also makes a first pass at "filtering" the data by making any 
-# point with a depth < 0 equal to depth = 0. This sometimes happened after 
-# centering the scan and extra "chatter" of the device at depth = 0. 
-# 
 # Input: 
 # 
-#   - trace       : raw csv file from ImageJ after image processing, contains 
-#                   the x and y values of the trace. 
+#   - trace       : tidy trace data frame, contains the x and y values of the 
+#                   trace.
 #
 #   - psi_calibration : csv file that contains two columns for the cut(): 
 #                           - psi_interval: the psi and y_val concatenated 
-#                                           together (i.e., 100:1.43) for the 
+#                                           together (i.e., 100:1.43 for the 
 #                                           100psi calibration that is 1.43 cm 
-#                                           above y = 0. 
+#                                           above y = 0). 
 #                           - psi_position: the y_val to cut by. This should 
 #                                           column should be one row longer than 
 #                                           the psi_interval column, and start 
@@ -189,9 +183,10 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
 #                                           category)                                    
 #   
 # Output: 
-#   - trace      : csv file of the trace complete with the psi_interval and 
+#   - trace      : trace data frame complete with the psi_interval and 
 #                  position a point fell into, the calculated psi value, and 
-#                  the calculated depth. 
+#                  the calculated depth. I kept all columns to ensure the 
+#                  function was working properly. 
 ###############################################################################
 transform_psitodepth <- function(trace, psi_calibration) {
   # defining the breaks 
@@ -213,8 +208,8 @@ transform_psitodepth <- function(trace, psi_calibration) {
   # splitting the label created by the cut function in to two separate columns 
   # since this made the calculations easier 
   trace <- tidyr::separate(trace, psi_interval_both, 
-                    sep = ":", 
-                    into = c("psi_interval", "psi_position"))
+                           sep = ":", 
+                           into = c("psi_interval", "psi_position"))
 
   # I needed numeric values to do calculations: 
   # is there a way to do this more efficiently? 
@@ -227,11 +222,7 @@ transform_psitodepth <- function(trace, psi_calibration) {
   # calculating depth by taking the psi value and dividing by the constant 
   # I defined above. 
   trace$depth <- trace$psi / PSI_TO_DEPTH
-  
-  # basic filtering method 
-  # trace[which(trace$depth < 0),]$depth <- 0
-  # ^ removed here since diveMove already has dive filtering methods 
-  
+
   # returning the trace 
   return(trace)
 }
@@ -246,9 +237,7 @@ transform_todepth <- function(trace, max_depth){
   # calculating depth using the max depth the user defines and the max 
   # value of the trace: 
   trace$depth <- ((trace$y_val * max_depth) / max(trace$y_val))
-  # basic filtering method 
-  # trace[which(trace$depth < 0),]$depth <- 0
-  # returning the trace 
+  # returning trace 
   return(trace)
 }
 

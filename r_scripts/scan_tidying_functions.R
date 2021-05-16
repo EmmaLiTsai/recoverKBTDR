@@ -112,6 +112,10 @@ trace <- tidy_trace(trace)
 # the function call. This function does a fuzzy full distance merge based on the 
 # x_val columns in the trace and time_dots data frame, and then calculates how 
 # much the y values of the trace need to be corrected to center the scan. 
+# 
+# This function was needed to ensure that any drift in the trace would be from 
+# the TDR and not from scanning. This drift is common with modern TDRs and can 
+# be easily handled with the diveMove package. 
 #
 # Input: 
 #   - trace        : tidy trace csv file 
@@ -130,7 +134,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # first, I needed to find the appropriate merge distance. This distance should 
   # be large enough to merge with trace values between time dots that are far 
   # apart. However, I remove duplicated values later in this function, so 
-  # large values also produce a lag.
+  # large values also produce a lag in centering...
   merge_dist <- max(abs(diff(time_dots$x_val)))
   
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 

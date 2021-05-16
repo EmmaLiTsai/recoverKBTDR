@@ -24,8 +24,8 @@
 # some basic libraries for visualizing the output of some of these functions: 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
-library(ggplot2) # for visualizing in this file 
-library(fuzzyjoin) # for fuzzy merge in scan centering, mainly difference_left_join()
+library(ggplot2) # for visualizing outputs in this file 
+library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
 library(dplyr) # for select(), mutate(), and case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
@@ -45,7 +45,7 @@ time_dots <- read.csv("../sample_data/skele_timedots.csv",
 psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", 
                             header = TRUE, 
                             stringsAsFactors = FALSE)
-# CAUTION- sometimes psi_calibratrion csv files will transform the psi_interval 
+# CAUTION- sometimes psi_calibration csv files will transform the psi_interval 
 # column (text format) to another format when the csv file is opened. It seems 
 # to read in well with read.csv, but I'm currently investigating a better way to 
 # manage and store these files so this doesn't happen.
@@ -62,7 +62,7 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 source("../r_scripts/scan_tidying_functions.R")
 # the output of this file is a centered trace with x and y values
 
-trace[!duplicated(trace[,1:2]),]
+nrow(trace[!duplicated(trace[,1:2]),])
 # ^ this is the same as the number of observations produced after centering, so 
 # I think methods for centering should be okay. Must be an bug with imageJ
 # selection tool from image processing
@@ -72,17 +72,19 @@ trace[!duplicated(trace[,1:2]),]
 ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() + 
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 
-# I could add this in the function call, but I kept it out so I could compare 
-# the output with the original trace csv file
+# I could add this in the function call, but I kept it out so I could visually 
+# compare the output with the original trace csv file
 trace <- center_trace
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
-
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
+
+# ordering -- this needs to be out of the function
+trace <- trace[order(trace$time),]
 
 # plotting: 
 ggplot(trace, aes(x = time, y = y_val)) + geom_line()
@@ -95,16 +97,14 @@ ggplot(trace, aes(x = time, y = y_val)) + geom_line()
 # calling the function
 trace <- transform_psitodepth(trace, psi_calibration)
 
-# ordering
-trace <- trace[order(trace$new_x),]
-
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
+
 # max depth value in the bulletin is 317 meters, which is very close to the one 
 # calculated here of 318.4 meters!:
 max(trace[1:200000,]$depth)
 
-# looking at different bouts of dives to assess how this method worked
+# looking at different bouts of dives to assess how this method worked: 
 # bout one 
 ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
 # 
