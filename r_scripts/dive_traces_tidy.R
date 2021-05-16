@@ -22,6 +22,7 @@
 RADIUS <- 20.6
 # height of the KBTDR pivot point when scaled up to the size of the physical
 # trace
+# TODO: this is not constant across all traces! See Issues in GitHub
 CENTER_Y <- 11.3
 # this was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
@@ -35,7 +36,7 @@ PSI_TO_DEPTH <- 1.4696
 # methods, but I created code that would fix this step and center the scan in
 # the scan_tidying_functions.R file. This function tidys the trace and csv files 
 # that were created from the ImageJ defaults using two functions: 
-#   tidy_trace(trace) and tidy_timedots(time_dots)
+# tidy_trace(trace) and tidy_timedots(time_dots)
 #
 # Here, I also centered the scan using the center_scan(trace, time_dots) 
 # function. This function did a fuzzy distance full merge using the "fuzzyjoin" 
@@ -60,7 +61,7 @@ PSI_TO_DEPTH <- 1.4696
 #         which uses the globally defined constants above. This should be the 
 #         same across all KBTDR devices. 
 #
-#   (3) - transfomr the x axis from time using the timing dots. To do this, I 
+#   (3) - transform the x axis from time using the timing dots. To do this, I 
 #         will create a helper data frame with the start and end points of a 
 #         time period and the corresponding scale value. This data frame may be 
 #         needed to help make the cut() function easier, where I would break 
@@ -229,6 +230,7 @@ transform_psitodepth <- function(trace, psi_calibration) {
   
   # basic filtering method 
   # trace[which(trace$depth < 0),]$depth <- 0
+  # ^ removed here since diveMove already has dive filtering methods 
   
   # returning the trace 
   return(trace)
@@ -253,13 +255,12 @@ transform_todepth <- function(trace, max_depth){
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
-# currently a work in progress 
+# currently a work in progress -- see options in testing_code.R
 
 
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
-
 # creating date_time column using the lubridate package, this was needed in 
 # order to read this file in as a TDR object in the diveMove package: 
 
