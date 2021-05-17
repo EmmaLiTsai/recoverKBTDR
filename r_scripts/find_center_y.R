@@ -1,3 +1,6 @@
+# This is a work in progress, but here is what I have so far to address Issue 
+# #13 in GitHub
+
 # This function finds the center_y value of the arm given two points along the 
 # descent of a dive (x1, y1; x2, y2). This dive should be rapid with little to 
 # no bottom time. To do this, the function calculates the amount of time it 
@@ -57,4 +60,5 @@ find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi
   return(rbind(h, k))
 }
 
+# running with sample values from WS_25:
 find_center_y(1142.86, 0, 1140.54, 9.31, 20.87, 0.1575, psi_calibration)
