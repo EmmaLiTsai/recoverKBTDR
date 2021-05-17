@@ -79,6 +79,11 @@ trace <- center_trace
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
+
+# CAUTION: before running this code, confirm that the correct center_y value 
+# has been calculated. See r_scripts/find_center_y.R file for possible 
+# calculations. 
+
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot

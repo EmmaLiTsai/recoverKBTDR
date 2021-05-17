@@ -22,7 +22,7 @@
 RADIUS <- 20.6
 # height of the KBTDR pivot point when scaled up to the size of the physical
 # trace
-# TODO: this is not constant across all traces! See Issues in GitHub
+# TODO: this is not constant across all traces! See Issue #13 in GitHub
 CENTER_Y <- 11.3
 # this was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
@@ -95,6 +95,9 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   # the original x/y and calculates where the center of the circle would be
   # (h), and uses this new center to find the x value when depth = 0. I did
   # some algebra to fit this math into one line of code
+  
+  # TODO: CENTER_Y is not constant across traces, see issue 13 in GitHub. Will 
+  # likely need extra calculations from r_scripts/find_center_y.R file. 
   trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) +
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
  
