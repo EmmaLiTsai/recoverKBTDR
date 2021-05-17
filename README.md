@@ -31,7 +31,10 @@ Contains:
 				
 			  - testing_code.R      -- contains testing code for functions created in the dives_traces_tidy.R file and 
 						   scan_tidying_functions.R file. This was needed to separate testing and produciton code, and 
-						   uses the trace and time_dots csv files in the sample data folder in this repository. 		  			
+						   uses the trace and time_dots csv files in the sample data folder in this repository. 
+			  
+			  - find_center_y.r  	-- contains a draft function with math to calculate the height of the transducer arm given two 
+						   points along the descent of a dive. 	  			
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots. This 
 		     file also contains a .txt file that outlines the image processing methods used to create these sample files.

@@ -14,7 +14,12 @@
 # circle-given-two-points-and-a-radius-algebraically
 # 
 # because this math is easier to put in code rather than solving a system of 
-# equations. The returned K value should be the center_y value for the record. 
+# equations. The returned K value should be the center_y value for the record.
+
+# This function also takes: r = 20.87, which is the constant length of the 
+# traducer arm; the rate that the record was moving at the time these two points 
+# were taken ((time point 2 - time point 1) / 12 minutes); and the file used 
+# for psi calibration. 
 
 find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi_calibration){
   # First, I am transforming y2 to depth in meters. This was needed to estimate 
@@ -42,9 +47,11 @@ find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi
   # minutes 
   t <- (depth / 1.1) / 60
   
-  # geometry from stack exchange (link above): 
+  # transforming x2 over in the -x direction such that x1 and x2 would be along
+  # the same circle with center (h,k)
   x2 = x2 - (rate * t)
   
+  # geometry from stack exchange (link above): 
   xa =  0.5 * (x2 - x1)
   ya =  0.5 * (y2 - y1)
   
