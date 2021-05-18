@@ -30,13 +30,15 @@
 # 
 # Function takes the default column names from ImageJ and image processing and
 # does some basic tidying so that the code is easier/cleaner to work with. This
-# involves selecting certain columns and changing name values. 
+# involves selecting certain columns, changing name values, and correcting the 
+# y values of the trace from odd origin placement in ImageJ (i.e., values above 
+# the origin are negative by default).
 # 
 # Input: 
 #   - trace   : raw csv file from ImageJ after image processing 
 #
 # Output: 
-#   - trace   : tidy csv file with correct columns and column names 
+#   - trace   : tidy file with correct columns and column names 
 ###############################################################################
 tidy_trace <- function(trace){
   # changing the corrected y-value-- this was needed from the odd way ImageJ 
@@ -65,20 +67,20 @@ tidy_trace <- function(trace){
 # involves selecting certain columns and changing name values, and fixing the 
 # y values after origin placement. This function also adds a new row to the 
 # time dots csv file such that the first value in the trace csv file becomes the 
-# first time dot-- this was needed for centering, time functions, and also was 
-# the way the previous group in the 90's analyzed these traces. 
+# first time dot-- this was needed for centering and time functions. This is 
+# cosistent with the way the previous group in the 90's analyzed these traces. 
 #
 # Input: 
 #   - time_dots   : raw csv file from ImageJ after image processing 
 #
 # Output: 
-#   - time_dots   : tidy csv file with correct columns and column names 
+#   - time_dots   : tidy file with correct columns and column names 
 ###############################################################################
 tidy_timedots <- function(time_dots){
   # selecting the correct columns for these data
   time_dots <- dplyr::select(time_dots, c("X", "Y"))
-  # creating the first time dot, which is when the trace begins. There is no time 
-  # dot in the trace when it first starts gathering data, so I had to add one 
+  # creating the first time dot, which is when the trace begins. There is not a  
+  # time dot created when the device starts gathering data, so I had to add one 
   # here: 
   time_dots <- rbind(c(0, time_dots$Y[1]), time_dots)
   # changing names
@@ -103,8 +105,8 @@ trace <- tidy_trace(trace)
 # Author:   EmmaLi Tsai
 # Date:     3/27/21
 # 
-# Function takes the trace and timedots csv files and uses the y values of the 
-# time dots to move the traces up/down to center the scan, such that all the 
+# Function takes the trace and timedots files and uses the y values of the 
+# time dots to move the trace up/down to center the scan, such that all the 
 # y-values of the time dots are along y = -dist_timedot that the user defines in 
 # the function call. This function does a fuzzy full distance merge based on the 
 # x_val columns in the trace and time_dots data frame, and then calculates how 
@@ -116,8 +118,8 @@ trace <- tidy_trace(trace)
 # filters (see Luque & Fried, 2011). 
 #
 # Input: 
-#   - trace        : tidy trace csv file 
-#   - time_dots    : tidy time_dots csv file
+#   - trace        : tidy trace file 
+#   - time_dots    : tidy time_dots file
 #   - dist_timedot : the y-axis the user would like to use to center the scan. 
 #                    The trace will be centered such that all time dots will 
 #                    fall along y = -dist_timedots. Default is set to 1.1cm from 
@@ -126,7 +128,7 @@ trace <- tidy_trace(trace)
 #
 # Output: 
 #   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
-#                    x values of the scan. 
+#                         x values of the scan. 
 ###############################################################################
 center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # first, I needed to find the appropriate merge distance. This distance should 
@@ -158,10 +160,10 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
   
   # removing duplicated values -- this happened when a point along a trace 
-  # was close to both time dots, and the way this code is set up it will keep 
-  # the first duplicated value but remove the trailing ones. Since any errors 
-  # due to scanning would be gradual and the time dots are usually ~1.2 cm apart,
-  # I think this method should be sound 
+  # was close to both time dots. This code will keep the first duplicated value 
+  # but remove the trailing ones. Since any errors due to scanning would be 
+  # gradual and the time dots are usually ~1.2 cm apart, I think this method 
+  # should be sound 
   fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
  
   # some final tidying -- this is removing unimportant columns resulting from 

@@ -34,14 +34,14 @@ PSI_TO_DEPTH <- 1.4696
 
 # Code here is absent because this is really more related to image processing 
 # methods, but I created code that would fix this step and center the scan in
-# the scan_tidying_functions.R file. This function tidys the trace and csv files 
-# that were created from the ImageJ defaults using two functions: 
+# the scan_tidying_functions.R file. This function tidies the trace and csv 
+# files that were created from the ImageJ defaults using two functions: 
 # tidy_trace(trace) and tidy_timedots(time_dots)
 #
-# Here, I also centered the scan using the center_scan(trace, time_dots) 
+# There, I also centered the scan using the center_scan(trace, time_dots) 
 # function. This function did a fuzzy distance full merge using the "fuzzyjoin" 
 # package to use the y-values of the time dots to center the scan in the trace 
-# file. I am currently working on improving the methods for centering. 
+# file. 
 
 # Functions to complete this step were tested in step one of the 
 # testing_code.R file. 
@@ -58,13 +58,12 @@ PSI_TO_DEPTH <- 1.4696
 # Function takes the tidy trace and time dots files to complete two steps: 
 # 
 #   (2) - apply radius arm transformation using the geometry of the KBTDR device 
-#         which uses the globally defined constants above. This should be the 
-#         same across all KBTDR devices. 
+#         which uses the globally defined constants above.
 #
 #   (3) - transform the x axis from time using the timing dots. To do this, I 
-#         will create a helper data frame with the start and end points of a 
+#         created a helper data frame with the start and end points of a 
 #         time period and the corresponding scale value. This data frame is  
-#         needed to help make the cut() function easier, where I would break 
+#         needed to help make the cut() function easier, so I can break 
 #         the trace up into sections that would identify which time period a 
 #         specific x value belongs to along a trace. Then, I do a merge() with 
 #         the trace data frame. Using this merged data frame, I do a mutate() 
@@ -102,7 +101,7 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
  
   # ordering the file based on new_x value-- this is needed to create accurate 
-  # time periods in step 3
+  # time periods in step three below
   trace <- trace[order(trace$new_x),]
 
   ## Starting Step Three: scale X based on time dots ###########################
