@@ -92,7 +92,7 @@ trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
 trace <- trace[order(trace$time),]
 
 # plotting: 
-ggplot(trace, aes(x = time, y = y_val)) + geom_line()
+ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
 # times here align with the times I produced with my original code in the 
 # example_trace.R file. 
 

@@ -19,11 +19,11 @@
 # Global constants: 
 
 # radius of the KBTDR arm when scaled up to the size of the physical traces
-RADIUS <- 20.6
+RADIUS <- 20.87
 # height of the KBTDR pivot point when scaled up to the size of the physical
 # trace
 # TODO: this is not constant across all traces! See Issue #13 in GitHub
-CENTER_Y <- 11.3
+CENTER_Y <- 11.1
 # this was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
 PSI_TO_DEPTH <- 1.4696
