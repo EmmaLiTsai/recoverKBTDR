@@ -53,7 +53,7 @@ find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi
   x2 = x2 - (rate * t)
   
   # geometry from stack exchange (link above-- I also have sample calculations 
-  # to confirm that this method works): 
+  # to confirm that this method of using the geometry of a rhombus works): 
   xa =  0.5 * (x2 - x1)
   ya =  0.5 * (y2 - y1)
   
