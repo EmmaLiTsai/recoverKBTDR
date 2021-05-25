@@ -55,7 +55,10 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 ################################################################################
 # Not sure if these functions will be included in the final package, but these 
 # functions help with transforming and tidying the csv files from ImageJ. This 
-# code also centers the scan, which was necessary after scanning the traces. 
+# code also centers the scan, which was necessary after scanning the traces.
+
+# If the scan has issues with the time dots (records 16 and 17), center the 
+# scan using the r_scripts/center_scan_td_issue.R file. 
 
 # These functions can be found in the scan_tidying_functions.R file in the
 # r_scripts folder. 
