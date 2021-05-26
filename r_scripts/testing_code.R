@@ -83,9 +83,14 @@ trace <- center_trace
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
 
-# CAUTION: before running this code, confirm that the correct center_y value 
+# Before running this code, confirm that the correct center_y value 
 # has been calculated. See r_scripts/find_center_y.R file for possible 
 # calculations. 
+
+# If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
+# data using the r_scripts/zoc.R file before using the transform_coordinates 
+# function. This code (modified from the diveMove package) correct the data such 
+# that depth = 0 aligns better with y = 0 for more reliable arc removal. 
 
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
