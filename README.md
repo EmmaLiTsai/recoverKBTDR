@@ -5,7 +5,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive traces from Kooyman-Bi
 Contains: 
 
  (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. Many of these .R files are preliminary code. 
- 		  	Within this folder, you can find seven files:
+ 		  	Within this folder, you can find eight files:
 
 			  - example_trace.R    -- contains example code that completes six main objective: removing the arc, spline smoothing, 
 						  adding the time dots, transforming the x-axis to time, scan centering, and adding dates and 
