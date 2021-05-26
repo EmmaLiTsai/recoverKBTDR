@@ -47,8 +47,9 @@ Contains:
 						   extreme level shifts and drift in depth = 0 within a bout, so I thought this file may be 
 						   useful to include. 
  
- (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots. This 
-		     file also contains a .txt file that outlines the image processing methods used to create these sample files.
+ (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots and 
+		     psi calibration curve at the end of the record. This file also contains a .txt file that outlines the image processing 
+		     methods used to create this sample record. 
 
  (3) Results       - folder that contains results for this project. 
  
