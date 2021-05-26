@@ -216,9 +216,15 @@ transform_psitodepth <- function(trace, psi_calibration) {
                            into = c("psi_interval", "psi_position"))
 
   # I needed numeric values to do calculations: 
-  # is there a way to do this more efficiently? 
   trace$psi_interval <- as.numeric(paste(trace$psi_interval))
   trace$psi_position <- as.numeric(paste(trace$psi_position))
+  
+  # Is there a way to do this more efficiently? I have this code below using 
+  # sapply, but it just seemed harder to follow: 
+  # cols <- trace[, c("psi_interval", "psi_position")]
+  # tidy_cols <- sapply(cols, function(x) as.numeric(paste(x)))
+  # 
+  # trace[ , colnames(trace) %in% colnames(tidy_cols)] <- tidy_cols 
   
   # calculating psi position based on the interval it was categorized into
   trace$psi <- ((trace$psi_interval * trace$y_val) / trace$psi_position)
