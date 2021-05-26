@@ -20,10 +20,7 @@
 
 # radius of the KBTDR arm when scaled up to the size of the physical traces
 RADIUS <- 20.87
-# height of the KBTDR pivot point when scaled up to the size of the physical
-# trace
-# TODO: this is not constant across all traces! See Issue #13 in GitHub
-CENTER_Y <- 11.1
+
 # this was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
 PSI_TO_DEPTH <- 1.4696
@@ -51,7 +48,7 @@ PSI_TO_DEPTH <- 1.4696
 ################################################################################
 
 ###############################################################################
-# Function: transform_coordinates(trace, time_dots, time_period_min = 12)
+# Function: transform_coordinates(trace, time_dots, center_y = 11.1, time_period_min = 12)
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
 # 
@@ -77,6 +74,12 @@ PSI_TO_DEPTH <- 1.4696
 # 
 #   - trace       : tidy trace data frame, contains the x and y values of the 
 #                   trace
+# 
+#   - center_y    : height of the pivot point of the transducer arm from depth 
+#                   = 0. This varies slightly across traces, but sample 
+#                   calculations can be found in the r_scripts/find_center_y.R
+#                   file. This value also needs to be visually confirmed (i.e., 
+#                   no abnormal skew across the record)
 #
 #   - time_period_min : minutes between each time period. This is 12 minutes for 
 #                   most traces. 
@@ -87,7 +90,7 @@ PSI_TO_DEPTH <- 1.4696
 #                  gathering data. I kept all columns to ensure that the 
 #                  function was working properly. 
 ###############################################################################
-transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
+transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period_min = 12) {
  ## Start Step Two: Transform Coordinates by Radius Arc Eqns ################# 
   
   # applying my new equation, basically just the equation of a circle but takes
@@ -97,8 +100,8 @@ transform_coordinates <- function(trace, time_dots, time_period_min = 12) {
   
   # TODO: CENTER_Y is not constant across traces, see issue 13 in GitHub. Will 
   # likely need extra calculations from r_scripts/find_center_y.R file. 
-  trace$new_x <- -sqrt((RADIUS^2) - (CENTER_Y^2)) +
-    (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - CENTER_Y)^2))
+  trace$new_x <- -sqrt((RADIUS^2) - (center_y^2)) +
+    (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - center_y)^2))
  
   # ordering the file based on new_x value-- this is needed to create accurate 
   # time periods in step three below

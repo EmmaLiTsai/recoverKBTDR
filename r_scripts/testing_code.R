@@ -84,8 +84,8 @@ trace <- center_trace
 ################################################################################
 
 # Before running this code, confirm that the correct center_y value 
-# has been calculated. See r_scripts/find_center_y.R file for possible 
-# calculations. 
+# has been calculated for the transform_coordinates function. See 
+# r_scripts/find_center_y.R file for possible calculations. 
 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
@@ -93,7 +93,7 @@ trace <- center_trace
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
 
 # calling the function here: 
-trace <- transform_coordinates(trace, time_dots, time_period_min = 12)
+trace <- transform_coordinates(trace, time_dots, center_y = 11.1, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
 
 # ordering -- this needs to be out of the function
@@ -115,7 +115,7 @@ trace <- transform_psitodepth(trace, psi_calibration)
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 317 meters, which is very close to the one 
-# calculated here of 318.4 meters!:
+# calculated here of 318 meters!:
 max(trace[1:200000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
