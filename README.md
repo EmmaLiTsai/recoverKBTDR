@@ -40,6 +40,12 @@ Contains:
 			  			      may be 60 minutes and ~8cm apart instead of 12 minutes apart and ~1.5cm apart). 
 						      There are only 2 records with this issue, but I thought these methods might be helpful 
 						      to include in the future code package. 
+
+			  - zoc.R    		-- contains preliminary code for zero offset correction (zoc) of the trace before arc removal. 
+						   This file is modeled after code that can be found in the diveMove package. The sample trace
+						   in this repo doesn't require zoc before arc removal, but some of the other records have
+						   extreme level shifts and drift in depth = 0 within a bout, so I thought this file may be 
+						   useful to include. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots. This 
 		     file also contains a .txt file that outlines the image processing methods used to create these sample files.
