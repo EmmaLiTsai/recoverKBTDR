@@ -93,7 +93,7 @@ trace <- center_trace
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
 
 # calling the function here: 
-trace <- transform_coordinates(trace, time_dots, center_y = 11.1, time_period_min = 12)
+trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
 
 # ordering -- this needs to be out of the function

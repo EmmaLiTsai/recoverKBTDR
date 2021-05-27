@@ -22,7 +22,7 @@
 # were taken ((time point 2 - time point 1) / 12 minutes); and the file used 
 # for psi calibration (only available for 1981 traces). 
 
-find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi_calibration){
+find_center_y <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration){
   # First, I am transforming y2 to depth in meters. This was needed to estimate 
   # the amount of time it would've taken for the seal to descend to this depth. 
   
@@ -70,4 +70,4 @@ find_center_y <- function(x1, y1, x2, y2, r = 20.87, rate, psi_calibration = psi
 }
 
 # running with sample values from WS_25:
-find_center_y(1142.9, 0, 1140.5, 9.3, 20.87, 0.16, psi_calibration)
+find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
