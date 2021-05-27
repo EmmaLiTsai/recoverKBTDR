@@ -19,7 +19,7 @@
 # Global constants: 
 
 # radius of the KBTDR arm when scaled up to the size of the physical traces
-RADIUS <- 20.87
+RADIUS <- 21.14
 
 # this was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
