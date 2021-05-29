@@ -164,6 +164,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # but remove the trailing ones. Since any errors due to scanning would be 
   # gradual and the time dots are usually ~1.2 cm apart, I think this method 
   # should be sound 
+  # resolved issue #11 in GitHub repo:
   fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
  
   # some final tidying -- this is removing unimportant columns resulting from 
