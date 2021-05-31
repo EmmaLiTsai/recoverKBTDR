@@ -41,4 +41,5 @@
         - since this introduces error with points crossing origin, I modified this by creating a new column called 
           y_corr_p2 which is the excel code: IF(B2>0, -B2, ABS(B2)), which accounts for values crossing the origin 
           (2/19 ET)
+	- This last excel step has been automated in the scan_tidying_functions.R file
 
