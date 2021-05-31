@@ -70,4 +70,6 @@ find_center_y <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi
 }
 
 # running with sample values from WS_25:
-find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+# find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+
+## Keep global level code out of the function files

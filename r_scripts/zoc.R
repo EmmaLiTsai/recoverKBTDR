@@ -31,6 +31,8 @@
 # need to load diveMove package first: 
 library(diveMove)
 
+## DWS: Oh, that seems dangerous.  Don't make that a dependency if possible.
+
 # defining window and quantiles for filtering method of zoc -- this will be 
 # unique for each trace: 
 #   depth bounds = restricted search for where depth = 0 should be (in cm)
