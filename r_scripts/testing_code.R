@@ -34,7 +34,7 @@ library(lubridate) # for dates and times
 source("../r_scripts/read_traces.R")
 source("../r_scripts/scan_tidying_functions.R")
 source("../r_scripts/dive_traces_tidy.R")
-source("../r_scripts/find_center_y.R")
+source("../r_scripts/find_center_y_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/center_scan_td_issue.R")
 source("../r_scripts/zoc.R")
@@ -93,7 +93,14 @@ trace <- center_trace
 # has been calculated for the transform_coordinates function.
 
 # running find_center_y with sample values from this record:
-find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+
+
+# if the record does not have a psi_calibration file (1978 - 1979 records), 
+# use this function instead: 
+# example from WS_14: 
+# find_center_y_nopsi(65.258, -0.056, 63.442, 5.341, 21.14, 0.21, 484, trace)
+
 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
