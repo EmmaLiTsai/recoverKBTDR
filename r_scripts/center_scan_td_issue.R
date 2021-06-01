@@ -6,10 +6,6 @@
 # This function centers records with time dot issues, where the time dots were 
 # too far apart for center_scan() to effectively center the trace. 
 
-# First: tidying the trace and time_dots file from scan_tidying_functions.R file
-time_dots <- tidy_timedots(time_dots)
-trace <- tidy_trace(trace)
-
 ###############################################################################
 # Function: center_scan_td_issue(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4)
 # 
@@ -103,13 +99,4 @@ center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dis
   # returning centered y-values 
   return(fuzzy_merge_trace)
 }
-# calling the function 
-center_scan_td_issue <- center_scan_td_issue(trace, time_dots)
-
-# Visualizing it -- comparing centering with original record, the record after 
-# center_scan, and the record after center_scan_long. Center_scan_long should 
-# be an improvement from both methods. 
-# ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_point() + 
-#   geom_point(data = center_scan_td_issue, aes(x = x_val, y = y_val), color = "red") + 
-#   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
 

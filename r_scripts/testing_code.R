@@ -33,6 +33,10 @@ library(lubridate) # for dates and times
 ## Needed functions
 source("../r_scripts/scan_tidying_functions.R")
 source("../r_scripts/dive_traces_tidy.R")
+source("../r_scripts/find_center_y.R")
+## Functions to handle unique issues in the records:
+source("../r_scripts/center_scan_td_issue.R")
+source("../r_scripts/zoc.R")
 
 
 # reading in trace
@@ -62,15 +66,25 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 # functions help with transforming and tidying the csv files from ImageJ. This 
 # code also centers the scan, which was necessary after scanning the traces.
 
-# If the scan has issues with the time dots (records 16 and 17), center the 
-# scan using the r_scripts/center_scan_td_issue.R file. 
 
-# These functions can be found in the scan_tidying_functions.R file in the
-# r_scripts folder. 
+# If the scan has issues with the time dots (records 16 and 17), center the 
+# scan using the r_scripts/center_scan_td_issue.R function:
+
+# center_scan_td_issue <- center_scan_td_issue(trace, time_dots)
+
+# Comparing centering with original record, the record after center_scan, and 
+# the record after center_scan_td_issue, which should be an improvement 
+# from both methods. 
+# ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_point() + 
+#   geom_point(data = center_scan_td_issue, aes(x = x_val, y = y_val), color = "red") + 
+#   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
+
+
+# scan tidying functions can be found in the scan_tidying_functions.R file in 
+# the r_scripts folder. 
 # the output of this file is a centered trace with x and y values
 
 # Moved these lines from scan_tidying_functions.R
-# Don't put global level code with the functions!
 time_dots <- tidy_timedots(time_dots)
 trace <- tidy_trace(trace)
 center_trace <- center_scan(trace, time_dots)
@@ -94,8 +108,10 @@ trace <- center_trace
 ################################################################################
 
 # Before running this code, confirm that the correct center_y value 
-# has been calculated for the transform_coordinates function. See 
-# r_scripts/find_center_y.R file for possible calculations. 
+# has been calculated for the transform_coordinates function.
+
+# running find_center_y with sample values from this record:
+find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
