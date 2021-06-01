@@ -74,7 +74,7 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
 
 
 ################################################################################
-# for records before 1981 without a psi_calibration file 
+# for records before 1981 without a psi_calibration file, but max depth value 
 ################################################################################
 find_center_y_nopsi <- function(x1, y1, x2, y2, r = 20.87, rate, max_depth, trace){
   
@@ -91,7 +91,7 @@ find_center_y_nopsi <- function(x1, y1, x2, y2, r = 20.87, rate, max_depth, trac
   x2 = x2 - (rate * t_2)
   
   if (y1 != 0) {
-    ## if the second y value is not = 0: 
+    ## if the first y value is not = 0: 
     depth_1 <-((y1 * max_depth) / max(trace$y_val, na.rm = TRUE))
     
     # finding time it took for seal to descend to that depth assuming it is 
