@@ -11,7 +11,7 @@
 # main steps outlined for this project: 
 
 #   1. Recenter and fix misalignment (both data inputs)
-#   2. transform coordinates by radius arm eqn
+#   2. Transform coordinates by radius arm eqn
 #   3. Transform x axis according to time dots
 #   4. Transform y axis to depth
 #   5. Smoothing
@@ -40,24 +40,20 @@ source("../r_scripts/zoc.R")
 
 
 # reading in trace
-trace <- read.csv("../sample_data/skele_trace.csv", 
+trace <- read.csv("../sample_data/WS_25_1981_trace.csv", 
                   header = TRUE, 
                   stringsAsFactors = FALSE)
 
 # reading in time dots 
-time_dots <- read.csv("../sample_data/skele_timedots.csv", 
+time_dots <- read.csv("../sample_data/WS_25_1981_timedots.csv", 
                       header = TRUE, 
                       stringsAsFactors = FALSE, 
                       row.names = 1)
 
 # psi calibration file
-psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv", 
+psi_calibration <- read.csv("../sample_data/WS_25_1981_psi_calibration.csv", 
                             header = TRUE, 
                             stringsAsFactors = FALSE)
-# CAUTION- sometimes psi_calibration csv files will transform the psi_interval 
-# column (text format) to another format when the csv file is opened. It seems 
-# to read in well with read.csv, but I'm currently investigating a better way to 
-# manage and store these files so this doesn't happen.
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
