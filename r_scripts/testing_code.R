@@ -113,8 +113,12 @@ find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
+zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
+# plotting to view data after zoc
+ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point()
 
-# calling the function here: 
+
+# calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
 

@@ -17,7 +17,7 @@
 # page (.runquantile, and .EndRule-- both originally from the caTools package 
 # that specializes in moving window statistics. Both present at the end of this 
 # file), and the code I wrote outside the function is modeled after the code you 
-# can find in the .depthFilter function on the GitHub page. The .depthFiler
+# can find in the .depthFilter function on the GitHub page. The .depthFilter
 # function runs on S4 objects, so I had to modify the code here for the simple 
 # trace data and so I could continue working with the data (i.e., remove arc, 
 # add times, depth calibration, etc.) before final dive analysis. 
@@ -28,71 +28,62 @@
 #
 ################################################################################
 
-# need to load diveMove package first: 
-library(diveMove)
-
-## DWS: Oh, that seems dangerous.  Don't make that a dependency if possible.
-
 # defining window and quantiles for filtering method of zoc -- this will be 
 # unique for each trace: 
 #   depth bounds = restricted search for where depth = 0 should be (in cm)
 #              k = size of windows used for first and second filters 
 #          probs = quantiles to extract for each k step 
 
-k = c(3, 500)
-probs= c(0.5, 0.02)
-depth.bounds = c(-5, 1) 
-
-# logical vector if there is an NA depth
-d.na <- is.na(trace$y_val)
-# seeing if the depth is in the bounds of where y = 0 should likely be:
-d.in.bounds <- trace$y_val > depth.bounds[1] & trace$y_val < depth.bounds[2]
-# grabbing the depths that fall into the category above or is NA:
-d.ok <- which(d.in.bounds | is.na(trace$y_val))
-
-# creating a matrix of y_values for each filter: 
-filters <- matrix(trace$y_val, ncol = 1)
-
-# for each k window of smoothing: 
-for (i in seq(length(k))) {
-  # add a column of y values from the trace df
-  filters <- cbind(filters, trace$y_val)
-  # grab the depths that are near depth = 0 for the window of smoothing:
-  dd <- filters[d.ok, i]
-  # calls the runquantile function, which creates a rolling quantile across the 
-  # window. This function also relies of the EndRule function which takes the 
-  # result of runquantile and transforms it into a vector.
-  filters[d.ok, i + 1] <- .runquantile(dd, k=k[i], probs=probs[i])
+zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1)){
   
-  ## Linear interpolation for depths out of bounds-- in other words,
-  # approximate the position of depth = 0 when the seal is diving at greater 
-  # depths 
-  offbounds <- which(!d.in.bounds)
-  offbounds.fun <- approxfun(seq(length(trace$y_val))[d.in.bounds],
-                             filters[d.in.bounds, i + 1], rule=2)
-  filters[offbounds, i + 1] <- offbounds.fun(offbounds)
+  # logical vector if there is an NA depth
+  d.na <- is.na(trace$y_val)
+  # seeing if the depth is in the bounds of where y = 0 should likely be:
+  d.in.bounds <- trace$y_val > depth.bounds[1] & trace$y_val < depth.bounds[2]
+  # grabbing the depths that fall into the category above or is NA:
+  d.ok <- which(d.in.bounds | is.na(trace$y_val))
   
-  ## NA input should be NA output regardless of na.rm
-  filters[d.na, i + 1] <- NA
+  # creating a matrix of y_values for each filter: 
+  filters <- matrix(trace$y_val, ncol = 1)
+  
+  # for each k window of smoothing: 
+  for (i in seq(length(k))) {
+    # add a column of y values from the trace df
+    filters <- cbind(filters, trace$y_val)
+    # grab the depths that are near depth = 0 for the window of smoothing:
+    dd <- filters[d.ok, i]
+    # calls the runquantile function, which creates a rolling quantile across the 
+    # window. This function also relies of the EndRule function which takes the 
+    # result of runquantile and transforms it into a vector.
+    filters[d.ok, i + 1] <- .runquantile(dd, k=k[i], probs=probs[i])
+    
+    ## Linear interpolation for depths out of bounds-- in other words,
+    # approximate the position of depth = 0 when the seal is diving at greater 
+    # depths 
+    offbounds <- which(!d.in.bounds)
+    offbounds.fun <- approxfun(seq(length(trace$y_val))[d.in.bounds],
+                               filters[d.in.bounds, i + 1], rule=2)
+    filters[offbounds, i + 1] <- offbounds.fun(offbounds)
+    
+    ## NA input should be NA output regardless of na.rm
+    filters[d.na, i + 1] <- NA
+  }
+  
+  # finding the depth adjustment by taking the y value and subtracting by the 
+  # filters
+  depth.adj <- trace$y_val - filters[, ncol(filters)]
+  # binding new depth adjustment with original trace data 
+  # I subtracted the depth adjustment by a small amount to account for the  
+  # thickness of the trace.
+  new <- cbind(trace$x_val, (depth.adj - 0.15))
+  # transforming to df 
+  new <- as.data.frame(new)
+  # changing names for future functions: 
+  names(new) <- c("x_val", "y_val")
+  
+  # returning the final output 
+  return(new)
 }
-
-# finding the depth adjustment by taking the y value and subtracting by the 
-# filters
-depth.adj <- trace$y_val - filters[, ncol(filters)]
-# binding new depth adjustment with original trace data 
-# I subtracted the depth adjustment by a small amount to account for the  
-# thickness of the trace.
-new <- cbind(trace$x_val, (depth.adj - 0.15))
-# transforming to df 
-new <- as.data.frame(new)
-# plotting: 
-ggplot(new[1000:19000,], aes(x = V1, y = V2)) + geom_point()
-
-# changing names for future functions: 
-names(new) <- c("x_val", "y_val")
-
-# overwriting trace with the new zoc data 
-trace <- new
 
 ###############################################################################
 ## other functions needed below-- copied from diveMove but originally from 
