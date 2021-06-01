@@ -93,10 +93,6 @@ tidy_timedots <- function(time_dots){
   return(time_dots)
 }
 
-# applying the changes
-time_dots <- tidy_timedots(time_dots)
-trace <- tidy_trace(trace)
-
 # STEP TWO CODE ###############################################################
 # The code below centers the scan to achieve step two of this file. 
 
@@ -175,10 +171,3 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # returning centered y-values 
   return(fuzzy_merge_trace)
 }
-# calling the function 
-center_trace <- center_scan(trace, time_dots)
-
-
-
-
-

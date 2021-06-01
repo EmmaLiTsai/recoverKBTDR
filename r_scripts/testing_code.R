@@ -30,6 +30,11 @@ library(lubridate) # for dates and times
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
+## Needed functions
+source("../r_scripts/scan_tidying_functions.R")
+source("../r_scripts/dive_traces_tidy.R")
+
+
 # reading in trace
 trace <- read.csv("../sample_data/skele_trace.csv", 
                   header = TRUE, 
@@ -62,8 +67,13 @@ psi_calibration <- read.csv("../sample_data/skele_psi_calibration.csv",
 
 # These functions can be found in the scan_tidying_functions.R file in the
 # r_scripts folder. 
-source("../r_scripts/scan_tidying_functions.R")
 # the output of this file is a centered trace with x and y values
+
+# Moved these lines from scan_tidying_functions.R
+# Don't put global level code with the functions!
+time_dots <- tidy_timedots(time_dots)
+trace <- tidy_trace(trace)
+center_trace <- center_scan(trace, time_dots)
 
 nrow(trace[!duplicated(trace[,1:2]),])
 # ^ this is the same as the number of observations produced after centering, so 
@@ -95,6 +105,9 @@ trace <- center_trace
 # calling the function here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
+
+## DWS: This function was not defined. I've added a source call to the top of
+## this script to define it.
 
 # ordering -- this needs to be out of the function
 trace <- trace[order(trace$time),]
