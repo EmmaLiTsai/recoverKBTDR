@@ -132,9 +132,12 @@ ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
-# calling the function -- the other function (transform_todepth) is needed for 
-# 1978 - 1979 traces without a psi calibration curve at the end of the record
+# calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration)
+
+# if the record is before 1981 and does not have a psi calibration curve at the
+# end, use the transform_todepth function (example below):
+# transform_todepth(trace, 318)
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
