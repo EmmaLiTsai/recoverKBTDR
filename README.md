@@ -5,7 +5,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-B
 Contains: 
 
  (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. 
- 		  	Within this folder, you can find six files:
+ 		  	Within this folder, you can find seven files:
 
 			  - dive_traces_tidy.R -- contains organized production code that can be broken up into six main steps: 
 
@@ -40,6 +40,9 @@ Contains:
 						   in this repo doesn't require zoc before arc removal, but some of the other records have
 						   extreme level shifts and drift in depth = 0 within a bout, so I thought this file may be 
 						   useful to include. 
+
+			  - read_traces.R 	-- contains code to read in all sample data (trace, time dots, psi_calibration) into the global 
+						   environment. First attempt at data abstraction. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots and 
 		     psi calibration curve at the end of the record. This file also contains a .txt file that outlines the image processing 
