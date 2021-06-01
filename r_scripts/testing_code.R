@@ -49,7 +49,7 @@ read_traces(filepath = "../sample_data")
 # functions help with transforming and tidying the csv files from ImageJ. This 
 # code also centers the scan, which was necessary after scanning the traces.
 
-
+# -- 
 # If the scan has issues with the time dots (records 16 and 17), center the 
 # scan using the r_scripts/center_scan_td_issue.R function:
 
@@ -60,7 +60,7 @@ read_traces(filepath = "../sample_data")
 # from both methods. 
 # ggplot(center_scan_td_issue, aes(x = x_val, y = y_val)) + geom_point() + 
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
-
+# -- 
 
 # scan tidying functions can be found in the scan_tidying_functions.R file in 
 # the r_scripts folder. 
@@ -95,13 +95,14 @@ trace <- center_trace
 # running find_center_y with sample values from this record:
 find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 
-
+# -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
 # use this function instead: 
 # example from WS_14: 
 # find_center_y_nopsi(65.258, -0.056, 63.442, 5.341, 21.14, 0.21, 484, trace)
+# -- 
 
-
+# -- 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
@@ -110,7 +111,7 @@ zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
-
+# --
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
@@ -129,9 +130,11 @@ ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration)
 
+# -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
 # end, use the transform_todepth function (example below):
 # transform_todepth(trace, 318)
+# -- 
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
