@@ -114,7 +114,8 @@ find_center_y(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
 zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
 # plotting to view data after zoc
-ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point()
+ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
 
 
 # calling the function to transform x-axis here: 
