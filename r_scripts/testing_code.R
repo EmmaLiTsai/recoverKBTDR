@@ -31,6 +31,7 @@ library(lubridate) # for dates and times
 # from what package. 
 
 ## Needed functions
+source("../r_scripts/read_traces.R")
 source("../r_scripts/scan_tidying_functions.R")
 source("../r_scripts/dive_traces_tidy.R")
 source("../r_scripts/find_center_y.R")
@@ -38,22 +39,8 @@ source("../r_scripts/find_center_y.R")
 source("../r_scripts/center_scan_td_issue.R")
 source("../r_scripts/zoc.R")
 
-
-# reading in trace
-trace <- read.csv("../sample_data/WS_25_1981_trace.csv", 
-                  header = TRUE, 
-                  stringsAsFactors = FALSE)
-
-# reading in time dots 
-time_dots <- read.csv("../sample_data/WS_25_1981_timedots.csv", 
-                      header = TRUE, 
-                      stringsAsFactors = FALSE, 
-                      row.names = 1)
-
-# psi calibration file
-psi_calibration <- read.csv("../sample_data/WS_25_1981_psi_calibration.csv", 
-                            header = TRUE, 
-                            stringsAsFactors = FALSE)
+# reading in trace: 
+read_traces(filepath = "../sample_data")
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
