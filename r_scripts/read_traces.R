@@ -2,7 +2,10 @@
 
 # Function below takes the file path that contains all files for a single record 
 # and reads in the trace, time dots, and psi_calibration csv files as data
-# frames to the global environment
+# frames to the global environment. 
+
+# With this function, the user would direct the function to a folder that 
+# contains all files for a single record. 
 
 read_traces <- function(filepath = "../sample_data"){
   # listing the files 
