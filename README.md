@@ -1,10 +1,10 @@
 # MS_DiveTraces
-Repo for recovering 1970s - 1980s Weddell seal paper dive traces from Kooyman-Billups TDRs
+Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-Billups TDRs
 
 
 Contains: 
 
- (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. Many of these .R files are preliminary code. 
+ (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. 
  		  	Within this folder, you can find six files:
 
 			  - dive_traces_tidy.R -- contains organized production code that can be broken up into six main steps: 
