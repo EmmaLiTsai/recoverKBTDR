@@ -71,8 +71,7 @@ psi_calibration <- read.csv("../sample_data/WS_25_1981_psi_calibration.csv",
 # Comparing centering with original record, the record after center_scan, and 
 # the record after center_scan_td_issue, which should be an improvement 
 # from both methods. 
-# ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_point() + 
-#   geom_point(data = center_scan_td_issue, aes(x = x_val, y = y_val), color = "red") + 
+# ggplot(center_scan_td_issue, aes(x = x_val, y = y_val)) + geom_point() + 
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
 
 
@@ -122,16 +121,12 @@ ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point()
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
 # any warning here would be from points that happened after the last time dot
 
-## DWS: This function was not defined. I've added a source call to the top of
-## this script to define it.
-
 # ordering -- this needs to be out of the function
 trace <- trace[order(trace$time),]
 
 # plotting: 
 ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
-# times here align with the times I produced with my original code in the 
-# example_trace.R file. 
+# times here align with the times I produced with my original code.
 
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
@@ -150,10 +145,10 @@ max(trace[1:200000,]$depth)
 # looking at different bouts of dives to assess how this method worked: 
 # bout one 
 ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
-# 
+
 # bout two 
 ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line() 
-# 
+
 # bout three 
 ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
 
@@ -168,8 +163,6 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
-# section is in development:  
-
 # trying out local fitting: 
 library(locfit)
 # smoothing method below doesn't work well as the trace progresses 

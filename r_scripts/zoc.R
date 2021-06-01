@@ -11,29 +11,45 @@
 # records with extreme level shifts and drift in depth = 0 within a bout of 
 # dives. Therefore, I thought it might be helpful to include this (still 
 # preliminary) file in the github repo.  
+
+###############################################################################
+# Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
+# Author:   EmmaLi Tsai
+# Date:     6/1/2021
+# 
+# Function takes the tidy trace to perform a zero-offset correction using the 
+# recursive filtering method that can be found in Luque & Fried, 2011: Recursive 
+# filtering for zero offset correction of diving depth time series with GNU R 
+# package diveMove. 
 # 
 # Here, I modified some code from the diveMove package on GitHub to work with 
 # the tidy trace data. This code relies on two functions that I pulled from the 
 # page (.runquantile, and .EndRule-- both originally from the caTools package 
 # that specializes in moving window statistics. Both present at the end of this 
-# file), and the code I wrote outside the function is modeled after the code you 
-# can find in the .depthFilter function on the GitHub page. The .depthFilter
-# function runs on S4 objects, so I had to modify the code here for the simple 
-# trace data and so I could continue working with the data (i.e., remove arc, 
-# add times, depth calibration, etc.) before final dive analysis. 
+# file), and the code I wrote within the zoc function is modeled after the code  
+# in the .depthFilter function on the GitHub page. His .depthFilter function 
+# runs on S4 objects, so I had to modify the code here for the simple trace
+# data and so I could continue working with the data (i.e., remove arc, add 
+# times, depth calibration, etc.) before final dive analysis. 
 # 
-# This filtering method for zero offset correction can be found in: 
-# Luque & Fried, 2011: Recursive filtering for zero offset correction of diving 
-# depth time series with GNU R package diveMove 
+# Input: 
+# 
+#   - trace       : tidy trace data frame, contains the x and y values of the 
+#                   trace
+#   
+#   - depth.bounds: restricted search window for where depth = 0 should likely 
+#                   be. For the records, this should be in cm. Defualt set 
+#                   c(-5, 1)
 #
-################################################################################
-
-# defining window and quantiles for filtering method of zoc -- this will be 
-# unique for each trace: 
-#   depth bounds = restricted search for where depth = 0 should be (in cm)
-#              k = size of windows used for first and second filters 
-#          probs = quantiles to extract for each k step 
-
+#   - k           : size of window used for first and second filters. 
+#                   default set to c(3, 500)
+#
+#   - probs       : quantiles to extract for each step of k. 
+#                   default set to c(0.05, 0.02)
+#
+# Output: 
+#   - zoc_trace   : trace data frame after it has been zero-offset corrected
+###############################################################################
 zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1)){
   
   # logical vector if there is an NA depth
@@ -75,14 +91,14 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5,
   # binding new depth adjustment with original trace data 
   # I subtracted the depth adjustment by a small amount to account for the  
   # thickness of the trace.
-  new <- cbind(trace$x_val, (depth.adj - 0.15))
+  zoc_trace <- cbind(trace$x_val, (depth.adj - 0.15))
   # transforming to df 
-  new <- as.data.frame(new)
+  zoc_trace <- as.data.frame(zoc_trace)
   # changing names for future functions: 
-  names(new) <- c("x_val", "y_val")
+  names(zoc_trace) <- c("x_val", "y_val")
   
   # returning the final output 
-  return(new)
+  return(zoc_trace)
 }
 
 ###############################################################################
