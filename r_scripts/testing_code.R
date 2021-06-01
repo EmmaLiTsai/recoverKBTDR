@@ -39,7 +39,7 @@ source("../r_scripts/find_center_y.R")
 source("../r_scripts/center_scan_td_issue.R")
 source("../r_scripts/zoc.R")
 
-# reading in trace: 
+# reading in full trace data (i.e., trace, time dots, and psi calibration): 
 read_traces(filepath = "../sample_data")
 
 ################################################################################
