@@ -49,7 +49,7 @@
 #                   default set to c(3, 500)
 #
 #   - probs       : quantiles to extract for each step of k. 
-#                   default set to c(0.05, 0.02)
+#                   default set to c(0.5, 0.02)
 #
 # Output: 
 #   - zoc_trace   : trace data frame after it has been zero-offset corrected
