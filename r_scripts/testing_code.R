@@ -33,9 +33,9 @@ library(caTools) # for zoc using moving window statistics
 
 ## Needed functions
 source("../r_scripts/read_trace.R")
-source("../r_scripts/scan_tidying_functions.R")
+source("../r_scripts/scan_tidy_functions.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/dive_traces_tidy_functions.R")
+source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
