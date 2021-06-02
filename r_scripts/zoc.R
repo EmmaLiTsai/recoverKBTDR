@@ -133,7 +133,7 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5,
   y <- double(n * np)
   y <- .C("run_quantile", as.double(x), y=y, as.integer(n),
           as.integer(k), as.double(probs), as.integer(np),
-          as.integer(type), NAOK=TRUE)$y
+          as.integer(type), NAOK=TRUE, package = "caTools")$y
   dim(y) <- c(n, np)
   
   for (i in 1:np) {                   # for each percentile
