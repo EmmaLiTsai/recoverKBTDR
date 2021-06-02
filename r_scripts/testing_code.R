@@ -27,19 +27,20 @@ library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
 library(dplyr) # for select(), mutate(), and case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
+library(caTools) # for zoc using moving window statistics 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
 ## Needed functions
-source("../r_scripts/read_traces.R")
+source("../r_scripts/read_trace.R")
 source("../r_scripts/scan_tidying_functions.R")
+source("../r_scripts/centering_functions.R")
 source("../r_scripts/dive_traces_tidy.R")
 source("../r_scripts/find_center_y_functions.R")
 ## Functions to handle unique issues in the records:
-source("../r_scripts/center_scan_td_issue.R")
 source("../r_scripts/zoc.R")
 # reading in full trace data (i.e., trace, time dots, and psi calibration): 
-read_traces(filepath = "../sample_data")
+read_trace(filepath = "../sample_data")
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################

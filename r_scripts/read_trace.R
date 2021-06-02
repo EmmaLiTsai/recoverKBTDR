@@ -7,7 +7,7 @@
 # With this function, the user would direct the function to a folder that 
 # contains all files for a single record. 
 
-read_traces <- function(filepath = "../sample_data"){
+read_trace <- function(filepath = "../sample_data"){
   # listing the files 
   trace_list <- list.files(path = filepath, pattern = "*.csv", full.names = TRUE)
   # extracting the names of the files to read them in 
@@ -20,6 +20,7 @@ read_traces <- function(filepath = "../sample_data"){
   # giving them appropriate names
   names(trace_files) <- names
   # reading them into the global environment... which seems dangerous...
+  # maybe remove below for less specific code, and create a named list instead: 
   invisible(lapply(names(trace_files), function(x) assign(x, trace_files[[x]], envir = .GlobalEnv)))
 }
 
