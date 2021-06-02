@@ -20,7 +20,7 @@ read_trace <- function(filepath = "../sample_data"){
   # giving them appropriate names
   names(trace_files) <- names
   # reading them into the global environment... which seems dangerous...
-  # maybe remove below for less specific code a named list: 
+  # maybe remove below for less specific code, and create a named list instead: 
   invisible(lapply(names(trace_files), function(x) assign(x, trace_files[[x]], envir = .GlobalEnv)))
 }
 

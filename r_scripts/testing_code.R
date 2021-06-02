@@ -27,6 +27,7 @@ library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
 library(dplyr) # for select(), mutate(), and case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
+library(caTools) # for zoc using moving window statistics 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
