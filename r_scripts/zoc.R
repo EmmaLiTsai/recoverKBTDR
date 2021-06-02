@@ -15,7 +15,6 @@
 # in order to remove the diveMove dependency, I think I will need to code 
 # something in C. The error I'm having is in the .C() line in the .runquantile 
 # function... 
-
 ###############################################################################
 # Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
 # Author:   EmmaLi Tsai
@@ -27,14 +26,12 @@
 # package diveMove. 
 # 
 # Here, I modified some code from the diveMove package on GitHub to work with 
-# the tidy trace data. This code relies on two functions that I pulled from the 
-# page (.runquantile, and .EndRule-- both originally from the caTools package 
-# that specializes in moving window statistics. Both present at the end of this 
-# file), and the code I wrote within the zoc function is modeled after the code  
-# in the .depthFilter function on the GitHub page. His .depthFilter function 
-# runs on S4 objects, so I had to modify the code here for the simple trace
-# data and so I could continue working with the data (i.e., remove arc, add 
-# times, depth calibration, etc.) before final dive analysis. 
+# the tidy trace data. This code relies on the caTools package that specializes 
+# in moving window statistics, and the code I wrote within the zoc function is 
+# modeled after the code in the .depthFilter function on the GitHub page. His 
+# .depthFilter function runs on S4 objects, so I had to modify the code here for 
+# the simple trace data and so I could continue working with the data (i.e., 
+# remove arc, add times, depth calibration, etc.) before final dive analysis. 
 # 
 # Input: 
 # 
