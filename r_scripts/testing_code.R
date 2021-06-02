@@ -168,7 +168,7 @@ ggplot(trace, aes(x = time, y = depth)) +
 
 # trying out spline smoothing with knots, since spline smoothing is usually more 
 # computationally efficient: 
-trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
+trace <- smooth_trace(trace, spar = 0.23, nknots = 5900)
 # plotting
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
