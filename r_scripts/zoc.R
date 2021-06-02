@@ -11,6 +11,10 @@
 # records with extreme level shifts and drift in depth = 0 within a bout of 
 # dives. Therefore, I thought it might be helpful to include this (still 
 # preliminary) file in the github repo.  
+# 
+# in order to remove the diveMove dependency, I think I will need to code 
+# something in C. The error I'm having is in the .C() line in the .runquantile 
+# function... 
 
 ###############################################################################
 # Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
@@ -57,8 +61,7 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5,
   # seeing if the depth is in the bounds of where y = 0 should likely be:
   d.in.bounds <- trace$y_val > depth.bounds[1] & trace$y_val < depth.bounds[2]
   # grabbing the depths that fall into the category above or is NA:
-  d.ok <- which(d.in.bounds | is.na(trace$y_val))
-  
+  d.ok <- which(d.in.bounds | is.na(trace$y_val)) # numeric 
   # creating a matrix of y_values for each filter: 
   filters <- matrix(trace$y_val, ncol = 1)
   
