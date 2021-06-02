@@ -38,7 +38,6 @@ source("../r_scripts/find_center_y_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/center_scan_td_issue.R")
 source("../r_scripts/zoc.R")
-
 # reading in full trace data (i.e., trace, time dots, and psi calibration): 
 read_traces(filepath = "../sample_data")
 

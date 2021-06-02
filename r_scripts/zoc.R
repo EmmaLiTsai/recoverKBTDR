@@ -16,6 +16,10 @@
 # something in C. The error I'm having is in the .C() line in the .runquantile 
 # function... 
 
+# I think I would have to compile it and then load it as a dynamic library in
+# dyn.load("../src/run_quantile.c")
+# or use rcpp package to directly write c code
+
 ###############################################################################
 # Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
 # Author:   EmmaLi Tsai
