@@ -33,10 +33,11 @@ library(caTools) # for zoc using moving window statistics
 
 ## Needed functions
 source("../r_scripts/read_trace.R")
-source("../r_scripts/scan_tidying_functions.R")
+source("../r_scripts/scan_tidy_functions.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/dive_traces_tidy.R")
+source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/find_center_y_functions.R")
+source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
 # reading in full trace data (i.e., trace, time dots, and psi calibration): 
@@ -164,50 +165,23 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
-# trying out local fitting: 
-library(locfit)
-# smoothing method below doesn't work well as the trace progresses 
-ggplot(trace[1500:99800,], aes(x = new_x, y = depth)) + geom_line() + 
-  geom_smooth(method = 'locfit', method.args = list(deg=20, alpha = 0.1))
-
-# trying out kernel smoothing: 
-k_fit <- with(trace, ksmooth(time, depth, kernel = "box", bandwidth = 1.5))
-# time values look off
-trace$ksmooth <- k_fit$y
-# plotting 
-ggplot(trace[5000:9000,], aes(x = time, y = ksmooth)) + 
-  geom_line(color = "red") + 
-  geom_line(aes(x = time, y = depth))
 
 # trying out spline smoothing with knots, since spline smoothing is usually more 
 # computationally efficient: 
-s_fit <- smooth.spline(trace$time, trace$depth, spar = 0.3, nknots = 5900)
-# adding it to the trace df
-trace$ssmooth <- predict(s_fit, trace$time)$y
+trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
 # plotting
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
-  geom_line(aes(x = time, y = ssmooth), color = "red", size = 1)
+  geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
 # this method is pretty good-- need to try out different number of knots and 
 # spar combinations... it would be nice if there was a way to mathematically 
 # determine appropriate number of knots & spar values based on the number of 
 # observations in a trace. From looking at the literature, this may involve 
 # generalized cross validation or AIC. 
 
-# This spline smoothing method is also used in the diveMove package, but these 
-# data need to be smoothed before they can be read in as a TDR object in this 
-# package. 
-
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
-ggplot(trace, aes(x = time, y = (depth - ssmooth))) + geom_line()
-
-# loess smoothing: 
-l_fit <- loess(time ~ depth, degree = 1, span = 0.1)
-# this takes so much longer to run...
-trace$lsmooth <- l_fit$fitted
-# plotting 
-ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
+ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
@@ -216,7 +190,7 @@ ggplot(trace[1000:9000,], aes(x = time, y = lsmooth)) + geom_line()
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 
-ggplot(trace[190000:198272,], aes(x = date_time, y = depth)) + geom_line()
+ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line()
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
