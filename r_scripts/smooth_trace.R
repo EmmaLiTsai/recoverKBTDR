@@ -6,7 +6,7 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
   smooth_fit <- smooth.spline(trace$time, trace$depth, 
                               spar = spar, nknots = nknots)
   # adding the smoothed predict values to the trace data frame 
-  trace$smooth <- predict(smooth_fit, trace$time)$y
+  trace$smooth_depth <- predict(smooth_fit, trace$time)$y
   
   # return trace data 
   return(trace)
