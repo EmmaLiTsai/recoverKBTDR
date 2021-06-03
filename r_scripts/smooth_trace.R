@@ -37,12 +37,12 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
   # predicting for the deeper parts of the record 
   trace_deep$smooth <- predict(smooth_fit_deep, trace_deep$time)$y
   
-  # recombinig the two: 
+  # recombining the two: 
   smooth_trace <- rbind(trace_shallow, trace_deep)
   # ordering 
   smooth_trace <- smooth_trace[order(smooth_trace$time),]
   
-  # recursive smoothing -- final smoothing 
+  # recursive and final smoothing 
   smooth_trace_2 <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
                                   spar = spar[2], nknots = nknots[2])
   smooth_trace$smooth_2 <- predict(smooth_trace_2, smooth_trace$time)$y
