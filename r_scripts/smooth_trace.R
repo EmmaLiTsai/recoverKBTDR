@@ -1,6 +1,4 @@
 # very simple function for spline smoothing of trace data 
-# TODO: explore cross validation methods to mathematically determine knots and 
-# spar values... or have have these values be defined by the user. 
 smooth_trace <- function(trace, spar = 0.3, nknots = 5900){ 
   # need to order first: 
   trace <- trace[order(trace$time),]
