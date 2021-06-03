@@ -184,6 +184,45 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
+# some potential cross validation code, see issue #17 in GitHub 
+
+# creating cross validation example for spline smoothing using leave one out 
+# cross validation method: 
+
+# creating smaller trace data frame 
+trace_cv <- trace[1:500,]
+# spar sequence 
+spar_seq <- seq(from = 0.05, to = 1.0, by = 0.02)
+
+cv_error_spar <- rep(NA, length(spar_seq))
+
+for (i in 1:length(spar_seq)){
+  spar_i <- spar_seq[i]
+  cv_error <- rep(NA, nrow(trace_cv))
+  for (v in 1:nrow(trace_cv)){
+    # validation
+    x_val <- trace_cv$time[v]
+    y_val <- trace_cv$depth[v]
+    # training 
+    x_train <- trace_cv$time[-v]
+    y_train <- trace_cv$depth[-v]
+    # smooth fit and prediction
+    smooth_fit <- smooth.spline(x = x_train, y = y_train, spar = spar_i)
+    y_predict <- predict(smooth_fit, x = x_val)
+    
+    cv_error[v] <- (y_val - y_predict$y)^2
+  }
+  cv_error_spar[i] <- mean(cv_error)
+}
+
+cv_error_spar
+
+# plotting prediction error 
+plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "red",
+     xlab = "Value of 'spar'", ylab = "LOOCV prediction error")
+
+spar_seq[which(cv_error_spar == min(cv_error_spar))]
+
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
