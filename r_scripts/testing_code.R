@@ -71,7 +71,18 @@ read_trace(filepath = "../sample_data")
 # Moved these lines from scan_tidying_functions.R
 time_dots <- tidy_timedots(time_dots)
 trace <- tidy_trace(trace)
-center_trace <- center_scan(trace, time_dots)
+center_trace1 <- old_center_scan(trace, time_dots)
+center_trace2 <- center_scan(trace, time_dots)
+
+nrow(center_trace1)
+nrow(center_trace2)
+
+## Don't match. The old version deletes rows!
+## DWS ok with removing dupes it works better. still not itndeitcal
+identical(center_trace1, center_trace2)
+
+center_trace1[10000:10050,]
+center_trace2[10000:10050,]
 
 nrow(trace[!duplicated(trace[,1:2]),])
 # ^ this is the same as the number of observations produced after centering, so 
