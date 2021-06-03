@@ -172,15 +172,16 @@ ggplot(trace, aes(x = time, y = depth)) +
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
 # function smooth_bounding is a more complex recursive spline smoothing function  
-# with depth bounds, such that depths < 0 meters have a higher spar value to  
-# reduce chatter created by the transducer arm while retaining wiggles in the  
+# with depth bounds, such that shallower depths have a higher spar value to  
+# reduce chatter created by the transducer arm, while retaining wiggles in the  
 # dives at depth: 
-smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900))
+smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 5)
 
 # comparing the two smoothing methods with the original data: 
-ggplot(trace[1000:9000,], aes(x = time, y = depth), color = "grey") + geom_line() + 
-  geom_line(data = smooth_bounded[1000:9000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
-  geom_line(data = trace[1000:9000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+# smoothing with depth bunds is in blue, and normal smoothing is in red 
+ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
+  geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
 # plotting
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
