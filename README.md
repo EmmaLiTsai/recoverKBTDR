@@ -44,8 +44,11 @@ Contains:
 			  - read_trace.R 	-- contains a function to read in all sample data (trace, time dots, psi_calibration) into the global 
 						   environment. First attempt at data abstraction. 
 
-			  - smooth_trace.R	-- contains a function for spline smoothing of trace, after axes have been transformed to time and 
-						   depth. 
+			  - smooth_trace.R	-- contains two functions for spline smoothing of trace, after axes have been transformed to time and 
+						   depth. smooth_trace is simple spline smoothing function, and smooth_trace_bounded is a recursive 
+						   smoothing function that adds depth bounds to spline smoothing such that the smoothing resolution 
+				  	           is lower at the surface and higher at during a dive. This function is a possible improvement 
+						   to the smooth_trace function, and the two methods are compared in the testing_code.R file.  
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots and 
 		     psi calibration curve at the end of the record. This file also contains a .txt file that outlines the image processing 
