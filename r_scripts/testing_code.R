@@ -169,13 +169,19 @@ ggplot(trace, aes(x = time, y = depth)) +
 
 # spline smoothing with knots, since spline smoothing is usually more 
 # computationally efficient. 
+
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
-# function smooth_bounding is a more complex recursive spline smoothing function  
-# with depth bounds, such that shallower depths have a higher spar value to  
-# reduce chatter created by the transducer arm, while retaining wiggles in the  
-# dives at depth: 
-smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 5)
+
+# function smooth_trace_bounded is a more complex recursive spline smoothing
+# function with depth bounds, such that shallower depths have a higher spar 
+# value to  reduce chatter created by the transducer arm, while retaining 
+# wiggles in the dives at depth. Supposed to be an improvement from 
+# smooth_trace function above. 
+smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 15)
+# this function would be sound considering there is less tension on the 
+# transducer arm at shallow depths, which produced extra noise in the record 
+# when the seal was resting at the surface or hauled out. 
 
 # comparing the two smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, and normal smoothing is in red 

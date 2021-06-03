@@ -18,7 +18,10 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
 # spar = 0.8 and 1000 knots), and higher resolution at depths > depth_bound 
 # (defaults set to spar = 0.3 and 5900 knots). This is an attempt to reduce 
 # chatter in the transducer arm when the seal is resting or hauled out, while 
-# keeping higher resolution in the dives at depth to retain wiggles.
+# keeping higher resolution in the dives at depth to retain wiggles. This 
+# method would be sound considering there would be less tension on the 
+# transducer arm at shallow depths, which produced unnecessary noise in the 
+# record
 smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 5){ 
   # need to order first: 
   trace <- trace[order(trace$time),]
