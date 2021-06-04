@@ -108,12 +108,13 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   trace <- trace[order(trace$new_x),]
   
   ## Starting Step Three: scale X based on time dots ###########################
-  
+  # creating zero stating time dot for time assignment 
+  time_dots_zero <- c(0, time_dots$x_val)
   # creating a data frame with time periods and start/end points for the time 
   # period... this will be used to cut the data 
-  tp_df <- data.frame(time_period = seq(1:nrow(time_dots)),
-                      start_x = time_dots$x_val, 
-                      end_x = lead(time_dots$x_val), 
+  tp_df <- data.frame(time_period = seq(1:length(time_dots_zero)),
+                      start_x = time_dots_zero, 
+                      end_x = lead(time_dots_zero), 
                       stringsAsFactors = FALSE)
   
   # adding the scale value 

@@ -82,7 +82,7 @@ old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 # ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
 # But I suspect cumsum is faster and I like not getting the NAs.
 rollmean <- function(x, n) {
-  cx <- c(0 , cumsum(x))
+  cx <- c(0, cumsum(x))
   return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
 }
 
@@ -93,14 +93,12 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   # x midpoints between time dots to use for cutting
   cutpoints <- c(0, rollmean(time_dots$x_val, 2), max(trace$x_val))
   # Then cut to assign every trace point an index from the time_points df:
-  time_dot_indices <- cut(trace$x_val, breaks=cutpoints, labels=FALSE)
+  time_dot_indices <- cut(trace$x_val, breaks = cutpoints, labels = FALSE)
   # Now do the adjustment
   trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
   
   return(trace)
 }
-
-
 
 
 

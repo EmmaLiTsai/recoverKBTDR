@@ -89,7 +89,7 @@ ggplot(center_trace2, aes(x = x_val, y = y_val)) + geom_line() +
 
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace csv file
-trace <- center_trace
+trace <- center_trace2
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
