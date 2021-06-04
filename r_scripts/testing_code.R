@@ -24,7 +24,7 @@
 # some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
-library(dplyr) # for select(), mutate(), and case_when()
+library(dplyr) # for select(), and mutate()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 library(caTools) # for zoc using moving window statistics 
@@ -34,8 +34,8 @@ library(caTools) # for zoc using moving window statistics
 ## Needed functions
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/find_center_y_functions.R")
+source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
@@ -121,7 +121,7 @@ trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_m
 trace <- trace[order(trace$time),]
 
 # plotting: 
-ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
+ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 # times here align with the times I produced with my original code.
 
 ################################################################################
@@ -176,7 +176,7 @@ trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
 # value to  reduce chatter created by the transducer arm, while retaining 
 # wiggles in the dives at depth. Supposed to be an improvement from 
 # smooth_trace function above. 
-smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 15)
+smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 0)
 # this function would be sound considering there is less tension on the 
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
