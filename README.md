@@ -5,7 +5,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-B
 Contains: 
 
  (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. 
- 		  	Within this folder, you can find eight files:
+ 		  	Within this folder, you can find seven files:
 
 			  - dive_trace_tidy_functions.R -- contains organized production code that can be broken up into six main steps: 
 
@@ -20,8 +20,6 @@ Contains:
 				    and extract the main trace from the thickness of the line. 
 				(6) Final tidying: this will add dive statistics, direction flagging, and also add dates and times to these data. 
 			
-			  - scan_tidy_functions.R -- contains code to tidy the trace and time dot csv files  
-				
 			  - testing_code.R      -- contains testing code for functions created in the dives_trace_tidy_functions.R file and 
 						   scan_tidy_functions.R file. This was needed to separate testing and produciton code, and 
 						   uses the trace, time_dots, and psi_calibration csv files in the sample data folder in this 
@@ -42,7 +40,8 @@ Contains:
 						   useful to include. 
 
 			  - read_trace.R 	-- contains a function to read in all sample data (trace, time dots, psi_calibration) into the global 
-						   environment. First attempt at data abstraction. 
+						   environment. First attempt at data abstraction, and contains code to tidy the trace and time dot 
+						   csv files.   
 
 			  - smooth_trace.R	-- contains two functions for spline smoothing of trace, after axes have been transformed to time and 
 						   depth. smooth_trace is simple spline smoothing function, and smooth_trace_bounded is a recursive 
