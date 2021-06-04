@@ -43,10 +43,6 @@ read_trace <- function(filepath = "../sample_data"){
   time_dots$Y <<- -time_dots$Y
   # selecting correct columns 
   time_dots <<- dplyr::select(time_dots, c("X", "Y"))
-  # creating the first time dot, which is when the trace begins. There is not a  
-  # time dot created when the device starts gathering data, so I had to add one 
-  # here: 
-  # time_dots <<- rbind(c(0, time_dots$Y[1]), time_dots)
   # changing names
   names(time_dots) <<- c("x_val", "y_val")
 
