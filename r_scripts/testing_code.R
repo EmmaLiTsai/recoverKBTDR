@@ -84,7 +84,7 @@ nrow(trace[!duplicated(trace[,1:2]),])
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
-ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() + 
+ggplot(center_trace2, aes(x = x_val, y = y_val)) + geom_line() + 
   geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
 
 # I could add this in the function call, but I kept it out so I could visually 

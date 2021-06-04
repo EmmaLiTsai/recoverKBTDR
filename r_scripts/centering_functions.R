@@ -1,5 +1,5 @@
 ###############################################################################
-# Function: center_scan(trace, time_dots, dist_timedot = 1.1)
+# Function: old_center_scan(trace, time_dots, dist_timedot = 1.1)
 # Author:   EmmaLi Tsai
 # Date:     3/27/21
 # 
@@ -28,7 +28,7 @@
 #   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
 #                         x values of the scan. 
 ###############################################################################
-center_scan <- function(trace, time_dots, dist_timedot = 1.1){
+old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # first, I needed to find the appropriate merge distance. This distance should 
   # be large enough to merge with trace values between time dots that are far 
   # apart. However, I remove duplicated values later in this function, so 
@@ -73,6 +73,37 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # returning centered y-values 
   return(fuzzy_merge_trace)
 }
+
+## New Method created by Dr. Schwilk: 
+
+# Simple rolling mean function. Window size is n. function returns a vector
+# that is shorter than original and does not pad with NAs. An alternative would
+# be create a rolling mean fx with filter():
+# ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
+# But I suspect cumsum is faster and I like not getting the NAs.
+rollmean <- function(x, n) {
+  cx <- c(0 , cumsum(x))
+  return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
+}
+
+
+center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
+  
+  # Replacing slow fuzzy merge with simple cut operation. First step is to find
+  # x midpoints between time dots to use for cutting
+  cutpoints <- c(0, rollmean(time_dots$x_val, 2), max(trace$x_val))
+  # Then cut to assign every trace point an index from the time_points df:
+  time_dot_indices <- cut(trace$x_val, breaks=cutpoints, labels=FALSE)
+  # Now do the adjustment
+  trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
+  
+  return(trace)
+}
+
+
+
+
+
 
 ################################################################################
 # Topic: Centering methods for records with time dot issues 
