@@ -33,9 +33,9 @@ library(caTools) # for zoc using moving window statistics
 
 ## Needed functions
 source("../r_scripts/read_trace.R")
-source("../r_scripts/scan_tidy_functions.R")
 source("../r_scripts/centering_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
+source("../r_scripts/scan_tidying_functions.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
@@ -48,8 +48,8 @@ read_trace(filepath = "../sample_data")
 # STEP ONE: re-centering and misalignment functions: ###########################
 ################################################################################
 # Not sure if these functions will be included in the final package, but these 
-# functions help with transforming and tidying the csv files from ImageJ. This 
-# code also centers the scan, which was necessary after scanning the traces.
+# functions help with transforming the csv files from ImageJ to center the 
+# record, which was necessary after scanning the traces.
 
 # -- 
 # If the scan has issues with the time dots (records 16 and 17), center the 
@@ -64,13 +64,6 @@ read_trace(filepath = "../sample_data")
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
 # -- 
 
-# scan tidying functions can be found in the scan_tidying_functions.R file in 
-# the r_scripts folder. 
-# the output of this file is a centered trace with x and y values
-
-# Moved these lines from scan_tidying_functions.R
-time_dots <- tidy_timedots(time_dots)
-trace <- tidy_trace(trace)
 center_trace1 <- old_center_scan(trace, time_dots)
 center_trace2 <- center_scan(trace, time_dots)
 

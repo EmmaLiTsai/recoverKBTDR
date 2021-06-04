@@ -187,7 +187,7 @@ rollmean <- function(x, n) {
 center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
-  # x midpoints between time dots to sue for cutting
+  # x midpoints between time dots to use for cutting
   cutpoints <- c(0, rollmean(time_dots$x_val, 2), max(trace$x_val))
   # Then cut to assign every trace point an index from the time_points df:
   time_dot_indices <- cut(trace$x_val, breaks=cutpoints, labels=FALSE)
@@ -195,8 +195,9 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   trace$y_val <- trace$y_val - time_dots$Y[time_dot_indices] - dist_timedot
 
   ## I don't like this. This should happen on data reading or cleaning. It has
-  ## nothing to do with centering:
-  trace <- trace[!duplicated(trace),]
+  ## nothing to do with centering: 
+  # moved to read_trace.R function 
+  # trace <- trace[!duplicated(trace),]
   
   return(trace)
 }

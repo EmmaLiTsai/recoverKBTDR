@@ -34,6 +34,9 @@ read_trace <- function(filepath = "../sample_data"){
   names(trace) <<- c("x_val", "y_val")
   # ordering the trace by increasing x value
   trace <<- trace[order(trace$x_val),]
+  # removing duplicates 
+  trace <<- trace[!duplicated(trace),]
+  
   
   ## tidy time dot data##
   # changing y-values due to odd ImageJ origin placement
