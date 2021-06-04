@@ -35,7 +35,6 @@ library(caTools) # for zoc using moving window statistics
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
-source("../r_scripts/scan_tidying_functions.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
@@ -85,7 +84,8 @@ nrow(trace[!duplicated(trace[,1:2]),])
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
 ggplot(center_trace2, aes(x = x_val, y = y_val)) + geom_line() + 
-  geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
+  geom_line(data = trace, aes(x = x_val, y = y_val), color = "red") + 
+  geom_line(data = center_trace1, aes(x = x_val, y = y_val), color = "blue")
 
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace csv file

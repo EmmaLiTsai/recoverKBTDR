@@ -50,12 +50,12 @@ old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # time dots are centered along the same horizontal line of y = dist_timedots. 
   
   # case_when function was needed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y < 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
-                                                   fuzzy_merge_trace$Y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
-                                                   fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
+  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$y_val.y < 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot), 
+                                                   fuzzy_merge_trace$y_val.y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$y_val.y)),
+                                                   fuzzy_merge_trace$y_val.y == 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot))
   
   # centering the scan using the above y corrected values  
-  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
+  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val.x + fuzzy_merge_trace$y_val_corr
   
   # removing duplicated values -- this happened when a point along a trace 
   # was close to both time dots. This code will keep the first duplicated value 
