@@ -69,26 +69,20 @@ center_trace2 <- center_scan(trace, time_dots)
 nrow(center_trace1)
 nrow(center_trace2)
 
-## Don't match. The old version deletes rows!
-## DWS ok with removing dupes it works better. still not itndeitcal
+## DWS ok with removing dupes it works better. still not identical
 identical(center_trace1, center_trace2)
 
 center_trace1[10000:10050,]
 center_trace2[10000:10050,]
 
-nrow(trace[!duplicated(trace[,1:2]),])
-# ^ this is the same as the number of observations produced after centering, so 
-# I think methods for centering should be okay. Must be an bug with imageJ
-# selection tool from image processing
-
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
-ggplot(center_trace2, aes(x = x_val, y = y_val)) + geom_line() + 
-  geom_line(data = trace, aes(x = x_val, y = y_val), color = "red") + 
-  geom_line(data = center_trace1, aes(x = x_val, y = y_val), color = "blue")
+ggplot(center_trace2[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = trace[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
+  geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "blue")
 
 # I could add this in the function call, but I kept it out so I could visually 
-# compare the output with the original trace csv file
+# compare the output with the original trace file
 trace <- center_trace2
 
 ################################################################################
@@ -194,7 +188,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey")
   geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
 # plotting
-ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
+ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
   geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
 # this method is pretty good-- need to try out different number of knots and 
