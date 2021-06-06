@@ -141,7 +141,7 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
                          time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
   
   # returning final trace 
-  return(trace)
+  return(drop_na(trace))
 }
 
 ################################################################################
