@@ -113,7 +113,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 
 # This function centers records with time dot issues, where the time dots were 
 # too far apart for center_scan() to effectively center the trace. 
-
 ###############################################################################
 # Function: center_scan_td_issue(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4)
 # 
@@ -122,8 +121,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 # This was needed for 2 records out of the 20 that I have in the lab). This 
 # function creates a line between two time dots and creates filler time dots 
 # along the line to make centering more reliable for these records. Basic 
-# structure of the code is modeled after the center_scan() function in the
-# scan_tidying_functions.R file 
+# structure of the code is modeled after the center_scan() function.
 # 
 # Input: 
 #     - trace       : tidy trace file 
@@ -138,8 +136,8 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #                     also for the fuzzy merge. Default set to 0.4cm. 
 # 
 # Output: 
-#     - fuzzy_merge_trace : fuzzy merged trace with centered y values and 
-#                           original x values of the scan. 
+#     - center_scan : centered scan using the center_scan function on the data 
+#                     frame of filler time dots 
 ###############################################################################
 center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4){
   # adding first time dot 
@@ -173,43 +171,11 @@ center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dis
     # rbinding to original df 
     center_seq <- rbind(center_seq, center_seq_loop)
   }
+  # changing names to be consistent
+  names(center_seq) <- c("x_val", "y_val")
+  # calling other function to center scan 
+  center_scan <- center_scan(trace, center_seq, dist_timedot = dist_timedot)
   
-  # code taken from center_scan() in scan_tidying_functions.R: 
-  # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
-  # it produces a data frame with x and y values of the trace and the connected
-  # x and y values of the trace (headers x_val.y and Y, respectively). 
-  
-  # I needed this in order to use the y values of the time dots to center the 
-  # scan.. 
-  
-  # TODO: sometimes R will return: cannot allocate vector of large size for
-  # some of the larger files. Look into R memory storage. 
-  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, center_seq, 
-                                                       by = c("x_val"), 
-                                                       max_dist = merge_dist)
-  
-  # calculating how far the y time dot values are from the dist_timedot value. 
-  # this was needed to move the x or y values up or down to center the scan 
-  # this has been fixed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y < 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
-                                                   fuzzy_merge_trace$Y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
-                                                   fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
-  
-  # centering the scan using the above y corrected values  
-  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
-  
-  # removing duplicated values -- this happened when a point along a trace 
-  # was close to both time dots, and the way this code is set up it will keep 
-  # the first duplicated value but remove the trailing ones. 
-  fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
-  
-  # some final tidying -- this is removing unimportant columns resulting from 
-  # the merge and giving these columns meaningful names. 
-  fuzzy_merge_trace <- fuzzy_merge_trace[,c(1,6)]
-  names(fuzzy_merge_trace) <- c("x_val", "y_val")
-  
-  # returning centered y-values 
-  return(fuzzy_merge_trace)
+  # # returning centered y-values 
+  return(center_scan)
 }
-
-
