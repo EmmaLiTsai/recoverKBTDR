@@ -29,11 +29,14 @@
 #                         x values of the scan. 
 ###############################################################################
 old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
+  # adding the first time dot at the beginning of the function 
+  time_dots_zero <- data.frame(x_val = c(0, time_dots$x_val), y_val = c(time_dots$y_val[1], time_dots$y_val))
+  
   # first, I needed to find the appropriate merge distance. This distance should 
   # be large enough to merge with trace values between time dots that are far 
   # apart. However, I remove duplicated values later in this function, so 
   # large values also produce a lag in centering...
-  merge_dist <- max(abs(diff(time_dots$x_val)))
+  merge_dist <- max(abs(diff(time_dots_zero$x_val)))
   
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
   # it produces a data frame with x and y values of the trace and the connected
@@ -41,7 +44,7 @@ old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   
   # I needed this in order to use the y values of the time dots to center the 
   # scan.
-  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots, 
+  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots_zero, 
                                                        by = c("x_val"), 
                                                        max_dist = merge_dist)
   
@@ -139,12 +142,14 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #                           original x values of the scan. 
 ###############################################################################
 center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4){
+  # adding first time dot 
+  time_dots_zero <- data.frame(x_val = c(0, time_dots$x_val), y_val = c(time_dots$y_val[1], time_dots$y_val))
   
   # creating helper data frame: 
-  center_dots <- data.frame(x1 = time_dots$x_val, 
-                            y1 = time_dots$Y, 
-                            x2 = lead(time_dots$x_val), 
-                            y2 = lead(time_dots$Y))
+  center_dots <- data.frame(x1 = time_dots_zero$x_val, 
+                            y1 = time_dots_zero$y_val, 
+                            x2 = lead(time_dots_zero$x_val), 
+                            y2 = lead(time_dots_zero$y_val))
   
   # adding a slope value and intercept to add filler time dots between two 
   # points: 
@@ -186,8 +191,8 @@ center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dis
   # calculating how far the y time dot values are from the dist_timedot value. 
   # this was needed to move the x or y values up or down to center the scan 
   # this has been fixed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y > 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
-                                                   fuzzy_merge_trace$Y < 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
+  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y < 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
+                                                   fuzzy_merge_trace$Y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
                                                    fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
   
   # centering the scan using the above y corrected values  

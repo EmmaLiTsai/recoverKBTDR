@@ -65,6 +65,7 @@ read_trace(filepath = "../sample_data")
 
 center_trace1 <- old_center_scan(trace, time_dots)
 center_trace2 <- center_scan(trace, time_dots)
+# center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
 nrow(center_trace1)
 nrow(center_trace2)
@@ -77,9 +78,9 @@ center_trace2[10000:10050,]
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
-ggplot(center_trace2[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() + 
-  geom_point(data = trace[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
-  geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "blue")
+ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
+  geom_point(data = center_trace2[1000:11000,], aes(x = x_val, y = y_val), color = "blue") 
 
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace file
