@@ -22,44 +22,28 @@
 # were taken ((time point 2 - time point 1) / 12 minutes); and the file used 
 # for psi calibration (only available for 1981 traces). 
 
-find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45){
+find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration){
   # First, I am transforming y2 and y1 to depth in meters. This was needed to 
   # estimate the amount of time it would've taken for the seal to descend to 
-  # this depth. y1 should be very close to 0, but I added extra calculations 
-  # here to handle non-zero y1 values. 
-  
-  # defining labels and adding the maximum psi of the TDR
-  labels <- c(psi_calibration$psi_interval, max_psi)
-  
-  # defining the breaks and adding the maximum position of the TDR and also the 
-  # minimum position to capture the lower values 
-  breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
-  
-  # combining the breaks and labels for future calculations 
-  labels <- paste(labels, breaks[2:length(breaks)], sep = ":")
-  
-  # creating a psi and interval column together to make the calculations easier
-  # the psi is in front of the corresponding y position with  ":" that will 
-  # be split later. This was just a way to do a cut with two different labels, 
-  # since I need both the psi and the position of the psi for these calculations
-  y_vals <- c(y2, y1)
-  cut_yvals <- sapply(y_vals, function(x) cut(x, breaks = breaks, labels = labels))
-  tidy_yvals <- sapply(cut_yvals, function(x) as.numeric(unlist(strsplit(as.character(x), ":"))))
-  
-  # using psi and the position of the psi calibration to calculate depth 
-  depth_2 <- ((y2 * tidy_yvals[1,1]) / tidy_yvals[2,1]) / PSI_TO_DEPTH
-  depth_1 <- ((y1 * tidy_yvals[1,2]) / tidy_yvals[2,2]) / PSI_TO_DEPTH
-  
+  # this depth. 
+  y_vals_df <- data.frame(y_vals = c(y2, y1))
+  depth_2 <- transform_psitodepth(y_vals_df, psi_calibration)$depth[1]
   # finding time it took for seal to descend to that depth assuming it is 
   # descending at 1.1 m/s (Williams et al., 2015) and transforming it to 
   # minutes 
   t_2 <- (depth_2 / 1.1) / 60
-  t_1 <- (depth_1 / 1.1) / 60
   
-  # transforming x over in the -x direction such that x1 and x2 would be along
+  # transforming x over in the -x direction such that two points would be along
   # the same circle with center (h,k)
   x2 = x2 - (rate * t_2)
-  x1 = x1 - (rate * t_1)
+  
+  # y1 should be very close to 0, but I added extra calculations here to handle
+  # non-zero y1 values. 
+  if (y1 !=0){
+    depth_1 <- transform_psitodepth(y_vals_df, psi_calibration)$depth[2]
+    t_1 <- (depth_1 / 1.1) / 60
+    x1 = x1 - (rate * t_1)
+  }
   
   # geometry from stack exchange (link above-- I also have sample calculations 
   # to confirm that this method of using the geometry of a rhombus works): 
@@ -82,7 +66,7 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
 ################################################################################
 # for records before 1981 without a psi_calibration file, but max depth value 
 ################################################################################
-find_center_y_nopsi <- function(x1, y1, x2, y2, r = 20.87, rate, max_depth, trace){
+find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, trace){
   
   # finding the depth of y2 
   depth_2 <- ((y2 * max_depth) / max(trace$y_val, na.rm = TRUE))
