@@ -173,40 +173,31 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 #                   trace.
 #
 #   - psi_calibration : csv file that contains two columns for the cut(): 
-#                           - psi_interval: the psi and y_val concatenated 
-#                                           together (i.e., 100:1.43 for the 
-#                                           100psi calibration that is 1.43 cm 
-#                                           above y = 0). 
-#                           - psi_position: the y_val to cut by. This should 
-#                                           column should be one row longer than 
-#                                           the psi_interval column, and start 
-#                                           with a lower y_val to encompass 
-#                                           points that may fall below y = 0. 
-#                                           (i.e., start with y_val -5 to 
-#                                           capture points with y_val = -0.01 so 
-#                                           it can fall in the 100:1.43 
-#                                           category)                                    
+#                           - psi_interval: the psi intervals at the end of the 
+#                                           record (i.e., 100psi, 200psi, etc.)
+#                           - psi_position: the y_val that corresponds to that 
+#                                           psi interval in cm
 #   
 # Output: 
 #   - trace      : trace data frame complete with the psi_interval and 
 #                  position a point fell into, the calculated psi value, and 
 #                  the calculated depth. I kept all columns to ensure the 
-#                  function was working properly. 
+#                  function was working properly, but can remove them in the
+#                  future if necessary. 
 ###############################################################################
-transform_psitodepth <- function(trace, psi_calibration) {
-  # defining the breaks 
-  breaks <- psi_calibration$psi_position
+transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
   
-  # defining the labels-- had to select a specific number of observations since 
-  # the last observation is a "" since there is an unequal number of 
-  # psi_interval and psi_position rows. I needed to specify an unequal number 
-  # of rows since these columns will be used for the cut() function. 
-  labels <- psi_calibration$psi_interval[1:6]
+  # defining labels and adding the maximum psi of the TDR
+  labels <- c(psi_calibration$psi_interval, max_psi)
+
+  # defining the breaks and adding the maximum position of the TDR and also the 
+  # minimum position to capture the lower values 
+  breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
+
+  # combining the breaks and labels for future calculations 
+  labels <- paste(labels, breaks[2:length(breaks)], sep = ":")
   
-  # creating a psi and interval column together to make the calculations easier
-  # the psi is in front of the corresponding y position with  ":" that will 
-  # be split later. This was just a way to do a cut with two different labels, 
-  # since I need both the psi and the position of the psi for these calculations
+  # cutting the data frame using the above breaks and labels 
   trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
                                  include.lowest = TRUE, labels = labels)
   

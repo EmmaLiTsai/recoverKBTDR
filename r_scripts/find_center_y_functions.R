@@ -28,11 +28,15 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
   # this depth. y1 should be very close to 0, but I added extra calculations 
   # here to handle non-zero y1 values. 
   
-  # defining the breaks: 
-  breaks <- psi_calibration$psi_position
+  # defining labels and adding the maximum psi of the TDR
+  labels <- c(psi_calibration$psi_interval, max_psi)
   
-  # defining the labels: 
-  labels <- psi_calibration$psi_interval[1:6]
+  # defining the breaks and adding the maximum position of the TDR and also the 
+  # minimum position to capture the lower values 
+  breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
+  
+  # combining the breaks and labels for future calculations 
+  labels <- paste(labels, breaks[2:length(breaks)], sep = ":")
   
   # creating a psi and interval column together to make the calculations easier
   # the psi is in front of the corresponding y position with  ":" that will 
