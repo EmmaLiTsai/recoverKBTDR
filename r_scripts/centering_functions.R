@@ -1,5 +1,5 @@
 ###############################################################################
-# Function: center_scan(trace, time_dots, dist_timedot = 1.1)
+# Function: old_center_scan(trace, time_dots, dist_timedot = 1.1)
 # Author:   EmmaLi Tsai
 # Date:     3/27/21
 # 
@@ -28,12 +28,15 @@
 #   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
 #                         x values of the scan. 
 ###############################################################################
-center_scan <- function(trace, time_dots, dist_timedot = 1.1){
+old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
+  # adding the first time dot at the beginning of the function 
+  time_dots_zero <- data.frame(x_val = c(0, time_dots$x_val), y_val = c(time_dots$y_val[1], time_dots$y_val))
+  
   # first, I needed to find the appropriate merge distance. This distance should 
   # be large enough to merge with trace values between time dots that are far 
   # apart. However, I remove duplicated values later in this function, so 
   # large values also produce a lag in centering...
-  merge_dist <- max(abs(diff(time_dots$x_val)))
+  merge_dist <- max(abs(diff(time_dots_zero$x_val)))
   
   # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
   # it produces a data frame with x and y values of the trace and the connected
@@ -41,7 +44,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   
   # I needed this in order to use the y values of the time dots to center the 
   # scan.
-  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots, 
+  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots_zero, 
                                                        by = c("x_val"), 
                                                        max_dist = merge_dist)
   
@@ -50,12 +53,12 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   # time dots are centered along the same horizontal line of y = dist_timedots. 
   
   # case_when function was needed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y < 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
-                                                   fuzzy_merge_trace$Y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
-                                                   fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
+  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$y_val.y < 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot), 
+                                                   fuzzy_merge_trace$y_val.y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$y_val.y)),
+                                                   fuzzy_merge_trace$y_val.y == 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot))
   
   # centering the scan using the above y corrected values  
-  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
+  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val.x + fuzzy_merge_trace$y_val_corr
   
   # removing duplicated values -- this happened when a point along a trace 
   # was close to both time dots. This code will keep the first duplicated value 
@@ -74,6 +77,35 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
   return(fuzzy_merge_trace)
 }
 
+## New Method created by Dr. Schwilk: 
+
+# Simple rolling mean function. Window size is n. function returns a vector
+# that is shorter than original and does not pad with NAs. An alternative would
+# be create a rolling mean fx with filter():
+# ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
+# But I suspect cumsum is faster and I like not getting the NAs.
+rollmean <- function(x, n) {
+  cx <- c(0, cumsum(x))
+  return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
+}
+
+
+center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
+  
+  # Replacing slow fuzzy merge with simple cut operation. First step is to find
+  # x midpoints between time dots to use for cutting
+  cutpoints <- c(0, rollmean(time_dots$x_val, 2), max(trace$x_val))
+  # Then cut to assign every trace point an index from the time_points df:
+  time_dot_indices <- cut(trace$x_val, breaks = cutpoints, labels = FALSE)
+  # Now do the adjustment
+  trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
+  
+  return(trace)
+}
+
+
+
+
 ################################################################################
 # Topic: Centering methods for records with time dot issues 
 # Date: 5/5/2021
@@ -81,7 +113,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 
 # This function centers records with time dot issues, where the time dots were 
 # too far apart for center_scan() to effectively center the trace. 
-
 ###############################################################################
 # Function: center_scan_td_issue(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4)
 # 
@@ -90,8 +121,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 # This was needed for 2 records out of the 20 that I have in the lab). This 
 # function creates a line between two time dots and creates filler time dots 
 # along the line to make centering more reliable for these records. Basic 
-# structure of the code is modeled after the center_scan() function in the
-# scan_tidying_functions.R file 
+# structure of the code is modeled after the center_scan() function.
 # 
 # Input: 
 #     - trace       : tidy trace file 
@@ -106,16 +136,18 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1){
 #                     also for the fuzzy merge. Default set to 0.4cm. 
 # 
 # Output: 
-#     - fuzzy_merge_trace : fuzzy merged trace with centered y values and 
-#                           original x values of the scan. 
+#     - center_scan : centered scan using the center_scan function on the data 
+#                     frame of filler time dots 
 ###############################################################################
 center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dist = 0.4){
+  # adding first time dot 
+  time_dots_zero <- data.frame(x_val = c(0, time_dots$x_val), y_val = c(time_dots$y_val[1], time_dots$y_val))
   
   # creating helper data frame: 
-  center_dots <- data.frame(x1 = time_dots$x_val, 
-                            y1 = time_dots$Y, 
-                            x2 = lead(time_dots$x_val), 
-                            y2 = lead(time_dots$Y))
+  center_dots <- data.frame(x1 = time_dots_zero$x_val, 
+                            y1 = time_dots_zero$y_val, 
+                            x2 = lead(time_dots_zero$x_val), 
+                            y2 = lead(time_dots_zero$y_val))
   
   # adding a slope value and intercept to add filler time dots between two 
   # points: 
@@ -139,43 +171,11 @@ center_scan_td_issue <- function(trace, time_dots, dist_timedot = 1.1, merge_dis
     # rbinding to original df 
     center_seq <- rbind(center_seq, center_seq_loop)
   }
+  # changing names to be consistent
+  names(center_seq) <- c("x_val", "y_val")
+  # calling other function to center scan 
+  center_scan <- center_scan(trace, center_seq, dist_timedot = dist_timedot)
   
-  # code taken from center_scan() in scan_tidying_functions.R: 
-  # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
-  # it produces a data frame with x and y values of the trace and the connected
-  # x and y values of the trace (headers x_val.y and Y, respectively). 
-  
-  # I needed this in order to use the y values of the time dots to center the 
-  # scan.. 
-  
-  # TODO: sometimes R will return: cannot allocate vector of large size for
-  # some of the larger files. Look into R memory storage. 
-  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, center_seq, 
-                                                       by = c("x_val"), 
-                                                       max_dist = merge_dist)
-  
-  # calculating how far the y time dot values are from the dist_timedot value. 
-  # this was needed to move the x or y values up or down to center the scan 
-  # this has been fixed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$Y > 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot), 
-                                                   fuzzy_merge_trace$Y < 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$Y)),
-                                                   fuzzy_merge_trace$Y == 0 ~ (abs(fuzzy_merge_trace$Y) - dist_timedot))
-  
-  # centering the scan using the above y corrected values  
-  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val + fuzzy_merge_trace$y_val_corr
-  
-  # removing duplicated values -- this happened when a point along a trace 
-  # was close to both time dots, and the way this code is set up it will keep 
-  # the first duplicated value but remove the trailing ones. 
-  fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
-  
-  # some final tidying -- this is removing unimportant columns resulting from 
-  # the merge and giving these columns meaningful names. 
-  fuzzy_merge_trace <- fuzzy_merge_trace[,c(1,6)]
-  names(fuzzy_merge_trace) <- c("x_val", "y_val")
-  
-  # returning centered y-values 
-  return(fuzzy_merge_trace)
+  # # returning centered y-values 
+  return(center_scan)
 }
-
-

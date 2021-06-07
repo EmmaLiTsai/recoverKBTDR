@@ -24,7 +24,7 @@
 # some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
-library(dplyr) # for select(), mutate(), and case_when()
+library(dplyr) # for select(), and mutate()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 library(caTools) # for zoc using moving window statistics 
@@ -33,10 +33,9 @@ library(caTools) # for zoc using moving window statistics
 
 ## Needed functions
 source("../r_scripts/read_trace.R")
-source("../r_scripts/scan_tidy_functions.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/find_center_y_functions.R")
+source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
@@ -47,8 +46,8 @@ read_trace(filepath = "../sample_data")
 # STEP ONE: re-centering and misalignment functions: ###########################
 ################################################################################
 # Not sure if these functions will be included in the final package, but these 
-# functions help with transforming and tidying the csv files from ImageJ. This 
-# code also centers the scan, which was necessary after scanning the traces.
+# functions help with transforming the csv files from ImageJ to center the 
+# record, which was necessary after scanning the traces.
 
 # -- 
 # If the scan has issues with the time dots (records 16 and 17), center the 
@@ -63,28 +62,28 @@ read_trace(filepath = "../sample_data")
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
 # -- 
 
-# scan tidying functions can be found in the scan_tidying_functions.R file in 
-# the r_scripts folder. 
-# the output of this file is a centered trace with x and y values
+center_trace1 <- old_center_scan(trace, time_dots)
+center_trace2 <- center_scan(trace, time_dots)
+# center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
-# Moved these lines from scan_tidying_functions.R
-time_dots <- tidy_timedots(time_dots)
-trace <- tidy_trace(trace)
-center_trace <- center_scan(trace, time_dots)
+nrow(center_trace1)
+nrow(center_trace2)
 
-nrow(trace[!duplicated(trace[,1:2]),])
-# ^ this is the same as the number of observations produced after centering, so 
-# I think methods for centering should be okay. Must be an bug with imageJ
-# selection tool from image processing
+## DWS ok with removing dupes it works better. still not identical
+identical(center_trace1, center_trace2)
+
+center_trace1[10000:10050,]
+center_trace2[10000:10050,]
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
-ggplot(center_trace, aes(x = x_val, y = y_val)) + geom_line() + 
-  geom_line(data = trace, aes(x = x_val, y = y_val), color = "red")
+ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
+  geom_point(data = center_trace2[1000:11000,], aes(x = x_val, y = y_val), color = "blue") 
 
 # I could add this in the function call, but I kept it out so I could visually 
-# compare the output with the original trace csv file
-trace <- center_trace
+# compare the output with the original trace file
+trace <- center_trace2
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
@@ -108,7 +107,7 @@ find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
-zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
+zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1))
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
@@ -122,7 +121,7 @@ trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_m
 trace <- trace[order(trace$time),]
 
 # plotting: 
-ggplot(trace[1000:9000,], aes(x = time, y = y_val)) + geom_line()
+ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 # times here align with the times I produced with my original code.
 
 ################################################################################
@@ -166,11 +165,30 @@ ggplot(trace, aes(x = time, y = depth)) +
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
 
-# trying out spline smoothing with knots, since spline smoothing is usually more 
-# computationally efficient: 
+# spline smoothing with knots, since spline smoothing is usually more 
+# computationally efficient. 
+
+# function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
+
+# function smooth_trace_bounded is a more complex recursive spline smoothing
+# function with depth bounds, such that shallower depths have a higher spar 
+# value to  reduce chatter created by the transducer arm, while retaining 
+# wiggles in the dives at depth. Supposed to be an improvement from 
+# smooth_trace function above. 
+smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 0)
+# this function would be sound considering there is less tension on the 
+# transducer arm at shallow depths, which produced extra noise in the record 
+# when the seal was resting at the surface or hauled out. 
+
+# comparing the two smoothing methods with the original data: 
+# smoothing with depth bounds is in blue, and normal smoothing is in red 
+ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
+  geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+
 # plotting
-ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
+ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
   geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
 # this method is pretty good-- need to try out different number of knots and 
@@ -182,6 +200,43 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
+
+# some potential cross validation code, see issue #17 in GitHub 
+# creating cross validation example for spline smoothing using leave one out 
+# cross validation method: 
+# creating smaller trace data frame 
+trace_cv <- trace[1:500,]
+# spar sequence 
+spar_seq <- seq(from = 0.05, to = 1.0, by = 0.02)
+
+cv_error_spar <- rep(NA, length(spar_seq))
+
+for (i in 1:length(spar_seq)){
+  spar_i <- spar_seq[i]
+  cv_error <- rep(NA, nrow(trace_cv))
+  for (v in 1:nrow(trace_cv)){
+    # validation
+    x_val <- trace_cv$time[v]
+    y_val <- trace_cv$depth[v]
+    # training 
+    x_train <- trace_cv$time[-v]
+    y_train <- trace_cv$depth[-v]
+    # smooth fit and prediction
+    smooth_fit <- smooth.spline(x = x_train, y = y_train, spar = spar_i)
+    y_predict <- predict(smooth_fit, x = x_val)
+    
+    cv_error[v] <- (y_val - y_predict$y)^2
+  }
+  cv_error_spar[i] <- mean(cv_error)
+}
+
+cv_error_spar
+
+# plotting prediction error 
+plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "red",
+     xlab = "Value of 'spar'", ylab = "LOOCV prediction error")
+
+spar_seq[which(cv_error_spar == min(cv_error_spar))]
 
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
