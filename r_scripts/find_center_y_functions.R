@@ -22,7 +22,7 @@
 # were taken ((time point 2 - time point 1) / 12 minutes); and the file used 
 # for psi calibration (only available for 1981 traces). 
 
-find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration){
+find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45){
   # First, I am transforming y2 and y1 to depth in meters. This was needed to 
   # estimate the amount of time it would've taken for the seal to descend to 
   # this depth. y1 should be very close to 0, but I added extra calculations 
