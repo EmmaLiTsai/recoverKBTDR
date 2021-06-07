@@ -11,7 +11,7 @@
 # records with extreme level shifts and drift in depth = 0 within a bout of 
 # dives. Therefore, I thought it might be helpful to include this (still 
 # preliminary) file in the github repo.  
-# 
+
 ###############################################################################
 # Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
 # Author:   EmmaLi Tsai

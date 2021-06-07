@@ -39,7 +39,6 @@ source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
-
 # reading in full trace data (i.e., trace, time dots, and psi calibration): 
 read_trace(filepath = "../sample_data")
 
@@ -129,7 +128,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
 # calling the function to transform y-axis to depth: 
-trace <- transform_psitodepth(trace, psi_calibration)
+trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 
 # -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
@@ -191,7 +190,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey")
 # plotting
 ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
-  geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
+  geom_line(aes(x = time, y = smooth_2), color = "red", size = 1)
 # this method is pretty good-- need to try out different number of knots and 
 # spar combinations... it would be nice if there was a way to mathematically 
 # determine appropriate number of knots & spar values based on the number of 
