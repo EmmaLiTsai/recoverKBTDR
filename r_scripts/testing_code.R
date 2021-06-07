@@ -153,6 +153,9 @@ ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line()
 # bout three 
 ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
 
+# bout four
+ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line() 
+
 # plotting again... this is close to what the final product should be. 
 ggplot(trace, aes(x = time, y = depth)) + 
   geom_line() +
@@ -183,6 +186,11 @@ smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(100
 
 # comparing the two smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, and normal smoothing is in red 
+ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = smooth_bounded[120000:140000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
+  geom_line(data = trace[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+
+# comparing another section of the record: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
   geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
