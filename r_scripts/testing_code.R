@@ -63,7 +63,7 @@ read_trace(filepath = "../sample_data")
 # -- 
 
 center_trace1 <- old_center_scan(trace, time_dots)
-center_trace2 <- center_scan(trace, time_dots)
+center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.5)
 # center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
 nrow(center_trace1)
@@ -153,8 +153,8 @@ ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line()
 # bout three 
 ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
 
-# bout four
-ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line() 
+# bout four 
+ggplot(trace[140000:170000,], aes(x = time, y = depth)) + geom_line() 
 
 # plotting again... this is close to what the final product should be. 
 ggplot(trace, aes(x = time, y = depth)) + 
@@ -168,18 +168,15 @@ ggplot(trace, aes(x = time, y = depth)) +
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
 
-# spline smoothing with knots, since spline smoothing is usually more 
-# computationally efficient. 
-
 # function smooth_trace is a simple spline smoothing function: 
-trace <- smooth_trace(trace, spar = 0.3, nknots = 5900)
+trace <- smooth_trace(trace, spar = 0.27, nknots = 5900)
 
 # function smooth_trace_bounded is a more complex recursive spline smoothing
 # function with depth bounds, such that shallower depths have a higher spar 
 # value to  reduce chatter created by the transducer arm, while retaining 
 # wiggles in the dives at depth. Supposed to be an improvement from 
 # smooth_trace function above. 
-smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 0)
+smooth_bounded <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900), depth_bound = 0)
 # this function would be sound considering there is less tension on the 
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
@@ -195,6 +192,11 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey")
   geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
   geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
+# comparing another section with the max depth: 
+ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = smooth_bounded[130000:160000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
+  geom_line(data = trace[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+
 # plotting
 ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
   geom_line() +
@@ -208,6 +210,9 @@ ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
+
+# Looking at the new maximum depth: 
+max(smooth_bounded$smooth_2[1:210000])
 
 # some potential cross validation code, see issue #17 in GitHub 
 # creating cross validation example for spline smoothing using leave one out 
