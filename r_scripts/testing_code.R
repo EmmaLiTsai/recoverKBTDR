@@ -132,6 +132,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+# the psi curve at the end matches the intervals on the record now.
 
 # -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
