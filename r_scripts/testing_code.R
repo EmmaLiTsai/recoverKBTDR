@@ -139,7 +139,7 @@ trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_positio
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
-# max depth value in the bulletin is 317 meters, which is very close to the one 
+# max depth value in the bulletin is 319 meters, which is very close to the one 
 # calculated here of 318 meters!:
 max(trace[1:200000,]$depth)
 
