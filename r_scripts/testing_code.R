@@ -35,6 +35,7 @@ library(caTools) # for zoc using moving window statistics
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
 source("../r_scripts/find_center_y_functions.R")
+source("../r_scripts/centered_psi_calibration.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
@@ -88,6 +89,8 @@ trace <- center_trace2
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
+# find the psi calibration curve after centering: 
+psi_calibration <- centered_psi_calibration(trace, 212000)
 
 # Before running this code, confirm that the correct center_y value 
 # has been calculated for the transform_coordinates function.
@@ -127,9 +130,6 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
-# find the psi calibration curve after centering: 
-psi_calibration <- centered_psi_calibration(trace, 212000)
-
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 
@@ -144,7 +144,7 @@ ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 319 meters, which is very close to the one 
 # calculated here but will decrease with smoothing 
-max(trace[1:200000,]$depth)
+max(trace[1:210000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
 # bout one 
