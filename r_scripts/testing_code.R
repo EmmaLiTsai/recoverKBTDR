@@ -63,7 +63,7 @@ read_trace(filepath = "../sample_data")
 # -- 
 
 center_trace1 <- old_center_scan(trace, time_dots)
-center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.5)
+center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
 # center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
 nrow(center_trace1)
