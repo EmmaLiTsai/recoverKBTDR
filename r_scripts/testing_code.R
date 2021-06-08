@@ -93,7 +93,7 @@ trace <- center_trace2
 # has been calculated for the transform_coordinates function.
 
 # running find_center_y with sample values from this record:
-find_center_y_psi(1142.90, 0, 1140.54, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
@@ -127,6 +127,9 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
+# find the psi calibration curve after centering: 
+psi_calibration <- centered_psi_calibration(trace, 212000)
+
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 
