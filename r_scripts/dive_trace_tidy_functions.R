@@ -188,43 +188,43 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
   
   # defining labels and adding the maximum psi of the TDR
-  labels <- c(psi_calibration$psi_interval, max_psi)
-
+  labels <- c(0, psi_calibration$psi_interval, max_psi)
+  
   # defining the breaks and adding the maximum position of the TDR and also the 
   # minimum position to capture the lower values 
   breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
-
+  
   # combining the breaks and labels for future calculations 
-  labels <- paste(labels, breaks[2:length(breaks)], sep = ":")
+  labels_combined <- paste(labels, breaks, sep = ":")
+  labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:6]
   
   # cutting the data frame using the above breaks and labels 
   trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
-                                 include.lowest = TRUE, labels = labels)
+                                 include.lowest = TRUE, labels = labels_combined)
   
   # splitting the label created by the cut function in to two separate columns 
   # since this made the calculations easier 
   trace <- tidyr::separate(trace, psi_interval_both, 
                            sep = ":", 
-                           into = c("psi_interval", "psi_position"))
+                           into = c("psi_interval_1", "psi_position_1", 
+                                    "psi_interval_2", "psi_position_2"))
   
-  # I needed numeric values to do calculations: 
-  trace$psi_interval <- as.numeric(paste(trace$psi_interval))
-  trace$psi_position <- as.numeric(paste(trace$psi_position))
+  # changing to numeric values 
+  cols <- trace[, c("psi_interval_1", "psi_position_1", "psi_interval_2", "psi_position_2")]
+  tidy_cols <- sapply(cols, function(x) as.numeric(paste(x)))
+  trace[ , colnames(trace) %in% colnames(tidy_cols)] <- tidy_cols 
   
-  # Is there a way to do this more efficiently? I have this code below using 
-  # sapply, but it just seemed harder to follow: 
-  # cols <- trace[, c("psi_interval", "psi_position")]
-  # tidy_cols <- sapply(cols, function(x) as.numeric(paste(x)))
-  # 
-  # trace[ , colnames(trace) %in% colnames(tidy_cols)] <- tidy_cols 
+  # helper vectors for future calculations 
+  diff_psi <- trace$psi_interval_2 - trace$psi_interval_1
+  diff_pos <- trace$psi_position_2 - trace$psi_position_1
+  diff_y_val <- trace$y_val - trace$psi_position_1
   
-  # calculating psi position based on the interval it was categorized into
-  trace$psi <- ((trace$psi_interval * trace$y_val) / trace$psi_position)
+  # calculating psi 
+  trace$psi <- case_when(trace$psi_interval_1 == 0 ~ (trace$psi_interval_2 * trace$y_val) / trace$psi_position_2,
+                         trace$psi_interval_1 > 0 ~ trace$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
-  # calculating depth by taking the psi value and dividing by the constant 
-  # I defined above. 
+  
   trace$depth <- trace$psi / PSI_TO_DEPTH
-  
   # returning the trace 
   return(trace)
 }

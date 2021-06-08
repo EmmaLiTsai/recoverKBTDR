@@ -63,7 +63,7 @@ read_trace(filepath = "../sample_data")
 # -- 
 
 center_trace1 <- old_center_scan(trace, time_dots)
-center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.5)
+center_trace2 <- center_scan(trace, time_dots, dist_timedot = 1.1)
 # center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
 nrow(center_trace1)
@@ -93,7 +93,7 @@ trace <- center_trace2
 # has been calculated for the transform_coordinates function.
 
 # running find_center_y with sample values from this record:
-find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.90, 0, 1140.54, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
@@ -140,7 +140,7 @@ trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_positio
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 319 meters, which is very close to the one 
-# calculated here of 318 meters!:
+# calculated here but will decrease with smoothing 
 max(trace[1:200000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
@@ -211,7 +211,8 @@ ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
-# Looking at the new maximum depth: 
+# Looking at the new maximum depth: this one should be as close as possible to 
+# 319 meters 
 max(smooth_bounded$smooth_2[1:210000])
 
 # some potential cross validation code, see issue #17 in GitHub 
