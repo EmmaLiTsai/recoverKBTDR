@@ -219,11 +219,11 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   diff_pos <- trace$psi_position_2 - trace$psi_position_1
   diff_y_val <- trace$y_val - trace$psi_position_1
   
-  # calculating psi 
+  # calculating psi -- had to be modified for y-values that were < 0
   trace$psi <- case_when(trace$psi_interval_1 == 0 ~ (trace$psi_interval_2 * trace$y_val) / trace$psi_position_2,
                          trace$psi_interval_1 > 0 ~ trace$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
-  
+  # final transformation 
   trace$depth <- trace$psi / PSI_TO_DEPTH
   # returning the trace 
   return(trace)
