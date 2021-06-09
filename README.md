@@ -11,12 +11,13 @@ Contains:
 
 				(1) Re-centering and fixing misalignment: this mainly focuses on tidying the trace and time_dots csv files after
 				    image processing steps in ImageJ. This code also aims to center the scan. Since this code is mainly related 
-				    to image processing, I moved code for this step to the scan_tidy_functions.R file. 
+				    to image processing, I moved code for this step to the read_trace.R file, and fixing misalignment code to 
+				    centering_functions.R file. 
 			      (2-3) Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
 				    using the timing dots. 
 				(4) Transform y axis to depth: this step will transform y values to psi using the psi calibration at the end 
 				    of the trace, and transform these psi values to depth. 
-				(5) Smoothing: this step will smooth these data to simplify the trace. This is needed to help remove noise 
+				(5) Smoothing: this step smoothes these data to simplify the trace. This is needed to help remove noise 
 				    and extract the main trace from the thickness of the line. 
 				(6) Final tidying: this will add dive statistics, direction flagging, and also add dates and times to these data. 
 			
