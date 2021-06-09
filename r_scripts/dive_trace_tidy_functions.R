@@ -194,15 +194,16 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   # minimum position to capture the lower values 
   breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
   
-  # combining the breaks and labels for future calculations 
+  # combining the breaks and labels for future calculations
   labels_combined <- paste(labels, breaks, sep = ":")
-  labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:6]
+  # combining the labels again to capture the full interval a y_val falls into 
+  labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
   
   # cutting the data frame using the above breaks and labels 
   trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
                                  include.lowest = TRUE, labels = labels_combined)
   
-  # splitting the label created by the cut function in to two separate columns 
+  # splitting the label created by the cut function in to four separate columns 
   # since this made the calculations easier 
   trace <- tidyr::separate(trace, psi_interval_both, 
                            sep = ":", 
@@ -214,14 +215,21 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   tidy_cols <- sapply(cols, function(x) as.numeric(paste(x)))
   trace[ , colnames(trace) %in% colnames(tidy_cols)] <- tidy_cols 
   
-  # helper vectors for future calculations 
+  # helper vectors for future calculations. I basically needed to do a segmented 
+  # calibration since the scales between psi intervals are different. 
+  # finding the difference in psi between intervals 
   diff_psi <- trace$psi_interval_2 - trace$psi_interval_1
+  # calculating the difference in position between two intervals 
   diff_pos <- trace$psi_position_2 - trace$psi_position_1
+  # finding difference in y value from the lower psi value of the interval it
+  # fell into 
   diff_y_val <- trace$y_val - trace$psi_position_1
   
-  # calculating psi -- had to be modified for y-values that were < 0
-  trace$psi <- case_when(trace$psi_interval_1 == 0 ~ (trace$psi_interval_2 * trace$y_val) / trace$psi_position_2,
-                         trace$psi_interval_1 > 0 ~ trace$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
+  # calculating psi -- had to be modified for y-values that were < 0, where only
+  # interval 2 would be used as a scale. Y-vals that fell in higher intervals 
+  # had to be scaled differently. 
+  trace$psi <- dplyr::case_when(trace$psi_interval_1 == 0 ~ (trace$psi_interval_2 * trace$y_val) / trace$psi_position_2,
+                                trace$psi_interval_1 > 0 ~ trace$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
   # final transformation 
   trace$depth <- trace$psi / PSI_TO_DEPTH

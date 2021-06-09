@@ -110,7 +110,7 @@ find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
-zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1))
+zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(0, 1))
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
