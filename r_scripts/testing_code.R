@@ -24,7 +24,7 @@
 # some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
-library(dplyr) # for select(), and mutate()
+library(dplyr, options(dplyr.summarise.inform = FALSE)) # for select(), and mutate()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 library(caTools) # for zoc using moving window statistics 
@@ -34,8 +34,8 @@ library(caTools) # for zoc using moving window statistics
 ## Needed functions
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/centered_psi_calibration.R")
+source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
@@ -64,7 +64,7 @@ read_trace(filepath = "../sample_data")
 # -- 
 
 center_trace1 <- old_center_scan(trace, time_dots)
-center_trace2 <- center_scan(trace, time_dots, dist_timedot = 1.1)
+center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
 # center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
 nrow(center_trace1)
@@ -90,7 +90,7 @@ trace <- center_trace2
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
 # find the psi calibration curve after centering: 
-psi_calibration <- centered_psi_calibration(trace, 212000)
+psi_calibration <- centered_psi_calibration(trace)
 
 # Before running this code, confirm that the correct center_y value 
 # has been calculated for the transform_coordinates function.
