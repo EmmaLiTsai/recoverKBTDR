@@ -19,15 +19,15 @@ Contains:
 				    of the trace, and transform these psi values to depth. 
 				(5) Smoothing: this step smoothes these data to simplify the trace. This is needed to help remove noise 
 				    and extract the main trace from the thickness of the line. 
-				(6) Final tidying: this will add dive statistics, direction flagging, and also add dates and times to these data. 
+				(6) Final tidying: this will add dates and times to these data, such that it ca be read into other available 
+				    dive analysis packages. 
 			
-			  - testing_code.R      -- contains testing code for functions created in the dives_trace_tidy_functions.R file and 
-						   scan_tidy_functions.R file. This was needed to separate testing and production code, and 
-						   uses the trace, time_dots, and psi_calibration csv files in the sample data folder in this 
-						   repository. 
+			  - testing_code.R      -- contains testing code for functions created in all R files in this project. This was needed to 
+						   separate testing and production code, and uses the tidy trace and time_dots csv files in the 
+						   sample data folder in this repository. 
 			  
-			  - find_center_y_functions.R -- contains two functions with math to calculate the height of the transducer arm given two 
-						 	 points along the descent of a dive. This function was intended to provide a tool 
+			  - find_center_y_functions.R -- contains two functions with math to calculate the height of the transducer arm pivot point 
+						 	 given two points along the descent of a dive. This function was intended to provide a tool 
 							 for estimating the height of the pivot point of the transducer arm, but this value should
 							 be visually confirmed to ensure that it does not introduce any abnormal skew across the 
 							 record. 	
