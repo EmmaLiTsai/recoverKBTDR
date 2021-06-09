@@ -34,12 +34,13 @@ library(caTools) # for zoc using moving window statistics
 ## Needed functions
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
+source("../r_scripts/centered_psi_calibration.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
-# reading in full trace data (i.e., trace, time dots, and psi calibration): 
+# reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")
 
 ################################################################################
@@ -88,12 +89,14 @@ trace <- center_trace2
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
+# find the psi calibration curve after centering: 
+psi_calibration <- centered_psi_calibration(trace)
 
 # Before running this code, confirm that the correct center_y value 
 # has been calculated for the transform_coordinates function.
 
 # running find_center_y with sample values from this record:
-find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
@@ -107,7 +110,7 @@ find_center_y_psi(1142.9, 0, 1140.5, 9.3, 21.14, 0.16, psi_calibration)
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
 # that depth = 0 aligns better with y = 0 for more reliable arc removal. 
-zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1))
+zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(0, 1))
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
@@ -115,10 +118,9 @@ ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() +
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
-# any warning here would be from points that happened after the last time dot
-
-# ordering -- this needs to be out of the function
-trace <- trace[order(trace$time),]
+# any observations removed were points that happened after the last time dot, 
+# or ones that were moved before the origin after arc removal (only with points 
+# that were extremely close to the origin)
 
 # plotting: 
 ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
@@ -129,6 +131,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+# the psi curve at the end matches the intervals on the record now.
 
 # -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
@@ -140,8 +143,8 @@ trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_positio
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 319 meters, which is very close to the one 
-# calculated here of 318 meters!:
-max(trace[1:200000,]$depth)
+# calculated here but will decrease with smoothing 
+max(trace[1:210000,]$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
 # bout one 
@@ -211,7 +214,8 @@ ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # to make sure nothing weird is happening here: 
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
-# Looking at the new maximum depth: 
+# Looking at the new maximum depth: this one should be as close as possible to 
+# 319 meters 
 max(smooth_bounded$smooth_2[1:210000])
 
 # some potential cross validation code, see issue #17 in GitHub 
@@ -263,3 +267,8 @@ ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line(
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
 
+
+# After this final step, the workflow is to export the final trace data to a 
+# csv file, which can be read for further dive analysis in the diveMove package. 
+# The diveMove package creates an S4 object using the date_time column and 
+# depth. 
