@@ -24,7 +24,7 @@
 # some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
 library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
-library(dplyr, options(dplyr.summarise.inform = FALSE)) # for select(), and mutate()
+library(dplyr) # for select(), and mutate()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 library(caTools) # for zoc using moving window statistics 
@@ -40,7 +40,7 @@ source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc.R")
-# reading in full trace data (i.e., trace, time dots, and psi calibration): 
+# reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")
 
 ################################################################################
@@ -118,10 +118,9 @@ ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() +
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
-# any warning here would be from points that happened after the last time dot
-
-# ordering -- this needs to be out of the function
-trace <- trace[order(trace$time),]
+# any observations removed were points that happened after the last time dot, 
+# or ones that were moved before the origin after arc removal (only with points 
+# that were extremely close to the origin)
 
 # plotting: 
 ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
@@ -268,3 +267,8 @@ ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line(
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
 
+
+# After this final step, the workflow is to export the final trace data to a 
+# csv file, which can be read for further dive analysis in the diveMove package. 
+# The diveMove package creates an S4 object using the date_time column and 
+# depth. 

@@ -140,8 +140,10 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
                          diff_with_scale = diff * scale, 
                          time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
   
-  # returning final trace 
-  return(tidyr::drop_na(trace))
+  # returning final trace -- there will be some NAs from points that happened 
+  # after the last time dot (and therefore couldn't be assigned a time), or 
+  # ones that were extremely close to the origin. 
+  return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
 ################################################################################
@@ -167,23 +169,25 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 # point. These psi values can then be transformed to depth (in meters) using a 
 # simple calculation.  
 # 
+# It should also be noted that this requires a segmented calibration, since 
+# the scale changes between psi intervals. This made the code slightly more 
+# complicated. 
+# 
 # Input: 
 # 
 #   - trace       : tidy trace data frame, contains the x and y values of the 
-#                   trace.
+#                   trace after centering. 
 #
-#   - psi_calibration : csv file that contains two columns for the cut(): 
+#   - psi_calibration : centered file that contains two columns for the cut(): 
 #                           - psi_interval: the psi intervals at the end of the 
 #                                           record (i.e., 100psi, 200psi, etc.)
 #                           - psi_position: the y_val that corresponds to that 
 #                                           psi interval in cm
 #   
 # Output: 
-#   - trace      : trace data frame complete with the psi_interval and 
-#                  position a point fell into, the calculated psi value, and 
-#                  the calculated depth. I kept all columns to ensure the 
-#                  function was working properly, but can remove them in the
-#                  future if necessary. 
+#   - trace      : trace data frame complete with the psi value and depth. I 
+#                  kept both so we can ensure that the psi calibration curve at 
+#                  the end of the record is precise. 
 ###############################################################################
 transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
   
@@ -200,36 +204,36 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
   
   # cutting the data frame using the above breaks and labels 
-  trace$psi_interval_both <- cut(trace$y_val, breaks = breaks,
-                                 include.lowest = TRUE, labels = labels_combined)
+  psi_interval_both <- as.data.frame(cut(trace$y_val, breaks = breaks,
+                           include.lowest = TRUE, labels = labels_combined))
+  # changing name of column 
+  names(psi_interval_both) <- "psi_interval_both"
   
   # splitting the label created by the cut function in to four separate columns 
   # since this made the calculations easier 
-  trace <- tidyr::separate(trace, psi_interval_both, 
+  psi_interval_sep <- tidyr::separate(psi_interval_both, col = 1, 
                            sep = ":", 
                            into = c("psi_interval_1", "psi_position_1", 
                                     "psi_interval_2", "psi_position_2"))
   
   # changing to numeric values 
-  cols <- trace[, c("psi_interval_1", "psi_position_1", "psi_interval_2", "psi_position_2")]
-  tidy_cols <- sapply(cols, function(x) as.numeric(paste(x)))
-  trace[ , colnames(trace) %in% colnames(tidy_cols)] <- tidy_cols 
-  
+  tidy_cols <- as.data.frame(sapply(psi_interval_sep, function(x) as.numeric(paste(x))))
+
   # helper vectors for future calculations. I basically needed to do a segmented 
   # calibration since the scales between psi intervals are different. 
   # finding the difference in psi between intervals 
-  diff_psi <- trace$psi_interval_2 - trace$psi_interval_1
+  diff_psi <- tidy_cols$psi_interval_2 - tidy_cols$psi_interval_1
   # calculating the difference in position between two intervals 
-  diff_pos <- trace$psi_position_2 - trace$psi_position_1
+  diff_pos <- tidy_cols$psi_position_2 - tidy_cols$psi_position_1
   # finding difference in y value from the lower psi value of the interval it
   # fell into 
-  diff_y_val <- trace$y_val - trace$psi_position_1
+  diff_y_val <- trace$y_val - tidy_cols$psi_position_1
   
   # calculating psi -- had to be modified for y-values that were < 0, where only
   # interval 2 would be used as a scale. Y-vals that fell in higher intervals 
   # had to be scaled differently. 
-  trace$psi <- dplyr::case_when(trace$psi_interval_1 == 0 ~ (trace$psi_interval_2 * trace$y_val) / trace$psi_position_2,
-                                trace$psi_interval_1 > 0 ~ trace$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
+  trace$psi <- dplyr::case_when(tidy_cols$psi_interval_1 == 0 ~ (tidy_cols$psi_interval_2 * trace$y_val) / tidy_cols$psi_position_2,
+                                tidy_cols$psi_interval_1 > 0 ~ tidy_cols$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
   # final transformation 
   trace$depth <- trace$psi / PSI_TO_DEPTH
@@ -272,6 +276,3 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   # returning the trace 
   return(trace)
 }
-
-# currently working on comparing the dive statistics from this recovered trace 
-# with the Castellini et al., 1992 bulletin using the diveMove() package
