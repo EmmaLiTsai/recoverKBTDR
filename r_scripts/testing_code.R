@@ -223,7 +223,7 @@ max(smooth_bounded$smooth_2[1:210000])
 # creating cross validation example for spline smoothing using leave one out 
 # cross validation method: 
 # creating smaller trace data frame 
-trace_cv <- trace[1:500,]
+trace_cv <- trace[sample(1:nrow(trace), 1000),]
 # spar sequence 
 spar_seq <- seq(from = 0.05, to = 1.0, by = 0.02)
 
