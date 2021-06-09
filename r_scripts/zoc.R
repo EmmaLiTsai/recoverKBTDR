@@ -86,9 +86,9 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5,
   # filters
   depth_adj <- trace$y_val - filters[, ncol(filters)]
   # binding new depth adjustment with original trace data 
-  # I subtracted the depth adjustment by a small amount to account for the  
-  # thickness of the trace.
-  zoc_trace <- cbind(trace$x_val, (depth_adj - 0.15))
+  # in the future, may need to subtract the depth adjustment by a small amount 
+  # to account for the thickness of the trace.
+  zoc_trace <- cbind(trace$x_val, depth_adj)
   # transforming to df 
   zoc_trace <- as.data.frame(zoc_trace)
   # changing names for future functions: 
