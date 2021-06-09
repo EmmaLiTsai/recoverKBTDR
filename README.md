@@ -21,12 +21,15 @@ Contains:
 				(6) Final tidying: this will add dive statistics, direction flagging, and also add dates and times to these data. 
 			
 			  - testing_code.R      -- contains testing code for functions created in the dives_trace_tidy_functions.R file and 
-						   scan_tidy_functions.R file. This was needed to separate testing and produciton code, and 
+						   scan_tidy_functions.R file. This was needed to separate testing and production code, and 
 						   uses the trace, time_dots, and psi_calibration csv files in the sample data folder in this 
 						   repository. 
 			  
 			  - find_center_y_functions.R -- contains two functions with math to calculate the height of the transducer arm given two 
-						 	 points along the descent of a dive. 	  	
+						 	 points along the descent of a dive. This function was intended to provide a tool 
+							 for estimating the height of the pivot point of the transducer arm, but this value should
+							 be visually confirmed to ensure that it does not introduce any abnormal skew across the 
+							 record. 	
 						   
 			  - centering_functions.R -- contains methods for centering records and also for handling unique time dot issues (i.e., 
 			  			     time dots may be 60 minutes and ~8cm apart instead of 12 minutes apart and ~1.5cm apart). 
@@ -50,7 +53,7 @@ Contains:
 						   to the smooth_trace function, and the two methods are compared in the testing_code.R file. 
 
 			  - centered_psi_calibration.R -- contains a function to extract the centered psi calibration positions after the record had 
-							  been centered. It creates a data frame and was intended to make future depth calcultions 
+							  been centered. It creates a data frame and was intended to make future depth calculations
 							  more accurate after centering. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots.
