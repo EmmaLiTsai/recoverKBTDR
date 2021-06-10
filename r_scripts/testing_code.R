@@ -175,6 +175,7 @@ ggplot(trace, aes(x = time, y = depth)) +
 # GitHub. This attempts to find the best spar value for smoothing using leave  
 # one out cross validation (loocv) method on a random sample of the trace data. 
 find_spar_loocv(trace)
+# seems to usually produce 0.27
 
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.27, nknots = 5900)
