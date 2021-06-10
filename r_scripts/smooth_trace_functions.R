@@ -99,6 +99,3 @@ find_spar_loocv <- function(trace){
   # finding the spar value that had the lowest prediction error 
   return(spar_seq[which(cv_error_spar == min(cv_error_spar))])
 }
-
-# what about k-fold cross validation? 
-
