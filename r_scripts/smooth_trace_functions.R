@@ -93,7 +93,7 @@ find_spar_loocv <- function(trace){
   }
   
   # plotting prediction error 
-  plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "red",
+  plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "blue",
        xlab = "Value of 'spar'", ylab = "LOOCV prediction error")
   
   # finding the spar value that had the lowest prediction error 

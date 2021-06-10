@@ -171,6 +171,10 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
+# A potential cross validation function in smooth_trace.R, see issue #17 in 
+# GitHub. This attempts to find the best spar value for smoothing using leave  
+# one out cross validation (loocv) method on a random sample of the trace data. 
+find_spar_loocv(trace)
 
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.27, nknots = 5900)
@@ -218,11 +222,6 @@ ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 # Looking at the new maximum depth: this one should be as close as possible to 
 # 319 meters 
 max(smooth_bounded$smooth_2[1:210000])
-
-# A potential cross validation function in smooth_trace.R, see issue #17 in 
-# GitHub. This attempts to find the best spar value for smoothing using leave  
-# one out cross validation (loocv) method on a random sample of the trace data. 
-find_spar_loocv(trace)
 
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
