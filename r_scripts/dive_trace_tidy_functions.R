@@ -82,7 +82,7 @@ PSI_TO_DEPTH <- 1.4696
 #                   no abnormal skew across the record)
 #
 #   - time_period_min : minutes between each time period. This is 12 minutes for 
-#                   most traces. 
+#                       most traces. 
 #   
 # Output: 
 #   - trace      : trace data frame complete with time periods, and time 
@@ -110,6 +110,7 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   ## Starting Step Three: scale X based on time dots ###########################
   # creating zero stating time dot for time assignment 
   time_dots_zero <- c(0, time_dots$x_val)
+  
   # creating a data frame with time periods and start/end points for the time 
   # period... this will be used to cut the data 
   tp_df <- data.frame(time_period = seq(1:length(time_dots_zero)),
@@ -142,7 +143,8 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   
   # returning final trace -- there will be some NAs from points that happened 
   # after the last time dot (and therefore couldn't be assigned a time), or 
-  # ones that were extremely close to the origin. 
+  # ones that were extremely close to the origin. This also orders the trace df
+  # by time 
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 

@@ -3,6 +3,8 @@
 # Author:   EmmaLi Tsai
 # Date:     3/27/21
 # 
+# NOTE: function is deprecated, replaced by center_scan()
+# 
 # Function takes the trace and timedots files and uses the y values of the 
 # time dots to move the trace up/down to center the scan, such that all the 
 # y-values of the time dots are along y = -dist_timedot that the user defines in 
@@ -102,9 +104,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   
   return(trace)
 }
-
-
-
 
 ################################################################################
 # Topic: Centering methods for records with time dot issues 

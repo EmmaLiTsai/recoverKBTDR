@@ -64,7 +64,7 @@ read_trace(filepath = "../sample_data")
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
 # -- 
 
-center_trace1 <- old_center_scan(trace, time_dots)
+center_trace1 <- old_center_scan(trace, time_dots, dist_timedot = 0.9)
 center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
 # center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
 
@@ -174,6 +174,7 @@ ggplot(trace, aes(x = time, y = depth)) +
 # A potential cross validation function in smooth_trace.R, see issue #17 in 
 # GitHub. This attempts to find the best spar value for smoothing using leave  
 # one out cross validation (loocv) method on a random sample of the trace data. 
+# It is really slow with a nested for loop... 
 find_spar_loocv(trace)
 # seems to usually produce 0.27
 
