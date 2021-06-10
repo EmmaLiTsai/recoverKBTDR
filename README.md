@@ -47,11 +47,13 @@ Contains:
 						   environment. First attempt at data abstraction, and contains code to tidy the trace and time dot 
 						   csv files.   
 
-			  - smooth_trace.R	-- contains two functions for spline smoothing of trace, after axes have been transformed to time and 
-						   depth. smooth_trace is simple spline smoothing function, and smooth_trace_bounded is a recursive 
-						   smoothing function that adds depth bounds to spline smoothing such that the smoothing resolution 
-				  	           is lower at the surface and higher at during a dive. This function is a possible improvement 
-						   to the smooth_trace function, and the two methods are compared in the testing_code.R file. 
+			  - smooth_trace_functions.R -- contains two functions for spline smoothing of trace, after axes have been transformed to time 
+						   	and depth. smooth_trace is simple spline smoothing function, and smooth_trace_bounded is a 
+						   	recursive smoothing function that adds depth bounds to spline smoothing such that the smoothing 
+				  	         	resolution  is lower at the surface and higher at during a dive. This function is a possible 
+						  	improvement to the smooth_trace function, and the two methods are compared in the testing_code.R 
+							file. This file also has some sample cross validation methods to mathematically determine the 
+							best spar value for the data. 
 
 			  - centered_psi_calibration.R -- contains a function to extract the centered psi calibration positions after the record had 
 							  been centered. It creates a data frame and was intended to make future depth calculations
