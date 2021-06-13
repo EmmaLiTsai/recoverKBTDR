@@ -34,7 +34,6 @@ library(caTools) # for zoc using moving window statistics
 ## Needed functions
 source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
-source("../r_scripts/centered_psi_calibration.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace_functions.R")
