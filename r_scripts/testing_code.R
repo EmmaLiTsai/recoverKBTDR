@@ -157,8 +157,8 @@ ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line()
 # bout three 
 ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
 
-# bout four 
-ggplot(trace[140000:170000,], aes(x = time, y = depth)) + geom_line() 
+# bout four, this one contains the deepest dive 
+ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line() 
 
 # plotting again... this is close to what the final product should be. 
 ggplot(trace, aes(x = time, y = depth)) + 
