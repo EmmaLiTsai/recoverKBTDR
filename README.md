@@ -5,7 +5,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-B
 Contains: 
 
  (1) R Scripts     - all .R script files with code that fixes various issues with the KBTDR traces. 
- 		  	Within this folder, you can find eight files:
+ 		  	Within this folder, you can find seven files:
 
 			  - dive_trace_tidy_functions.R -- contains organized production code that can be broken up into six main steps: 
 
@@ -35,7 +35,10 @@ Contains:
 			  - centering_functions.R -- contains methods for centering records and also for handling unique time dot issues (i.e., 
 			  			     time dots may be 60 minutes and ~8cm apart instead of 12 minutes apart and ~1.5cm apart). 
 						     There are only 2 records with this issue, but I thought these methods might be helpful 
-						     to include in the future code package. 
+						     to include in the future code package. Another function is added to this file, 
+						     centered_psi_calibration, that extracts the psi calibration curve after centering. It 
+						     creates a data frame and was intended to make future depth calculations more accurate 
+						     after centering. 
 
 			  - zoc.R    		-- contains a preliminary function for zero offset correction (zoc) of the trace before arc removal. 
 						   This file is modeled after code that can be found in the diveMove package. The sample trace
@@ -54,10 +57,6 @@ Contains:
 						  	improvement to the smooth_trace function, and the two methods are compared in the testing_code.R 
 							file. This file also has some sample cross validation methods to mathematically determine the 
 							best spar value for the data. 
-
-			  - centered_psi_calibration.R -- contains a function to extract the centered psi calibration positions after the record had 
-							  been centered. It creates a data frame and was intended to make future depth calculations
-							  more accurate after centering. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots.
 		     This file also contains a .txt file that outlines the image processing methods used to create this sample record.
