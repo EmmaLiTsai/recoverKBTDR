@@ -82,6 +82,19 @@ ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() +
   geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
   geom_point(data = center_trace2[1000:11000,], aes(x = x_val, y = y_val), color = "blue") 
 
+# creating another window to compare the different methods: 
+ggplot(trace[88000:100000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = center_trace1[88000:100000,], aes(x = x_val, y = y_val), color = "red") + 
+  geom_point(data = center_trace2[88000:100000,], aes(x = x_val, y = y_val), color = "blue") 
+
+# plotting the difference between two methods and corresponding position of the 
+# time dots 
+coeff <- 10
+ggplot(center_trace1, aes(x = x_val)) + 
+  geom_line(aes(y = y_val - (center_trace2$y_val))) + 
+  geom_line(data = time_dots, aes(x = x_val, y = (y_val/coeff)), color = "red") + 
+  scale_y_continuous(name = "diff(y_val)", sec.axis = sec_axis(~.*coeff, name = "time dots"))
+
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace file
 trace <- center_trace2
