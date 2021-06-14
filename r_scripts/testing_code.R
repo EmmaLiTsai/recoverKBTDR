@@ -188,7 +188,17 @@ ggplot(trace, aes(x = time, y = depth)) +
 # one out cross validation (loocv) method on a random sample of the trace data. 
 # It is really slow with a nested for loop... 
 find_spar_loocv(trace)
-# seems to usually produce 0.27
+# seems to usually produce 0.27, but this method seems to produce extremely low 
+# values for some of the other records... 
+
+# This is an example using ordinary leave-one-out methods: 
+smooth.spline(trace$time, trace$depth, nknots = 5900, cv = TRUE)
+# and another example using generalized cross validation:
+smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
+# seems to be a delicate balance between knots and smoothing penalties, but it 
+# seems like the general approach from the literature is to have a high number 
+# of knots and let the smoothing penalties control the fit.  
+# (Perperoglou et al., 2019)
 
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.27, nknots = 5900)
