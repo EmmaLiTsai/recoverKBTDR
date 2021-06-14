@@ -247,6 +247,27 @@ ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 # 319 meters 
 max(smooth_bounded$smooth_2[1:210000])
 
+# What about P-splines? They are supposed to perform well with very non-linear 
+# data, but aren't very popular
+library(pspline)
+# using generalized cross validation to determine spar values
+p_spline <- smooth.Pspline(trace$time, trace$depth, method = 3)
+# just transforming to data frame 
+new <- cbind(p_spline$x, p_spline$ysmth)
+new <- as.data.frame(new)
+names(new) <- c("time", "depth")
+
+# plotting -- p spline is overfitting 
+ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
+  geom_line(color = "grey") + 
+  geom_line(data = new[1000:11000,], aes(x = time, y = depth)) + 
+  geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue")
+
+# comparing another bout
+ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = smooth_bounded[145000:160000,], aes(x = time, y = smooth_2), color = "blue") +  
+  geom_line(data = new[145000:160000,], aes(x = time, y = depth)) 
+  
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
