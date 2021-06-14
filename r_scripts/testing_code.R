@@ -247,8 +247,8 @@ ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 # 319 meters 
 max(smooth_bounded$smooth_2[1:210000])
 
-# What about P-splines? They are supposed to perform well with very non-linear 
-# data, but aren't very popular
+# trying out another package with some cross validation methods, but it's very 
+# similar to smooth.spline output 
 library(pspline)
 # using generalized cross validation to determine spar values
 p_spline <- smooth.Pspline(trace$time, trace$depth, method = 3)
