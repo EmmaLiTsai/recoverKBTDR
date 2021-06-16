@@ -253,7 +253,8 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 ggplot(trace[143000:157000,], aes(x = time, y = smooth_depth)) +
   geom_line(aes(time, depth), color= "gray", size = 0.2) +
   geom_point(aes(color = deriv > 0)) +
-  geom_line()
+  geom_line() + 
+  scale_color_discrete(name = "", labels = c("Ascent", "Descent"))
 
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 

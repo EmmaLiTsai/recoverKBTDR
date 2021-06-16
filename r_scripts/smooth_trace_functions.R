@@ -21,7 +21,7 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
 # keeping higher resolution in the dives at depth to retain wiggles. This 
 # method would be sound considering there would be less tension on the 
 # transducer arm at shallow depths, which produced unnecessary noise in the 
-# record
+# record. Here, I also added dive component assignment. 
 smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 5){ 
   # need to order first: 
   trace <- trace[order(trace$time),]
