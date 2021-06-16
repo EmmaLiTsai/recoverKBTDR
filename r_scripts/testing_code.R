@@ -208,10 +208,9 @@ find_spar_loocv(trace)
 smooth.spline(trace$time, trace$depth, nknots = 5900, cv = TRUE)
 # and another example using generalized cross validation:
 smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
-# seems to be a delicate balance between knots and smoothing penalties, but it 
-# seems like the general approach from the literature is to have a high number 
-# of knots and let the smoothing penalties control the fit.  
-# (Perperoglou et al., 2019)
+# seems to be a delicate balance between knots and smoothing penalties, but the 
+# general approach from the literature is to have a high number of knots and let 
+# the smoothing penalties control the fit (Perperoglou et al., 2019).
 
 # function smooth_trace is a simple spline smoothing function: 
 trace <- smooth_trace(trace, spar = 0.27, nknots = 5900)
@@ -232,7 +231,7 @@ ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "gre
   geom_line(data = smooth_bounded[120000:140000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
   geom_line(data = trace[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
-# comparing another section of the record: 
+# comparing another section of the record, where the two methods diverge: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = smooth_bounded[1000:11000,], aes(x = time, y = smooth_2), color = "blue", size = 1) +  
   geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
@@ -257,7 +256,7 @@ ggplot(smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
 # Looking at the new maximum depth: this one should be as close as possible to 
-# 319 meters 
+# 319 meters, but has definitely changed with smoothing 
 max(smooth_bounded$smooth_2[1:210000])
 
 # trying out another package with some cross validation methods, but it's very 
@@ -293,8 +292,7 @@ ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line(
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
 
-
-# After this final step, the workflow is to export the final trace data to a 
-# csv file, which can be read for further dive analysis in the diveMove package. 
-# The diveMove package creates an S4 object using the date_time column and 
-# depth. 
+# After this final step, the proposed workflow is to export the final trace data 
+# to a csv file, which can be read for further dive analysis in the diveMove 
+# package. The diveMove package creates an S4 object using the date_time column 
+# and depth. 
