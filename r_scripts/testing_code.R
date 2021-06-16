@@ -226,23 +226,23 @@ trace <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900)
 # comparing the two smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, and normal smoothing is in red 
 ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_y), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
 # comparing another section of the record, where the two methods diverge: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_y), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
 # comparing another section with the max depth: 
 ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_y), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
 
 # plotting
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line(color = "grey") +
-  geom_line(aes(x = time, y = smooth_y), color = "red", size = 1)
+  geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
 # this method is pretty good-- need to try out different number of knots and 
 # spar combinations... it would be nice if there was a way to mathematically 
 # determine appropriate number of knots & spar values based on the number of 
@@ -250,18 +250,18 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 # generalized cross validation or AIC. 
 
 # also added dive component assignment within the smoothing functions: 
-ggplot(trace[143000:157000,], aes(x = time, y = smooth_y)) +
-  geom_line(aes(time, depth), color="gray", size=0.2) +
-  geom_point(aes(color=deriv > 0)) +
+ggplot(trace[143000:157000,], aes(x = time, y = smooth_depth)) +
+  geom_line(aes(time, depth), color= "gray", size = 0.2) +
+  geom_point(aes(color = deriv > 0)) +
   geom_line()
 
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
-ggplot(trace, aes(x = time, y = (depth - smooth_y))) + geom_line()
+ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 
 # Looking at the new maximum depth: this one should be as close as possible to 
 # 319 meters, but has definitely changed with smoothing 
-max(trace$smooth_2[1:210000])
+max(trace$smooth_depth[1:210000])
 
 # trying out another package with some cross validation methods, but it's very 
 # similar to smooth.spline output 
@@ -277,11 +277,11 @@ names(new) <- c("time", "depth")
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line(color = "grey") + 
   geom_line(data = new[1000:11000,], aes(x = time, y = depth)) + 
-  geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_y), color = "blue")
+  geom_line(aes(x = time, y = smooth_depth), color = "blue")
 
 # comparing another bout
 ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(data = trace[145000:160000,], aes(x = time, y = smooth_y), color = "blue") +  
+  geom_line(aes(x = time, y = smooth_depth), color = "blue") +  
   geom_line(data = new[145000:160000,], aes(x = time, y = depth)) 
   
 ################################################################################

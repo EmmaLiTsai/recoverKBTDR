@@ -50,7 +50,7 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
                                   spar = spar[2], nknots = nknots[2])
   # added final smoothing and dive component assignment 
   smooth_trace <- dplyr::mutate(smooth_trace, 
-                                smooth_y = predict(spline.mod, smooth_trace$time)$y,
+                                smooth_depth = predict(spline.mod, smooth_trace$time)$y,
                                 deriv = predict(spline.mod, smooth_trace$time, deriv=1)$y,
                                 ascent = deriv < 0,
                                 deriv_diff = lag(sign(deriv)) - sign(deriv),
