@@ -143,6 +143,9 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
                          diff_with_scale = diff * scale, 
                          time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
   
+  # removing extra columns created by the function 
+  trace <- trace[,!(names(trace) %in% c("start_x", "scale", "end_x", "diff", "diff_with_scale", "time_period"))]
+ 
   # returning final trace -- there will be some NAs from points that happened 
   # after the last time dot (and therefore couldn't be assigned a time), or 
   # points that were negative and very close to the origin (and therefore arc 
