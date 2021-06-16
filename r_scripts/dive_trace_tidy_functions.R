@@ -209,13 +209,19 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
   
   # cutting the data frame using the above breaks and labels 
-  psi_interval_both <- as.data.frame(cut(trace$y_val, breaks = breaks,
-                           include.lowest = TRUE, labels = labels_combined))
+  psi_interval_both <- as.data.frame(cut(trace$y_val, 
+                                         breaks = breaks,
+                                         include.lowest = TRUE, 
+                                         labels = labels_combined))
   # changing name of column 
   names(psi_interval_both) <- "psi_interval_both"
   
   # splitting the label created by the cut function in to four separate columns 
-  # since this made the calculations easier 
+  # since this made the calculations easier. I'm basically going to use the 
+  # intervals as scales to do a segmented calibration on the record, since the 
+  # scale between each psi interval changes. 
+  # this step makes the function very slow, but I think I can find a quicker way 
+  # to do this 
   psi_interval_sep <- tidyr::separate(psi_interval_both, col = 1, 
                            sep = ":", 
                            into = c("psi_interval_1", "psi_position_1", 
@@ -234,13 +240,13 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   # fell into 
   diff_y_val <- trace$y_val - tidy_cols$psi_position_1
   
-  # calculating psi -- had to be modified for y-values that were < 0, where only
-  # interval 2 would be used as a scale. Y-vals that fell in higher intervals 
+  # calculating psi -- had to be modified for y_vals that were < 0, where only
+  # interval 2 would be used as a scale. Y_vals that fell in higher intervals 
   # had to be scaled differently. 
   trace$psi <- dplyr::case_when(tidy_cols$psi_interval_1 == 0 ~ (tidy_cols$psi_interval_2 * trace$y_val) / tidy_cols$psi_position_2,
                                 tidy_cols$psi_interval_1 > 0 ~ tidy_cols$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
-  # final transformation 
+  # final transformation -- linear relationship between psi and depth 
   trace$depth <- trace$psi / PSI_TO_DEPTH
   # returning the trace 
   return(trace)

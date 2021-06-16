@@ -132,13 +132,21 @@ zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(0,
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
+# plotting another view 
+ggplot(zoc_trace[145000:160000,], aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = trace[145000:160000,], aes(x = x_val, y = y_val), color = "red")
+# plotting the whole record 
+ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_point(data = trace, aes(x = x_val, y = y_val), color = "red")
 # --
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.10, time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
-# or ones that were moved before the origin after arc removal (only with points 
-# that were extremely close to the origin)
+# or ones that were moved before the origin after arc removal (only points that 
+# were extremely close to the origin and negative). I kept all columns that I 
+# used for calculations so that I could confirm that the time assignment was 
+# working, but can always remove them later. 
 
 # plotting: 
 ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()

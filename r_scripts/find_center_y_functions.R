@@ -1,6 +1,8 @@
-# This is a work in progress, but here is what I have so far to address Issue 
-# #13 in GitHub
-
+# NOTE: these functions are only ESTIMATES of center_y. These calculations need 
+# to be confirmed visually to ensure that it does not introduce any abnormal 
+# skew across the record. However, any variation in this height is < 1mm at the 
+# scale of the KBTDR. 
+# 
 # This function finds the center_y value of the arm given two points along the 
 # descent of a dive (x1, y1; x2, y2). This dive should be rapid with little to 
 # no bottom time, since this would imply that the seal was moving at a constant 
@@ -17,7 +19,7 @@
 # because this math is easier to put in code rather than solving a system of 
 # equations. The returned K value should be the center_y value for the record.
 
-# This function also takes: r = 20.87, which is the constant length of the 
+# This function also takes: r = 21.14, which is the constant length of the 
 # traducer arm; the rate that the record was moving at the time these two points 
 # were taken ((time point 2 - time point 1) / 12 minutes); and the file used 
 # for psi calibration (only available for 1981 traces). 
@@ -89,12 +91,9 @@ find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, trac
     # minutes 
     t_1 <- (depth_1 / 1.1) / 60
     
-    # transforming x2 over in the -x direction such that x1 and x2 would be along
+    # transforming x1 over in the -x direction such that x1 and x2 would be along
     # the same circle with center (h,k)
     x1 = x1 - (rate * t_1)
-    
-    ##
-    
   }
   
   # geometry from stack exchange (link above-- I also have sample calculations 
