@@ -46,9 +46,18 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
   smooth_trace <- smooth_trace[order(smooth_trace$time),]
   
   # recursive and final smoothing 
-  smooth_trace_2 <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
+  spline.mod <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
                                   spar = spar[2], nknots = nknots[2])
-  smooth_trace$smooth_2 <- predict(smooth_trace_2, smooth_trace$time)$y
+  # added final smoothing and dive component assignment 
+  smooth_trace <- dplyr::mutate(smooth_trace, 
+                                smooth_y = predict(spline.mod, smooth_trace$time)$y,
+                                deriv = predict(spline.mod, smooth_trace$time, deriv=1)$y,
+                                ascent = deriv < 0,
+                                deriv_diff = lag(sign(deriv)) - sign(deriv),
+                                peak = case_when(deriv_diff < 0 ~ "TOP",
+                                                 deriv_diff > 0 ~ "BOTTOM"))
+  # removing extra column 
+  smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
   
   # final return 
   return(smooth_trace)
