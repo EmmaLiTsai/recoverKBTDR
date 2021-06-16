@@ -257,7 +257,7 @@ ggplot(trace[143000:157000,], aes(x = time, y = smooth_y)) +
 
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
-ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
+ggplot(trace, aes(x = time, y = (depth - smooth_y))) + geom_line()
 
 # Looking at the new maximum depth: this one should be as close as possible to 
 # 319 meters, but has definitely changed with smoothing 
@@ -277,11 +277,11 @@ names(new) <- c("time", "depth")
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line(color = "grey") + 
   geom_line(data = new[1000:11000,], aes(x = time, y = depth)) + 
-  geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_2), color = "blue")
+  geom_line(data = trace[1000:11000,], aes(x = time, y = smooth_y), color = "blue")
 
 # comparing another bout
 ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(data = trace[145000:160000,], aes(x = time, y = smooth_2), color = "blue") +  
+  geom_line(data = trace[145000:160000,], aes(x = time, y = smooth_y), color = "blue") +  
   geom_line(data = new[145000:160000,], aes(x = time, y = depth)) 
   
 ################################################################################
@@ -291,7 +291,7 @@ ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "gre
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 
-ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line()
+ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_y)) + geom_line()
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
