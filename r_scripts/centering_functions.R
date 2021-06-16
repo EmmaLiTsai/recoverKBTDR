@@ -216,16 +216,18 @@ centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600,
   psi_simple <- psi_simple[psi_simple$floor > 0,]
   
   # some extra filtering to handle values that are close but were not captured 
-  # by the grouping functions above
+  # by the grouping functions above. I do this by taking the difference between 
+  # the two intervals using the lag() function and creating another filter 
   
   # creating a helper data frame to make future calculations easier 
   final_filter <- data.frame(segment = psi_simple$floor, mean = psi_simple$mean, lag = lag(psi_simple$mean))
   final_filter$diff <- final_filter$mean - final_filter$lag
   
-  # trying to catch larger values that might not have been grouped 
+  # trying to catch values that are close but might not have been grouped in the 
+  # filters above using the difference between intervals 
   final_psi <- dplyr::case_when(final_filter$diff < 1 && final_filter$segment > 2 ~ mean(c(final_filter$mean, final_filter$lag)), 
                                 final_filter$diff > 1 | is.na(final_filter$diff) ~ final_filter$mean)
-  # omit if NAs were produced
+  # omit if NAs were produced 
   final_psi <- na.omit(final_psi)
   # making psi data frame
   psi_calibration <- data.frame(psi_interval = psi_interval, 
