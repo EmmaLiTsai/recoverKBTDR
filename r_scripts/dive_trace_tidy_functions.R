@@ -96,10 +96,11 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   # applying my new equation, basically just the equation of a circle but takes
   # the original x/y and calculates where the center of the circle would be
   # (h), and uses this new center to find the x value when depth = 0. I did
-  # some algebra to fit this math into one line of code
-  
-  # TODO: CENTER_Y is not constant across traces, see issue 13 in GitHub. Will 
-  # likely need extra calculations from r_scripts/find_center_y.R file. 
+  # some algebra to fit this math into one line of code, but it should be noted 
+  # that points close to the origin and < 0 will often get transformed in the 
+  # -x direction and placed before the origin. This is likely unimportant 
+  # because this would be exactly when the TDR was was turned on and therefore 
+  # not attached to the animal yet. 
   trace$new_x <- -sqrt((RADIUS^2) - (center_y^2)) +
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - center_y)^2))
   
@@ -118,7 +119,8 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
                       end_x = lead(time_dots_zero), 
                       stringsAsFactors = FALSE)
   
-  # adding the scale value 
+  # adding the scale value for each time period, which will be multiplied by: 
+  # (trace$new_x - tp_df$start_x) to assign a time to each new_x
   tp_df$scale = time_period_min / (tp_df$end_x - tp_df$start_x)
   
   # adding this as a time period variable to the trace using the cut() function
@@ -143,8 +145,9 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   
   # returning final trace -- there will be some NAs from points that happened 
   # after the last time dot (and therefore couldn't be assigned a time), or 
-  # ones that were extremely close to the origin. This also orders the trace df
-  # by time 
+  # points that were negative and very close to the origin (and therefore arc 
+  # removal moved them over in the -x direction and before the origin). I also 
+  # order the record here. 
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
