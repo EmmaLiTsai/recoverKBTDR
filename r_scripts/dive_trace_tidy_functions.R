@@ -269,7 +269,8 @@ transform_todepth <- function(trace, max_depth){
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
-# currently a work in progress -- see options in testing_code.R
+# currently a work in progress -- see options in testing_code.R and functions 
+# present in the r_scripts/smooth_trace_functions.R file
 
 
 ################################################################################
