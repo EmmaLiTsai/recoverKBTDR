@@ -226,7 +226,7 @@ trace <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900)
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
-trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200)
+trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 50, depth_thresh = 10)
 # here is what this smoothing method looks like: 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1)

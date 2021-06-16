@@ -69,7 +69,7 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
 # similar to the method above, but uses a rolling mean to detect instances where
 # the average depth is >= 10 meters and we can therefore assume that a bout of 
 # dives is happening. It then increases the resolution of the smoothing spline. 
-smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200){
+smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200, depth_thresh = 10){
   # ordering 
   trace <- trace[order(trace$time),]
   # detecting a bout of dives using the runmean function: 
@@ -77,8 +77,8 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
                             depth = trace$depth, 
                             time = trace$time)
   # defining a bout as when the mean depth is >= 10 meters in that window 
-  trace$bout <- case_when(detect_bout$runmean >= 10 ~ 1, 
-                          detect_bout$runmean < 10 ~ 0)
+  trace$bout <- case_when(detect_bout$runmean >= depth_thresh ~ 1, 
+                          detect_bout$runmean < depth_thresh ~ 0)
   # separating parts of the record not in about
   trace_nobout <- trace[which(trace$bout == 0), ]
   # separating parts of the record in a bout
