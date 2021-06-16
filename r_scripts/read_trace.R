@@ -13,9 +13,13 @@ read_trace <- function(filepath = "../sample_data"){
   trace_list <- list.files(path = filepath, pattern = "*.csv", full.names = TRUE)
   # extracting the names of the files to read them in 
   names <- sub('\\.csv$', '', basename(trace_list))
-  # removing the beginning of the file name so it works better for future 
-  # functions
-  names <- substring(names, 12)
+  # splitting the file to break up the file name string -- this might be changed 
+  # later in package development depending on how people store and manage their 
+  # files
+  names <- unlist(strsplit(names, "[1-9]_"))
+  # picking out different files: trace, time dots, psi calibration, or argument
+  # file 
+  names <- names[grep("^t|p|a", names)]
   # reading in all trace files 
   trace_files <- lapply(trace_list, read.csv)
   # giving them appropriate names
@@ -36,7 +40,6 @@ read_trace <- function(filepath = "../sample_data"){
   trace <<- trace[order(trace$x_val),]
   # removing duplicates 
   trace <<- trace[!duplicated(trace),]
-  
   
   ## tidy time dot data##
   # changing y-values due to odd ImageJ origin placement
