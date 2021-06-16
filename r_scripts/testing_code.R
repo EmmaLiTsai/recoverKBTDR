@@ -50,7 +50,7 @@ read_trace(filepath = "../sample_data")
 # functions help with transforming the csv files from ImageJ to center the 
 # record, which was necessary after scanning the traces.
 
-# -- 
+# -- unique case -- 
 # If the scan has issues with the time dots (records 16 and 17), center the 
 # scan using the r_scripts/center_scan_td_issue.R function:
 
@@ -61,7 +61,7 @@ read_trace(filepath = "../sample_data")
 # from both methods. 
 # ggplot(center_scan_td_issue, aes(x = x_val, y = y_val)) + geom_point() + 
 #   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
-# -- 
+# -- unique case --
 
 center_trace1 <- old_center_scan(trace, time_dots, dist_timedot = 0.9)
 center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
@@ -116,14 +116,14 @@ psi_calibration <- centered_psi_calibration(trace)
 # running find_center_y with sample values from this record:
 find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
-# -- 
+# -- unique case -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
 # use this function instead: 
 # example from WS_14: 
 # find_center_y_nopsi(65.258, -0.056, 63.442, 5.341, 21.14, 0.21, 484, trace)
-# -- 
+# -- unique case -- 
 
-# -- 
+# -- unique case -- 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc.R file before using the transform_coordinates 
 # function. This code (modified from the diveMove package) correct the data such 
@@ -138,7 +138,7 @@ ggplot(zoc_trace[145000:160000,], aes(x = x_val, y = y_val)) + geom_point() +
 # plotting the whole record 
 ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace, aes(x = x_val, y = y_val), color = "red")
-# --
+# -- unique case -- 
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.10, time_period_min = 12)
@@ -159,11 +159,11 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 # the psi curve at the end matches the intervals on the record now.
 
-# -- 
+# -- unique case -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
 # end, use the transform_todepth function (example below):
 # transform_todepth(trace, 318)
-# -- 
+# -- unique case -- 
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
