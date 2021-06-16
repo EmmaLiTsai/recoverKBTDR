@@ -94,6 +94,11 @@ ggplot(center_trace1, aes(x = x_val)) +
   geom_line(aes(y = y_val - (center_trace2$y_val))) + 
   geom_line(data = time_dots, aes(x = x_val, y = (y_val/coeff)), color = "red") + 
   scale_y_continuous(name = "diff(y_val)", sec.axis = sec_axis(~.*coeff, name = "time dots"))
+# this plot definitely shows the lag created by the fuzzy join (center_trace1), 
+# since the fuzzy join starts over estimating the centering that is needed right 
+# when the position of the time dots starts increasing (~x_val 70cm). The 
+# new rolling mean method is much more responsive to changes in time dot
+# position, so I believe this is the best method. 
 
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace file
