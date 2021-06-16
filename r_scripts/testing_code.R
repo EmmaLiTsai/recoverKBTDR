@@ -292,7 +292,7 @@ ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "gre
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 
-ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_y)) + geom_line()
+ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line()
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 

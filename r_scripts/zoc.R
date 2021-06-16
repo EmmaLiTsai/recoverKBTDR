@@ -1,8 +1,6 @@
 # Topic: zero offset correcting (zoc) the data before arc removal ##############
 # Date: 5/20/2021 
 # 
-# Still a work in progress! 
-# 
 # Zoc would make arc removal more reliable since the arc equation assumes 
 # that depth = 0 is the same as y = 0, but there is (slight) drift in y = 0 
 # for some of the records. This issue also happens with modern TDRs, but zero
