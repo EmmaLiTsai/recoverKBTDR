@@ -210,6 +210,7 @@ smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
 # general approach from the literature is to have a high number of knots and let 
 # the smoothing penalties control the fit (Perperoglou et al., 2019).
 
+## Three possible smoothing methods: ## 
 # function smooth_trace is a simple spline smoothing function: 
 trace_smooth <- smooth_trace(trace, spar = 0.27, nknots = 5900)
 
@@ -223,21 +224,32 @@ trace <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900)
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
 
-# comparing the two smoothing methods with the original data: 
-# smoothing with depth bounds is in blue, and normal smoothing is in red 
+# this is another possible method that increases the resolution of spline 
+# smoothing when the seal is in a bout of dives
+trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200)
+# here is what this smoothing method looks like: 
+ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1)
+
+# comparing the three smoothing methods with the original data: 
+# smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
+# smoothing method is in dark blue 
 ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
-  geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+  geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
+  geom_line(data = trace_smooth_bout[120000:140000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
 
-# comparing another section of the record, where the two methods diverge: 
+# comparing another section of the record, where the methods diverge: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
-  geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+  geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
+  geom_line(data = trace_smooth_bout[1000:11000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
 
 # comparing another section with the max depth: 
 ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
-  geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) 
+  geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
+  geom_line(data = trace_smooth_bout[130000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
 
 # plotting
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
@@ -264,27 +276,6 @@ ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
 # 319 meters, but has definitely changed with smoothing 
 max(trace$smooth_depth[1:210000])
 
-# trying out another package with some cross validation methods, but it's very 
-# similar to smooth.spline output 
-library(pspline)
-# using generalized cross validation to determine spar values
-p_spline <- smooth.Pspline(trace$time, trace$depth, method = 3)
-# just transforming to data frame 
-new <- cbind(p_spline$x, p_spline$ysmth)
-new <- as.data.frame(new)
-names(new) <- c("time", "depth")
-
-# plotting -- p spline is overfitting 
-ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
-  geom_line(color = "grey") + 
-  geom_line(data = new[1000:11000,], aes(x = time, y = depth)) + 
-  geom_line(aes(x = time, y = smooth_depth), color = "blue")
-
-# comparing another bout
-ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth), color = "blue") +  
-  geom_line(data = new[145000:160000,], aes(x = time, y = depth)) 
-  
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################

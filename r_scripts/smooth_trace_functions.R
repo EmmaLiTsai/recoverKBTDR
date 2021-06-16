@@ -63,6 +63,60 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
   return(smooth_trace)
 }
 
+
+# here is another possible smoothing method that attempts to increase resolution 
+# in spline smoothing when the seal is undergoing a bout of dives. It is very 
+# similar to the method above, but uses a rolling mean to detect instances where
+# the average depth is >= 10 meters and we can therefore assume that a bout of 
+# dives is happening. It then increases the resolution of the smoothing spline. 
+smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200){
+  # ordering 
+  trace <- trace[order(trace$time),]
+  # detecting a bout of dives using the runmean function: 
+  detect_bout <- data.frame(runmean = (runmean(trace$depth, window)), 
+                            depth = trace$depth, 
+                            time = trace$time)
+  # defining a bout as when the mean depth is >= 10 meters in that window 
+  trace$bout <- case_when(detect_bout$runmean >= 10 ~ 1, 
+                          detect_bout$runmean < 10 ~ 0)
+  # separating parts of the record not in about
+  trace_nobout <- trace[which(trace$bout == 0), ]
+  # separating parts of the record in a bout
+  trace_bout <- trace[which(trace$bout == 1), ]
+  # spline smoothing for the parts of the record not in bout
+  smooth_fit_nobout <- smooth.spline(trace_nobout$time, trace_nobout$depth, 
+                                     spar = spar[1], nknots = nknots[1])
+  # predicting for the parts of the record not in a bout 
+  trace_nobout$smooth <- predict(smooth_fit_nobout, trace_nobout$time)$y
+  # spline smoothing for the parts of the record in a bout
+  smooth_fit_bout <- smooth.spline(trace_bout$time, trace_bout$depth, 
+                                   spar = spar[2], nknots = nknots[2])
+  # predicting for the parts of the record in a bout 
+  trace_bout$smooth <- predict(smooth_fit_bout, trace_bout$time)$y
+  
+  # recombining the two: 
+  smooth_trace <- rbind(trace_nobout, trace_bout)
+  # ordering 
+  smooth_trace <- smooth_trace[order(smooth_trace$time),]
+  
+  # recursive and final smoothing 
+  spline.mod <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
+                              spar = spar[2], nknots = nknots[2])
+  # added final smoothing and dive component assignment 
+  smooth_trace <- dplyr::mutate(smooth_trace, 
+                                smooth_depth = predict(spline.mod, smooth_trace$time)$y,
+                                deriv = predict(spline.mod, smooth_trace$time, deriv=1)$y,
+                                ascent = deriv < 0,
+                                deriv_diff = lag(sign(deriv)) - sign(deriv),
+                                peak = case_when(deriv_diff < 0 ~ "TOP",
+                                                 deriv_diff > 0 ~ "BOTTOM"))
+  # removing extra column 
+  smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
+  
+  return(smooth_trace)
+}
+
+
 # cross validation methods: 
 # leave-one-out cross validation method- inefficient and slow due to nested for 
 # loop. 
