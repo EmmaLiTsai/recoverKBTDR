@@ -73,9 +73,9 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
   # ordering 
   trace <- trace[order(trace$time),]
   # detecting a bout of dives using the runmean function: 
-  detect_bout <- data.frame(runmean = (runmean(trace$depth, window)), 
-                            depth = trace$depth, 
-                            time = trace$time)
+  detect_bout <- caTools::data.frame(runmean = (runmean(trace$depth, window)), 
+                                     depth = trace$depth, 
+                                     time = trace$time)
   # defining a bout as when the mean depth is >= 10 meters in that window 
   trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1, 
                                  detect_bout$runmean < depth_thresh ~ 0)
