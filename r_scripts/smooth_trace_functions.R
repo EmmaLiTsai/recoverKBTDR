@@ -77,8 +77,8 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
                             depth = trace$depth, 
                             time = trace$time)
   # defining a bout as when the mean depth is >= 10 meters in that window 
-  trace$bout <- case_when(detect_bout$runmean >= depth_thresh ~ 1, 
-                          detect_bout$runmean < depth_thresh ~ 0)
+  trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1, 
+                                 detect_bout$runmean < depth_thresh ~ 0)
   # separating parts of the record not in about
   trace_nobout <- trace[which(trace$bout == 0), ]
   # separating parts of the record in a bout
