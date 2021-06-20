@@ -56,7 +56,7 @@ Contains:
 				  	         	resolution  is lower at the surface and higher at during a dive. This function is a possible 
 						  	improvement to the smooth_trace function, and the two methods are compared in the testing_code.R 
 							file. This file also has some sample cross validation methods to mathematically determine the 
-							best spar value for the data. 
+							best spar value for the data, and some helper functions for smoothing comparisons. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots.
 		     This file also contains a .txt file that outlines the image processing methods used to create this sample record.
