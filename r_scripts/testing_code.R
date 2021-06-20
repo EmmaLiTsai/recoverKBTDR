@@ -236,18 +236,19 @@ trace <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900)
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
   geom_line(color = "grey") +
   geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
-# this method is pretty good-- need to try out different number of knots and 
-# spar combinations... it would be nice if there was a way to mathematically 
-# determine appropriate number of knots & spar values based on the number of 
-# observations in a trace. From looking at the literature, this may involve 
-# generalized cross validation or AIC. 
+# this method is pretty good, I wonder if this smoothing method is better than 
+# the bout smoothing method below? 
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
 trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 50, depth_thresh = 10)
-# here is what this smoothing method looks like: 
+# here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1)
+  geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1) + 
+  theme(legend.position = "none")
+# you can certainly see the different bouts of dives in this method! I created 
+# this smoothing method because it might help increase the resolution of 
+# post-dive surface intervals. 
 
 # comparing the three smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
@@ -255,19 +256,22 @@ ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") +
 ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[120000:140000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
+  geom_line(data = trace_smooth_bout[120000:140000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  theme(legend.position = "none")
 
 # comparing another section of the record, where the methods diverge: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[1000:11000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
+  geom_line(data = trace_smooth_bout[1000:11000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  theme(legend.position = "none")
 
 # comparing another section with the max depth: 
 ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
   geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[130000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5)
+  geom_line(data = trace_smooth_bout[130000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  theme(legend.position = "none")
 
 # also added dive component assignment within the smoothing functions: 
 ggplot(trace[143000:157000,], aes(x = time, y = smooth_depth)) +
