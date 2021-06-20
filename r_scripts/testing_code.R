@@ -155,7 +155,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 ################################################################################
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
-# the psi curve at the end matches the intervals on the record now.
+# the psi curve at the end matches the intervals on the record
 
 # -- unique case -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
@@ -209,6 +209,15 @@ smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
 # seems to be a delicate balance between knots and smoothing penalties, but the 
 # general approach from the literature is to have a high number of knots and let 
 # the smoothing penalties control the fit (Perperoglou et al., 2019).
+
+# A helper function to visually compare different spar values: 
+spar_options <- view_spar_options(trace, increase_spar = 0.05)
+# plotting
+ggplot(spar_options, aes(x = time, y = value, color = name)) + 
+  geom_line() + 
+  facet_wrap(~name) + 
+  theme_bw() + 
+  theme(legend.position = "none")
 
 ## Three possible smoothing methods: ## 
 # function smooth_trace is a simple spline smoothing function: 

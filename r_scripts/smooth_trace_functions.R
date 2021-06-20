@@ -162,3 +162,31 @@ find_spar_loocv <- function(trace){
   # finding the spar value that had the lowest prediction error 
   return(spar_seq[which(cv_error_spar == min(cv_error_spar))])
 }
+
+# function to help find a good spar value. The function runs through a sequence 
+# of spar values and returns a long data frame that can be used to visualize 
+# different outputs in ggplot
+view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
+  # defining knots and spar sequence
+  spar_seq <- seq(0, 1, by = increase_spar)
+  nknots <- nknots
+  # ordering trace 
+  trace <- trace[order(trace$time),]
+  data_i <- trace
+  # looping thorugh each spar value 
+  for(i in 1:length(spar_seq)){
+    smooth_fit_i <- smooth.spline(trace$time, trace$depth, 
+                                  spar = spar_seq[i], nknots = 5900)
+    predict_i <- predict(smooth_fit_i, trace$time)$y
+    data_i <- cbind(data_i, predict_i)
+  }
+  # organizing and tidying for final graph 
+  spar_names <- paste("spar_", spar_seq, sep = "")
+  names(data_i)[(ncol(trace)+1):ncol(data_i)] <- spar_names
+  # just grabbing spar values, time, and depth for graphing
+  just_spar <- data_i[, grep("^(s|d|t)", names(data_i))]
+  # pivor longer for easier graphing
+  spar_long <- tidyr::pivot_longer(just_spar, spar_names)
+  # returning the final output 
+  return(spar_long)
+}
