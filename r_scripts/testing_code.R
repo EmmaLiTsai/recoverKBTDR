@@ -248,7 +248,8 @@ ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") +
   theme(legend.position = "none")
 # you can certainly see the different bouts of dives in this method! I created 
 # this smoothing method because it might help increase the resolution of 
-# post-dive surface intervals. 
+# post-dive surface intervals. The gcv and residual sums of squares value for 
+# this model is lowest in this model in comparison to the two above. 
 
 # comparing the three smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
