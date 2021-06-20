@@ -46,12 +46,12 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
   smooth_trace <- smooth_trace[order(smooth_trace$time),]
   
   # recursive and final smoothing 
-  spline.mod <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
+  spline_mod_depth <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
                                   spar = spar[2], nknots = nknots[2])
   # added final smoothing and dive component assignment 
   smooth_trace <- dplyr::mutate(smooth_trace, 
-                                smooth_depth = predict(spline.mod, smooth_trace$time)$y,
-                                deriv = predict(spline.mod, smooth_trace$time, deriv=1)$y,
+                                smooth_depth = predict(spline_mod_depth, smooth_trace$time)$y,
+                                deriv = predict(spline_mod_depth, smooth_trace$time, deriv=1)$y,
                                 ascent = deriv < 0,
                                 deriv_diff = lag(sign(deriv)) - sign(deriv),
                                 peak = case_when(deriv_diff < 0 ~ "TOP",
@@ -69,7 +69,7 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
 # similar to the method above, but uses a rolling mean to detect instances where
 # the average depth is >= 10 meters and we can therefore assume that a bout of 
 # dives is happening. It then increases the resolution of the smoothing spline. 
-smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 1200, depth_thresh = 10){
+smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 50, depth_thresh = 10){
   # ordering 
   trace <- trace[order(trace$time),]
   # detecting a bout of dives using the runmean function: 
@@ -100,12 +100,12 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
   smooth_trace <- smooth_trace[order(smooth_trace$time),]
   
   # recursive and final smoothing 
-  spline.mod <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
+  spline_mod_bout <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
                               spar = spar[2], nknots = nknots[2])
   # added final smoothing and dive component assignment 
   smooth_trace <- dplyr::mutate(smooth_trace, 
-                                smooth_depth = predict(spline.mod, smooth_trace$time)$y,
-                                deriv = predict(spline.mod, smooth_trace$time, deriv=1)$y,
+                                smooth_depth = predict(spline_mod_bout, smooth_trace$time)$y,
+                                deriv = predict(spline_mod_bout, smooth_trace$time, deriv=1)$y,
                                 ascent = deriv < 0,
                                 deriv_diff = lag(sign(deriv)) - sign(deriv),
                                 peak = case_when(deriv_diff < 0 ~ "TOP",
@@ -169,19 +169,23 @@ find_spar_loocv <- function(trace){
 view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
   # defining knots and spar sequence
   spar_seq <- seq(0, 1, by = increase_spar)
+  spar_gcv <- rep(NA, length(spar_seq))
   nknots <- nknots
   # ordering trace 
   trace <- trace[order(trace$time),]
   data_i <- trace
-  # looping thorugh each spar value 
+  # looping through each spar value, keeping note of the gcv value for future 
+  # comparisons 
   for(i in 1:length(spar_seq)){
     smooth_fit_i <- smooth.spline(trace$time, trace$depth, 
                                   spar = spar_seq[i], nknots = 5900)
+    spar_gcv[i] <- smooth_fit_i$crit
     predict_i <- predict(smooth_fit_i, trace$time)$y
     data_i <- cbind(data_i, predict_i)
   }
   # organizing and tidying for final graph 
   spar_names <- paste("spar_", spar_seq, sep = "")
+  spar_names <- paste(spar_names, round(spar_gcv, 2), sep = "_")
   names(data_i)[(ncol(trace)+1):ncol(data_i)] <- spar_names
   # just grabbing spar values, time, and depth for graphing
   just_spar <- data_i[, grep("^(s|d|t)", names(data_i))]
