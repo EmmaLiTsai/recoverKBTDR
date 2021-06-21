@@ -40,11 +40,12 @@ Contains:
 						     creates a data frame and was intended to make future depth calculations more accurate 
 						     after centering. 
 
-			  - zoc.R    		-- contains a preliminary function for zero offset correction (zoc) of the trace before arc removal. 
+			  - zoc_functions.R 	-- contains a preliminary function for zero offset correction (zoc) of the trace before arc removal. 
 						   This file is modeled after code that can be found in the diveMove package. The sample trace
 						   in this repo doesn't require zoc before arc removal, but some of the other records have
 						   extreme level shifts and drift in depth = 0 within a bout, so I thought this file may be 
-						   useful to include. 
+						   useful to include. This file also includes an extra function (zoc_big_drift) to help zoc 
+						   records that have extreme drift in depth = 0 such that zoc was difficult. 
 
 			  - read_trace.R 	-- contains a function to read in all sample data (trace and time dots) into the global 
 						   environment. First attempt at data abstraction, and contains code to tidy the trace and time dot 

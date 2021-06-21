@@ -95,3 +95,28 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5,
   # returning the final output 
   return(zoc_trace)
 }
+
+# This function is intended to help zoc traces that have extreme drift in depth 
+# = 0. I only have one trace that requires this extra correction, but I figured 
+# this might be helpful with future package development. Essentially, it adds 
+# another offset correction before the zoc() function is called, using a rolling 
+# min with window = 2000. This created a jagged line that represents the drift 
+# in y = 0 across the record. Then, the rolling min vector is smoothed out using 
+# a rolling mean of the same window, to help smooth out the minimum line for 
+# y-val correction (similar to the centering scan process). Then, the centered 
+# record is corrected using the original zoc functon. 
+zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1)){
+  # detecting drift line across the record 
+  min <- caTools::runmin(trace$y_val, k = 2000)
+  mean <- caTools::runmean(min, k = 2000)
+  # creating a data frame that has the needed y_val correction 
+  drift_correct <- data.frame(x_val = trace$x_val, y_val = trace$y_val, zoc_y = mean)
+  drift_correct$corr <- drift_correct$y_val - drift_correct$zoc_y
+  # changing names for zoc 
+  drift_correct <- drift_correct[, names(drift_correct) %in% c("x_val", "corr")]
+  names(drift_correct) <- c("x_val", "y_val")
+  # final zoc 
+  zoc_trace <- zoc(drift_correct, k = k, probs = probs, depth_bounds = depth_bounds)
+  # final return 
+  return(zoc_trace)
+}
