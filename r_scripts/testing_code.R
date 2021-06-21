@@ -38,7 +38,7 @@ source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
 source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
-source("../r_scripts/zoc.R")
+source("../r_scripts/zoc_functions.R")
 
 # reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")
