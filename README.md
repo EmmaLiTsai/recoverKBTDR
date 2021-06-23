@@ -32,13 +32,9 @@ Contains:
 							 be visually confirmed to ensure that it does not introduce any abnormal skew across the 
 							 record. 	
 						   
-			  - centering_functions.R -- contains methods for centering records and also for handling unique time dot issues (i.e., 
-			  			     time dots may be 60 minutes and ~8cm apart instead of 12 minutes apart and ~1.5cm apart). 
-						     There are only 2 records with this issue, but I thought these methods might be helpful 
-						     to include in the future code package. Another function is added to this file, 
-						     centered_psi_calibration, that extracts the psi calibration curve after centering. It 
-						     creates a data frame and was intended to make future depth calculations more accurate 
-						     after centering. 
+			  - centering_functions.R -- contains methods for centering records and another function, centered_psi_calibration, that 
+						     extracts the psi calibration curve after centering. It creates a data frame and was intended 
+						     to make future depth calculations more accurate after centering. 
 
 			  - zoc_functions.R 	-- contains a preliminary function for zero offset correction (zoc) of the trace before arc removal. 
 						   This file is modeled after code that can be found in the diveMove package. The sample trace

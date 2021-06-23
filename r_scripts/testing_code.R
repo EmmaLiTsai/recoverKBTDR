@@ -50,22 +50,10 @@ read_trace(filepath = "../sample_data")
 # functions help with transforming the csv files from ImageJ to center the 
 # record, which was necessary after scanning the traces.
 
-# -- unique case -- 
-# If the scan has issues with the time dots (records 16 and 17), center the 
-# scan using the r_scripts/center_scan_td_issue.R function:
-
-# center_scan_td_issue <- center_scan_td_issue(trace, time_dots)
-
-# Comparing centering with original record, the record after center_scan, and 
-# the record after center_scan_td_issue, which should be an improvement 
-# from both methods. 
-# ggplot(center_scan_td_issue, aes(x = x_val, y = y_val)) + geom_point() + 
-#   geom_point(data = trace, aes(x = x_val, y = y_val), color = "blue")
-# -- unique case --
-
 center_trace1 <- old_center_scan(trace, time_dots, dist_timedot = 0.9)
 center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
-# center_trace3 <- center_scan_td_issue(trace, time_dots, merge_dist = 0.5)
+# can also confirm that the center_scan method works well for records with time 
+# dot issues (time dots are farther apart than normal). 
 
 nrow(center_trace1)
 nrow(center_trace2)
