@@ -11,7 +11,7 @@
 # preliminary) file in the github repo.  
 
 ###############################################################################
-# Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-5, 1))
+# Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-1, 1))
 # Author:   EmmaLi Tsai
 # Date:     6/1/2021
 # 
@@ -46,7 +46,7 @@
 # Output: 
 #   - zoc_trace   : trace data frame after it has been zero-offset corrected
 ###############################################################################
-zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1)){
+zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1)){
   
   # logical vector if there is an NA depth
   d_na <- is.na(trace$y_val)
@@ -97,15 +97,15 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5,
 }
 
 # This function is intended to help zoc traces that have extreme drift in depth 
-# = 0. I only have one trace that requires this extra correction, but I figured 
+# = 0. I only have two traces that require this extra correction, but I figured 
 # this might be helpful with future package development. Essentially, it adds 
 # another offset correction before the zoc() function is called, using a rolling 
 # min with window = 2000. This created a jagged line that represents the drift 
 # in y = 0 across the record. Then, the rolling min vector is smoothed out using 
 # a rolling mean of the same window, to help smooth out the minimum line for 
 # y-val correction (similar to the centering scan process). Then, the centered 
-# record is corrected using the original zoc functon. 
-zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-5, 1)){
+# record is corrected using the original zoc function. 
+zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1)){
   # detecting drift line across the record 
   min <- caTools::runmin(trace$y_val, k = 2000)
   mean <- caTools::runmean(min, k = 2000)
