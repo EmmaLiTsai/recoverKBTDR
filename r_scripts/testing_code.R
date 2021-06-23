@@ -141,6 +141,11 @@ ggplot(zoc_trace[145000:160000,], aes(x = x_val, y = y_val)) + geom_point() +
 # plotting the whole record 
 ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace, aes(x = x_val, y = y_val), color = "red")
+
+# If there is HUGE drift in the record (WS_1 and WS_22), zoc the data with the
+# function zoc_big_drift(). It basically calls the zoc function above, but adds 
+# an extra filtering process beforehand to help make zoc more reliable. 
+
 # -- unique case -- 
 
 # calling the function to transform x-axis here: 
