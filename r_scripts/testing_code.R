@@ -93,7 +93,7 @@ coeff <- 10
 ggplot(center_trace1, aes(x = x_val)) + 
   geom_line(aes(y = y_val - (center_trace2$y_val))) + 
   geom_line(data = time_dots, aes(x = x_val, y = (y_val/coeff)), color = "red") + 
-  scale_y_continuous(name = "diff(y_val)", sec.axis = sec_axis(~.*coeff, name = "time dots"))
+  scale_y_continuous(name = "diffference in y-val", sec.axis = sec_axis(~.*coeff, name = "time dots"))
 # this plot definitely shows the lag created by the fuzzy join (center_trace1), 
 # since the fuzzy join starts over estimating the centering that is needed right 
 # when the position of the time dots starts increasing (~x_val 70cm). The 
@@ -197,6 +197,8 @@ ggplot(trace, aes(x = time, y = depth)) +
 ################################################################################
 ## STEP FIVE: Smoothing ########################################################
 ################################################################################
+
+## First, here are some possible cross validation methods: ##
 # A potential cross validation function in smooth_trace.R, see issue #17 in 
 # GitHub. This attempts to find the best spar value for smoothing using leave  
 # one out cross validation (loocv) method on a random sample of the trace data. 
@@ -215,7 +217,7 @@ smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
 
 # A helper function to visually compare different spar values: 
 spar_options <- view_spar_options(trace, increase_spar = 0.05)
-# plotting
+# plotting-- this takes a bit to run 
 ggplot(spar_options, aes(x = time, y = value, color = name)) + 
   geom_line() + 
   facet_wrap(~name) + 
@@ -244,7 +246,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
-trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 150, depth_thresh = 15)
+trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 150, depth_thresh = 5)
 # here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1) + 
@@ -303,6 +305,15 @@ ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line(
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
+
+# I was wondering if I could detect haul-out behavior from the difference 
+# between time dots (dots should be closer since the motor rolling the film  
+# slows from Antarctic air temperatures). But there doesn't seem to be a clear 
+# trend in this record: 
+ggplot(trace, aes(x = x_val, y = y_val)) + geom_point() + 
+  geom_line(data = time_dots, aes(x = x_val, y = c(0, diff(y_val)*100)), color = "red", size = 1)
+# I only see a trend in a handful of the records, but this could also mean that 
+# the seal might've just not hauled out in some of the records (like this one).
 
 # After this final step, the proposed workflow is to export the final trace data 
 # to a csv file, which can be read for further dive analysis in the diveMove 
