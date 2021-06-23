@@ -95,13 +95,13 @@ trace <- center_trace2
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
 ################################################################################
+
 # find the psi calibration curve after centering: 
 psi_calibration <- centered_psi_calibration(trace)
 
-# Before running this code, confirm that the correct center_y value 
-# has been calculated for the transform_coordinates function.
-
-# running find_center_y with sample values from this record:
+# running find_center_y with sample values from this record. This function is 
+# meant to find an approximate value for center_y, but this still needs to be 
+# visually confirmed. 
 find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- unique case -- 
@@ -135,6 +135,9 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # an extra filtering process beforehand to help make zoc more reliable. 
 
 # -- unique case -- 
+
+# Before running this code below, confirm that the correct center_y value has 
+# been calculated for the transform_coordinates function.
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, center_y = 11.10, time_period_min = 12)
