@@ -190,7 +190,7 @@ view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
   # just grabbing spar values, time, and depth for graphing
   just_spar <- data_i[, grep("^(s|d|t)", names(data_i))]
   # pivor longer for easier graphing
-  spar_long <- tidyr::pivot_longer(just_spar, spar_names)
+  spar_long <- tidyr::pivot_longer(just_spar, all_of(spar_names))
   # returning the final output 
   return(spar_long)
 }
