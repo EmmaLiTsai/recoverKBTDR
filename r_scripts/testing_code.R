@@ -47,51 +47,27 @@ read_trace(filepath = "../sample_data")
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
 ################################################################################
-# Not sure if these functions will be included in the final package, but these 
-# functions help with transforming the csv files from ImageJ to center the 
-# record, which was necessary after scanning the traces.
+# Not sure if this function will be included in the final package, but these 
+# functions help with transforming the files from ImageJ to center the record, 
+# which was necessary after scanning the traces.
 
-center_trace1 <- old_center_scan(trace, time_dots, dist_timedot = 0.9)
-center_trace2 <- center_scan(trace, time_dots, dist_timedot = 0.9)
+center_trace <- center_scan(trace, time_dots, dist_timedot = 0.9)
 # can also confirm that the center_scan method works well for records with time 
-# dot issues (time dots are farther apart than normal). 
-
-nrow(center_trace1)
-nrow(center_trace2)
-
-## DWS ok with removing dupes it works better. still not identical
-identical(center_trace1, center_trace2)
-
-center_trace1[10000:10050,]
-center_trace2[10000:10050,]
+# dot issues (time dots are farther apart than normal). Comparisons between 
+# centering methods can be found in previous commits in this repository. 
 
 # plotting the centered trace with the original trace to see how the script 
 # ran and how centering performed: 
 ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) + geom_point() + 
-  geom_point(data = center_trace1[1000:11000,], aes(x = x_val, y = y_val), color = "red") + 
-  geom_point(data = center_trace2[1000:11000,], aes(x = x_val, y = y_val), color = "blue") 
+  geom_point(data = center_trace[1000:11000,], aes(x = x_val, y = y_val), color = "red") 
 
 # creating another window to compare the different methods: 
 ggplot(trace[88000:100000,], aes(x = x_val, y = y_val)) + geom_point() + 
-  geom_point(data = center_trace1[88000:100000,], aes(x = x_val, y = y_val), color = "red") + 
-  geom_point(data = center_trace2[88000:100000,], aes(x = x_val, y = y_val), color = "blue") 
-
-# plotting the difference between two methods and corresponding position of the 
-# time dots 
-coeff <- 10
-ggplot(center_trace1, aes(x = x_val)) + 
-  geom_line(aes(y = y_val - (center_trace2$y_val))) + 
-  geom_line(data = time_dots, aes(x = x_val, y = (y_val/coeff)), color = "red") + 
-  scale_y_continuous(name = "diffference in y-val", sec.axis = sec_axis(~.*coeff, name = "time dots"))
-# this plot definitely shows the lag created by the fuzzy join (center_trace1), 
-# since the fuzzy join starts over estimating the centering that is needed right 
-# when the position of the time dots starts increasing (~x_val 70cm). The 
-# new rolling mean method is much more responsive to changes in time dot
-# position, so I believe this is the best method. 
+  geom_point(data = center_trace[88000:100000,], aes(x = x_val, y = y_val), color = "red") 
 
 # I could add this in the function call, but I kept it out so I could visually 
 # compare the output with the original trace file
-trace <- center_trace2
+trace <- center_trace
 
 ################################################################################
 # STEP TWO AND THREE: Transform coordinates by arm equation and time scale######
@@ -298,7 +274,7 @@ max(trace$smooth_depth[1:210000])
 ################################################################################
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
-# calling the function 
+# calling the function to add dates and times to the data 
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 

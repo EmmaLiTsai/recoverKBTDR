@@ -1,21 +1,18 @@
 ###############################################################################
-# Function: old_center_scan(trace, time_dots, dist_timedot = 1.1)
-# Author:   EmmaLi Tsai
-# Date:     3/27/21
-# 
-# NOTE: function is deprecated, replaced by center_scan()
-# 
+# Function: center_scan(trace, time_dots, dist_timedot = 1.1)
+# Author:   Dr. Dylan Schwilk
+#  
 # Function takes the trace and timedots files and uses the y values of the 
 # time dots to move the trace up/down to center the scan, such that all the 
 # y-values of the time dots are along y = -dist_timedot that the user defines in 
-# the function call. This function does a fuzzy full distance merge based on the 
-# x_val columns in the trace and time_dots data frame, and then calculates how 
-# much the y values of the trace need to be corrected to center the scan. 
-# 
+# the function call. It basically creates a rolling mean function on the x_vals 
+# of the timing gots to to cut the x_vals of the trace data frame, which allows 
+# for centering. This function is a large improvement from the original fuzzy 
+# join methods, and also works on records with time dot issues. 
+#
 # This function was needed to ensure that any drift in the trace would be from 
 # the TDR and not from scanning. This drift is common with modern TDRs and can 
-# be easily handled with the diveMove package with zero offset correction 
-# filters (see Luque & Fried, 2011). 
+# be easily handled in future zoc functions. 
 #
 # Input: 
 #   - trace        : tidy trace file 
@@ -27,71 +24,8 @@
 #                    records. 
 #
 # Output: 
-#   - fuzzy_merge_trace : fuzzy merged trace with centered y values and original
-#                         x values of the scan. 
+#   - trace : centered trace with two columns: x_val and y_val
 ###############################################################################
-old_center_scan <- function(trace, time_dots, dist_timedot = 1.1){
-  # adding the first time dot at the beginning of the function 
-  time_dots_zero <- data.frame(x_val = c(0, time_dots$x_val), y_val = c(time_dots$y_val[1], time_dots$y_val))
-  
-  # first, I needed to find the appropriate merge distance. This distance should 
-  # be large enough to merge with trace values between time dots that are far 
-  # apart. However, I remove duplicated values later in this function, so 
-  # large values also produce a lag in centering...
-  merge_dist <- max(abs(diff(time_dots_zero$x_val)))
-  
-  # this is a fuzzy distance merge that I did using the "fuzzyjoin" package. 
-  # it produces a data frame with x and y values of the trace and the connected
-  # x and y values of the trace (headers x_val.y and Y, respectively). 
-  
-  # I needed this in order to use the y values of the time dots to center the 
-  # scan.
-  fuzzy_merge_trace <- fuzzyjoin::difference_left_join(trace, time_dots_zero, 
-                                                       by = c("x_val"), 
-                                                       max_dist = merge_dist)
-  
-  # calculating how far the y time dot values are from the dist_timedot value. 
-  # this was needed to move the y values of the trace up/down such that the 
-  # time dots are centered along the same horizontal line of y = dist_timedots. 
-  
-  # case_when function was needed to account for when the time dots might be > 0! 
-  fuzzy_merge_trace$y_val_corr <- dplyr::case_when(fuzzy_merge_trace$y_val.y < 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot), 
-                                                   fuzzy_merge_trace$y_val.y > 0 ~ ((-dist_timedot) - abs(fuzzy_merge_trace$y_val.y)),
-                                                   fuzzy_merge_trace$y_val.y == 0 ~ (abs(fuzzy_merge_trace$y_val.y) - dist_timedot))
-  
-  # centering the scan using the above y corrected values  
-  fuzzy_merge_trace$center_y <- fuzzy_merge_trace$y_val.x + fuzzy_merge_trace$y_val_corr
-  
-  # removing duplicated values -- this happened when a point along a trace 
-  # was close to both time dots. This code will keep the first duplicated value 
-  # but remove the trailing ones. Since any errors due to scanning would be 
-  # gradual and the time dots are usually ~1.2 cm apart, I think this method 
-  # should be sound 
-  # resolved issue #11 in GitHub repo:
-  fuzzy_merge_trace <- fuzzy_merge_trace[!duplicated(fuzzy_merge_trace[,1:2]),]
-  
-  # some final tidying -- this is removing unimportant columns resulting from 
-  # the merge and giving these columns meaningful names. 
-  fuzzy_merge_trace <- fuzzy_merge_trace[,c(1,6)]
-  names(fuzzy_merge_trace) <- c("x_val", "y_val")
-  
-  # returning centered y-values 
-  return(fuzzy_merge_trace)
-}
-
-## New Method created by Dr. Schwilk: 
-
-# Simple rolling mean function. Window size is n. function returns a vector
-# that is shorter than original and does not pad with NAs. An alternative would
-# be create a rolling mean fx with filter():
-# ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
-# But I suspect cumsum is faster and I like not getting the NAs.
-rollmean <- function(x, n) {
-  cx <- c(0, cumsum(x))
-  return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
-}
-
-
 center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
@@ -103,6 +37,16 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
   
   return(trace)
+}
+
+# Simple rolling mean function. Window size is n. function returns a vector
+# that is shorter than original and does not pad with NAs. An alternative would
+# be create a rolling mean fx with filter():
+# ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
+# But I suspect cumsum is faster and I like not getting the NAs.
+rollmean <- function(x, n) {
+  cx <- c(0, cumsum(x))
+  return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
 }
 
 ###############################################################################
@@ -146,7 +90,10 @@ centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600,
   # the two intervals using the lag() function and creating another filter 
   
   # creating a helper data frame to make future calculations easier 
-  final_filter <- data.frame(segment = psi_simple$floor, mean = psi_simple$mean, lag = lag(psi_simple$mean))
+  final_filter <- data.frame(segment = psi_simple$floor, 
+                             mean = psi_simple$mean, 
+                             lag = lag(psi_simple$mean))
+  # finding the difference between intervals 
   final_filter$diff <- final_filter$mean - final_filter$lag
   
   # trying to catch values that are close but might not have been grouped in the 
