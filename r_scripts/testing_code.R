@@ -243,7 +243,7 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
-trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 150, depth_thresh = 5)
+trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 800, depth_thresh = 10)
 # here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1) + 
@@ -252,6 +252,10 @@ ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") +
 # this smoothing method because it might help increase the resolution of 
 # post-dive surface intervals. The gcv and residual sums of squares value for 
 # this model is lowest in this model in comparison to the two above. 
+# here is another look at this method: 
+ggplot(trace[118000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(data = trace_smooth_bout[118000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 1) + 
+  theme(legend.position = "none")
 
 # comparing the three smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
