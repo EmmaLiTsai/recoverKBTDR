@@ -283,6 +283,18 @@ ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line(
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
 
+# careful -- this function also creates duplicated times from points that are 
+# close together: 
+group_times <- dplyr::group_by(trace, date_time) %>% summarize(count = n())
+# plotting duplicated points; most happen around a bout of dives
+ggplot(trace, aes(x = date_time, y = smooth_depth)) + geom_line() + 
+  geom_line(data = group_times, aes(x = date_time, y = count), color = "red")
+# many observations are dropped when removing duplicates:
+trace_no_dupes <- trace[!duplicated(trace$date_time),]
+# but visaully the record still looks the same:
+ggplot(trace[1:16000,], aes(x = date_time, y = depth)) + geom_line() + 
+  geom_line(data = trace_no_dupes[1:10948,], aes(x = date_time, y = depth), color = "red")
+
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
 # slows from Antarctic air temperatures). But there doesn't seem to be a clear 
