@@ -190,7 +190,7 @@ smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
 # A helper function to visually compare different spar values: 
 spar_options <- view_spar_options(trace, increase_spar = 0.05)
 # plotting-- this takes a bit to run 
-ggplot(spar_options, aes(x = time, y = value, color = name)) + 
+ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) + 
   geom_line() + 
   facet_wrap(~name) + 
   theme_bw() + 
