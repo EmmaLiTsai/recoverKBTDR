@@ -179,7 +179,7 @@ view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
   for(i in 1:length(spar_seq)){
     smooth_fit_i <- smooth.spline(trace$time, trace$depth, 
                                   spar = spar_seq[i], nknots = 5900)
-    spar_gcv[i] <- smooth_fit_i$crit
+    spar_gcv[i] <- smooth_fit_i$cv.crit
     predict_i <- predict(smooth_fit_i, trace$time)$y
     data_i <- cbind(data_i, predict_i)
   }
