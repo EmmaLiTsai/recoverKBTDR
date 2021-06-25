@@ -23,8 +23,7 @@
 
 # some basic libraries that are required:  
 library(ggplot2) # for visualizing outputs in this file 
-library(fuzzyjoin) # for fuzzy merge in scan centering, difference_left_join()
-# function is deprecated and this dependency can be removed later
+# dependencies: 
 library(dplyr) # for select(), and mutate()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
