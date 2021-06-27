@@ -21,10 +21,10 @@
 # Reading in example data: #####################################################
 ################################################################################
 
-# some basic libraries that are required:  
-library(ggplot2) # for visualizing outputs in this file 
+# for visualizing outputs in this file:
+library(ggplot2) 
 # dependencies: 
-library(dplyr) # for select(), and mutate()
+library(dplyr) # for select(), mutate(), case_when()
 library(tidyr) # for separate()
 library(lubridate) # for dates and times 
 library(caTools) # for zoc using moving window statistics 
@@ -78,7 +78,7 @@ psi_calibration <- centered_psi_calibration(trace)
 # running find_center_y with sample values from this record. This function is 
 # meant to find an approximate value for center_y, but this still needs to be 
 # visually confirmed. 
-find_center_y_psi(1142.90, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.93, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- unique case -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
