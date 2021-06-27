@@ -116,7 +116,7 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # been calculated for the transform_coordinates function.
 
 # calling the function to transform x-axis here: 
-trace <- transform_coordinates(trace, time_dots, center_y = 11.10, time_period_min = 12)
+trace <- transform_coordinates(trace, time_dots, center_y = 11.2, time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
 # or ones that were moved before the origin after arc removal (only points that 
 # were extremely close to the origin and negative). 
