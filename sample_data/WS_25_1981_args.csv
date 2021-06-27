@@ -1,0 +1,2 @@
+radius,center_y,dist_timedot,time_period_min,spar_l,spar_h,nknots_l,nknots_h,depth_bounds_smooth,date_start,max_depth,k_l,k_h,probs_l,probs_h,depth_bounds_l,depth_bounds_h,zoc_offset,window
+21.14,11.19,0.9,12,0.8,0.3,1000,5900,0,1981:01:16 15:10:00,NA,NA,NA,NA,NA,NA,NA,NA,120000:140000

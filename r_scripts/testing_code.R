@@ -40,6 +40,15 @@ source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
+# fast-track recovery function that works with an argument csv file to pass 
+# trace-specific arguments to all the functions in this repository: 
+# source("../r_scripts/fast_recovery.R")
+# recover_record(filepath = "../sample_data")
+# output is a fully recovered trace with dates, times, and smoothed depths. 
+# I created this to quickly read-in data without having to tab through this 
+# file, and also for future diveMove analysis. This was more important for my 
+# private repo with the whole dataset for this project. 
+
 # reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")
 
