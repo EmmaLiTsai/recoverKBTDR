@@ -95,7 +95,7 @@ find_center_y_psi(1142.945, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 # reliable arc removal. If the trace has extreme drift in depth = 0 after 
 # centering, use the function zoc_big_drift, which adds another correction 
 # filter before zoc. 
-zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(0, 1))
+zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1))
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
@@ -106,9 +106,9 @@ ggplot(zoc_trace[145000:160000,], aes(x = x_val, y = y_val)) + geom_point() +
 ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace, aes(x = x_val, y = y_val), color = "red")
 
-# If there is HUGE drift in the record (WS_1 and WS_22), zoc the data with the
-# function zoc_big_drift(). It basically calls the zoc function above, but adds 
-# an extra filtering process beforehand to help make zoc more reliable. 
+# If there is HUGE drift in the record (WS_1_part2 and WS_22), zoc the data with 
+# the function zoc_big_drift(). It basically calls the zoc function above, but 
+# adds an extra filtering process beforehand to help make zoc more reliable. 
 
 # -- unique case -- 
 
