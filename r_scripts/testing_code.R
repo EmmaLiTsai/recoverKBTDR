@@ -78,7 +78,7 @@ psi_calibration <- centered_psi_calibration(trace)
 # running find_center_y with sample values from this record. This function is 
 # meant to find an approximate value for center_y, but this still needs to be 
 # visually confirmed. 
-find_center_y_psi(1142.93, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
+find_center_y_psi(1142.945, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
 # -- unique case -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
@@ -116,7 +116,7 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # been calculated for the transform_coordinates function.
 
 # calling the function to transform x-axis here: 
-trace <- transform_coordinates(trace, time_dots, center_y = 11.2, time_period_min = 12)
+trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
 # or ones that were moved before the origin after arc removal (only points that 
 # were extremely close to the origin and negative). 
