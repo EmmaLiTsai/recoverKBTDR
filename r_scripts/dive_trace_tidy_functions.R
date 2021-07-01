@@ -288,6 +288,10 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00"){
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
     seconds(as.integer((trace$time %% 1) * 60))
+  # removing duplicated times -- this happened when two points were very close 
+  # together and got assigned the same time. Dive analysis packages cannot 
+  # handle duplicated times
+  trace <- trace[!duplicated(trace$date_time),]
   # returning the trace 
   return(trace)
 }

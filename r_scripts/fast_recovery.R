@@ -56,15 +56,7 @@ recover_record <- function(filepath = "../sample_data"){
 
   # add dates and times
   trace <- add_dates_times(trace, start_time = args$date_start)
-  
-  # filtering by smoothing depth, removing any smoothing values < 0... this 
-  # might just be tagged onto the smoothing function in later commits: 
-  trace[trace$smooth_depth < 0,]$smooth_depth <- 0
-  
-  # removing dupes of datetime for diveMove package. This happened when points 
-  # were really close to eachother so were assigned the same time.
-  trace <<- trace[!duplicated(trace$date_time),]
-  
+
   # eventually write this output into csv file in a different folder(results 
   # folder?), to read into diveMove package...
 }

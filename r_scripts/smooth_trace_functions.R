@@ -8,6 +8,9 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
   # adding the smoothed predict values to the trace data frame 
   trace$smooth_depth <- predict(smooth_fit, trace$time)$y
   
+  # removing extra noise
+  trace[trace$smooth_depth < 0,]$smooth_depth <- 0
+  
   # return trace data 
   return(trace)
 }
@@ -58,6 +61,9 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
                                                  deriv_diff > 0 ~ "BOTTOM"))
   # removing extra column 
   smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
+  
+  # removing excess noise 
+  smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
   
   # final return 
   return(smooth_trace)
@@ -112,6 +118,8 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
                                                  deriv_diff > 0 ~ "BOTTOM"))
   # removing extra column 
   smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
+  # removing excess noise at the surface 
+  smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
   
   return(smooth_trace)
 }

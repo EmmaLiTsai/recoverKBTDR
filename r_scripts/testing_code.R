@@ -23,11 +23,12 @@
 
 # for visualizing outputs in this file:
 library(ggplot2) 
+
 # dependencies: 
-library(dplyr) # for select(), mutate(), case_when()
+library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize()
 library(tidyr) # for separate()
-library(lubridate) # for dates and times 
-library(caTools) # for zoc using moving window statistics 
+library(lubridate) # for ymd_hms() 
+library(caTools) # for runmean() and runquantile() 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
@@ -40,8 +41,8 @@ source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
-# fast-track recovery function that works with an argument csv file to pass 
-# trace-specific arguments to all the functions in this repository: 
+# fast-track recovery function that works with an argument csv file (args) to 
+# pass trace-specific arguments to all the functions in this repository: 
 source("../r_scripts/fast_recovery.R")
 recover_record(filepath = "../sample_data")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
@@ -49,7 +50,8 @@ recover_record(filepath = "../sample_data")
 # file, and also for future diveMove analysis. This was more important for my 
 # private repo with the whole data set for this project. 
 
-# reading in full trace data (i.e., trace and time dots): 
+# step-by-step functions
+# reading in full trace data (i.e., trace, time dots, and argument file): 
 read_trace(filepath = "../sample_data")
 
 ################################################################################
@@ -130,7 +132,7 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 
 # calling the function to transform x-axis here: 
 trace <- transform_coordinates(trace, time_dots, 
-                               center_y = 11.2, 
+                               center_y = 11.19, 
                                time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
 # or ones that were moved before the origin after arc removal (only points that 
@@ -225,15 +227,15 @@ trace_smooth <- smooth_trace(trace,
 # value to  reduce chatter created by the transducer arm, while retaining 
 # wiggles in the dives at depth. Supposed to be an improvement from 
 # smooth_trace function above. 
-trace <- smooth_trace_bounded(trace, 
+trace_smooth_bounded <- smooth_trace_bounded(trace, 
                               spar = c(0.8, 0.27), 
                               nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                              depth_bound = 0)
+                              depth_bound = 10)
 # this function would be sound considering there is less tension on the 
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
 # plotting
-ggplot(trace[1000:11000,], aes(x = time, y = depth)) + 
+ggplot(trace_smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
   geom_line(color = "grey") +
   geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
 # this method is pretty good, I wonder if this smoothing method is better than 
@@ -241,14 +243,14 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
-trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
+trace <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
                                        nknots = c(1000, signif(nrow(trace) * .03, 1)), 
                                        window = nrow(trace)/200,
                                        depth_thresh = 10)
 
 # here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1) + 
+  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
 # you can certainly see the different bouts of dives in this method! I created 
 # this smoothing method because it might help increase the resolution of 
@@ -256,30 +258,30 @@ ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") +
 # this model is lowest in this model in comparison to the two above. 
 # here is another look at this method: 
 ggplot(trace[118000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(data = trace_smooth_bout[118000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 1) + 
+  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
 
 # comparing the three smoothing methods with the original data: 
 # smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
 # smoothing method is in dark blue 
 ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
   geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[120000:140000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  geom_line(data = trace_smooth_bounded[120000:140000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
   theme(legend.position = "none")
 
 # comparing another section of the record, where the methods diverge: 
 ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
   geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[1000:11000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  geom_line(data = trace_smooth_bounded[1000:11000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
   theme(legend.position = "none")
 
 # comparing another section with the max depth: 
 ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth), color = "blue", size = 1) +  
+  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
   geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bout[130000:160000,], aes(x = time, y = smooth_depth, color = bout), size = 0.5) + 
+  geom_line(data = trace_smooth_bounded[130000:160000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
   theme(legend.position = "none")
 
 # also added dive component assignment within the smoothing functions: 
@@ -304,22 +306,12 @@ max(trace$smooth_depth[1:210000])
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
 
 # plotting 
-ggplot(trace[190000:198272,], aes(x = date_time, y = smooth_depth)) + geom_line()
+ggplot(trace[120000:125000,], aes(x = date_time, y = depth)) + 
+  geom_line(color = "grey") + 
+  geom_line(aes(x = date_time, y = smooth_depth))
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
-
-# careful -- this function also creates duplicated times from points that are 
-# close together: 
-group_times <- dplyr::group_by(trace, date_time) %>% summarize(count = n())
-# plotting duplicated points; most happen around a bout of dives
-ggplot(trace, aes(x = date_time, y = smooth_depth)) + geom_line() + 
-  geom_line(data = group_times, aes(x = date_time, y = count), color = "red")
-# many observations are dropped when removing duplicates:
-trace_no_dupes <- trace[!duplicated(trace$date_time),]
-# but visaully the record still looks the same:
-ggplot(trace[1:16000,], aes(x = date_time, y = depth)) + geom_line() + 
-  geom_line(data = trace_no_dupes[1:10948,], aes(x = date_time, y = depth), color = "red")
 
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
