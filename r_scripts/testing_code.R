@@ -40,6 +40,15 @@ source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
+# fast-track recovery function that works with an argument csv file to pass 
+# trace-specific arguments to all the functions in this repository: 
+source("../r_scripts/fast_recovery.R")
+recover_record(filepath = "../sample_data")
+# output is a fully recovered trace with dates, times, and smoothed depths. 
+# I created this to quickly read-in data without having to tab through this 
+# file, and also for future diveMove analysis. This was more important for my 
+# private repo with the whole data set for this project. 
+
 # reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")
 
@@ -95,7 +104,11 @@ find_center_y_psi(1142.945, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 # reliable arc removal. If the trace has extreme drift in depth = 0 after 
 # centering, use the function zoc_big_drift, which adds another correction 
 # filter before zoc. 
-zoc_trace <- zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1))
+zoc_trace <- zoc(trace, 
+                 k = c(2, 500), 
+                 probs = c(0.5, 0.02), 
+                 depth_bounds = c(-1, 1))
+
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
   geom_point(data = trace[1000:19000,], aes(x = x_val, y = y_val), color = "red")
@@ -116,7 +129,9 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # been calculated for the transform_coordinates function.
 
 # calling the function to transform x-axis here: 
-trace <- transform_coordinates(trace, time_dots, center_y = 11.19, time_period_min = 12)
+trace <- transform_coordinates(trace, time_dots, 
+                               center_y = 11.2, 
+                               time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
 # or ones that were moved before the origin after arc removal (only points that 
 # were extremely close to the origin and negative). 
@@ -129,7 +144,10 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 # STEP FOUR: Transform Y axis from psi to depth ################################
 ################################################################################
 # calling the function to transform y-axis to depth: 
-trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+trace <- transform_psitodepth(trace, 
+                              psi_calibration, 
+                              max_psi = 900, 
+                              max_position = 22.45)
 # the psi curve at the end matches the intervals on the record
 
 # -- unique case -- 
@@ -198,14 +216,19 @@ ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) +
 
 ## Three possible smoothing methods: ## 
 # function smooth_trace is a simple spline smoothing function: 
-trace_smooth <- smooth_trace(trace, spar = 0.27, nknots = 5900)
+trace_smooth <- smooth_trace(trace, 
+                             spar = 0.27, 
+                             nknots = signif(nrow(trace) * .03, 1))
 
 # function smooth_trace_bounded is a more complex recursive spline smoothing
 # function with depth bounds, such that shallower depths have a higher spar 
 # value to  reduce chatter created by the transducer arm, while retaining 
 # wiggles in the dives at depth. Supposed to be an improvement from 
 # smooth_trace function above. 
-trace <- smooth_trace_bounded(trace, spar = c(0.8, 0.27), nknots = c(1000, 5900), depth_bound = 0)
+trace <- smooth_trace_bounded(trace, 
+                              spar = c(0.8, 0.27), 
+                              nknots = c(1000, signif(nrow(trace) * .03, 1)), 
+                              depth_bound = 0)
 # this function would be sound considering there is less tension on the 
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
@@ -218,7 +241,11 @@ ggplot(trace[1000:11000,], aes(x = time, y = depth)) +
 
 # this is another possible method that increases the resolution of spline 
 # smoothing when the seal is in a bout of dives
-trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 800, depth_thresh = 10)
+trace_smooth_bout <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
+                                       nknots = c(1000, signif(nrow(trace) * .03, 1)), 
+                                       window = nrow(trace)/200,
+                                       depth_thresh = 10)
+
 # here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
   geom_line(data = trace_smooth_bout, aes(x = time, y = smooth_depth, color = bout), size = 1) + 

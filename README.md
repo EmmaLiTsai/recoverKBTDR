@@ -54,6 +54,11 @@ Contains:
 						  	improvement to the smooth_trace function, and the two methods are compared in the testing_code.R 
 							file. This file also has some sample cross validation methods to mathematically determine the 
 							best spar value for the data, and some helper functions for smoothing comparisons. 
+
+			  - fast_recovery.R     -- contains a function that uses an argument file to pass all trace-specific arguments to all functions
+					           in this repository. Intended to make recovery faster instead of having to tab through the whole 
+						   testing_code.R file, and to begin brainstorming user interface. This function is more important for 
+						   my private repository with the whole dataset for this project. 
  
  (2) Sample Data   - contain XY coordinates of sample trace data as .csv files, along with the corresponding positions of the timing dots.
 		     This file also contains a .txt file that outlines the image processing methods used to create this sample record.
