@@ -91,14 +91,14 @@ psi_calibration <- centered_psi_calibration(trace)
 # visually confirmed. 
 find_center_y_psi(1142.945, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 
-# -- unique case -- 
+# -- start unique case -- 
 # if the record does not have a psi_calibration file (1978 - 1979 records), 
 # use this function instead: 
 # example from WS_14: 
 # find_center_y_nopsi(65.258, -0.056, 63.442, 5.341, 21.14, 0.21, 484, trace)
-# -- unique case -- 
+# -- end unique case -- 
 
-# -- unique case -- 
+# -- start unique case -- 
 # If the scan has major drift in depth = 0 and/or level shifts, zero offset the 
 # data using the r_scripts/zoc_functions.R file before using the 
 # transform_coordinates function. This code (modified from the diveMove package) 
@@ -124,8 +124,7 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # If there is HUGE drift in the record (WS_1_part2 and WS_22), zoc the data with 
 # the function zoc_big_drift(). It basically calls the zoc function above, but 
 # adds an extra filtering process beforehand to help make zoc more reliable. 
-
-# -- unique case -- 
+# -- end unique case -- 
 
 # Before running this code below, confirm that the correct center_y value has 
 # been calculated for the transform_coordinates function.
@@ -152,11 +151,11 @@ trace <- transform_psitodepth(trace,
                               max_position = 22.45)
 # the psi curve at the end matches the intervals on the record
 
-# -- unique case -- 
+# -- start unique case -- 
 # if the record is before 1981 and does not have a psi calibration curve at the
 # end, use the transform_todepth function (example below):
 # transform_todepth(trace, 318)
-# -- unique case -- 
+# -- end unique case -- 
 
 # plotting 
 ggplot(trace, aes(x = time, y = depth)) + geom_line()
@@ -242,7 +241,9 @@ ggplot(trace_smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # the bout smoothing method below? 
 
 # this is another possible method that increases the resolution of spline 
-# smoothing when the seal is in a bout of dives
+# smoothing when the seal is in a bout of dives. This function is similar to the 
+# smoothing method above, but would help retain the resolution between dives for 
+# post-dive surface intervals. 
 trace <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
                                        nknots = c(1000, signif(nrow(trace) * .03, 1)), 
                                        window = nrow(trace)/200,
