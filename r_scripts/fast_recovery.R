@@ -22,14 +22,14 @@ recover_record <- function(filepath = "../sample_data"){
     # if there is big drift:
     if(args$depth_bound_h > 1){
       trace <- zoc_big_drift(trace, 
-                             k = c(args$k_l, args$k_h), 
-                             probs = c(args$probs_l, args$probs_h), 
+                             k = c(2, args$k_h), 
+                             probs = c(0.5, 0.02), 
                              depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
       
     } else { # if drift is minor:
       trace <- zoc(trace, 
-                   k = c(args$k_l, args$k_h), 
-                   probs = c(args$probs_l, args$probs_h), 
+                   k = c(2, args$k_h), 
+                   probs = c(0.5, 0.02), 
                    depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
     }
     # offset to account for thickness of the record (0 in most cases)
@@ -37,20 +37,23 @@ recover_record <- function(filepath = "../sample_data"){
   }
   
   # remove arc and time assignment
-  trace <- transform_coordinates(trace, time_dots, center_y = args$center_y, time_period_min = args$time_period_min)
+  trace <- transform_coordinates(trace, time_dots, 
+                                 center_y = args$center_y, 
+                                 time_period_min = args$time_period_min)
   
   # if the record has a psi calibration curve or simply a max depth value:
   if (is.na(args$max_depth)){
-    trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+    trace <- transform_psitodepth(trace, psi_calibration, 
+                                  max_psi = 900, max_position = 22.45)
   } else {
     trace <- transform_todepth(trace, max_depth = args$max_depth)
   }
   
   # smooth the record
   trace <- smooth_trace_bout(trace, 
-                             spar = c(args$spar_l, args$spar_h), 
-                             nknots = c(args$nknots_l, args$nknots_h), 
-                             window = 150, 
+                             spar = c(0.8, args$spar_h), 
+                             nknots = c(1000, signif(nrow(trace) * .03, 1)), 
+                             window = nrow(trace)/200, 
                              depth_thresh = args$depth_bounds_smooth)
 
   # add dates and times
