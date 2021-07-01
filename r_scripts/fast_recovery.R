@@ -18,7 +18,7 @@ recover_record <- function(filepath = "../sample_data"){
   }
   
   # zoc, if needed
-  if (!is.na(args$k_l)){
+  if (!is.na(args$k_h)){
     # if there is big drift:
     if(args$depth_bound_h > 1){
       trace <- zoc_big_drift(trace, 
