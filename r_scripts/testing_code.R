@@ -47,7 +47,7 @@ recover_record(filepath = "../sample_data")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
 # I created this to quickly read-in data without having to tab through this 
 # file, and also for future diveMove analysis. This was more important for my 
-# private repo with the whole dataset for this project. 
+# private repo with the whole data set for this project. 
 
 # reading in full trace data (i.e., trace and time dots): 
 read_trace(filepath = "../sample_data")

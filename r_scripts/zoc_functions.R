@@ -92,6 +92,13 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1,
   # changing names for future functions: 
   names(zoc_trace) <- c("x_val", "y_val")
   
+  # adding small amount to account for thickness of the trace: 
+  shallow <- zoc_trace[which(zoc_trace$y_val < 0.5),]
+  shallow_diff_y <- dplyr::group_by(shallow, x_val) %>% summarize(diff_y = diff(y_val), .groups = "drop")
+  zoc_offset <- mean(shallow_diff_y$diff_y)
+  
+  # addin gthe offset 
+  zoc_trace$y_val <- zoc_trace$y_val + zoc_offset
   # returning the final output 
   return(zoc_trace)
 }
@@ -117,6 +124,7 @@ zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_boun
   names(drift_correct) <- c("x_val", "y_val")
   # final zoc 
   zoc_trace <- zoc(drift_correct, k = k, probs = probs, depth_bounds = depth_bounds)
+  
   # final return 
   return(zoc_trace)
 }

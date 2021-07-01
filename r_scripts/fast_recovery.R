@@ -32,8 +32,6 @@ recover_record <- function(filepath = "../sample_data"){
                    probs = c(0.5, 0.02), 
                    depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
     }
-    # offset to account for thickness of the record (0 in most cases)
-    trace$y_val <- trace$y_val + args$zoc_offset
   }
   
   # remove arc and time assignment
