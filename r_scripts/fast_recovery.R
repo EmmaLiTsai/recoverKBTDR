@@ -55,7 +55,10 @@ recover_record <- function(filepath = "../sample_data"){
                              depth_thresh = args$depth_bounds_smooth)
 
   # add dates and times
-  trace <- add_dates_times(trace, start_time = args$date_start)
+  trace <<- add_dates_times(trace, 
+                           start_time = args$date_start, 
+                           on_seal = args$on_seal, 
+                           off_seal = args$off_seal)
 
   # eventually write this output into csv file in a different folder(results 
   # folder?), to read into diveMove package...

@@ -25,7 +25,8 @@
 library(ggplot2) 
 
 # dependencies: 
-library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize()
+library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize(), 
+# filter()
 library(tidyr) # for separate()
 library(lubridate) # for ymd_hms() 
 library(caTools) # for runmean() and runquantile() 
@@ -304,10 +305,13 @@ max(trace$smooth_depth[1:210000])
 ## STEP SIX:  Dive statistics, direction flagging, etc##########################
 ################################################################################
 # calling the function to add dates and times to the data 
-trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00")
+trace <- add_dates_times(trace, 
+                         start_time = "1981:01:16 15:10:00", 
+                         on_seal = "1981-01-16 17:58:00", 
+                         off_seal = "1981-01-23 15:30:00")
 
 # plotting 
-ggplot(trace[120000:125000,], aes(x = date_time, y = depth)) + 
+ggplot(trace[120000:nrow(trace),], aes(x = date_time, y = depth)) + 
   geom_line(color = "grey") + 
   geom_line(aes(x = date_time, y = smooth_depth))
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
