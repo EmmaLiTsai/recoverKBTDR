@@ -51,7 +51,7 @@ recover_record <- function(filepath = "../sample_data"){
   trace <- smooth_trace_bout(trace, 
                              spar = c(0.8, args$spar_h), 
                              nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                             window = nrow(trace)/200, 
+                             window = signif(floor(nrow(trace) * 0.002), 1), 
                              depth_thresh = args$depth_bounds_smooth)
 
   # add dates and times

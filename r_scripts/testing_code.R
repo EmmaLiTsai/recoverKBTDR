@@ -47,7 +47,7 @@ source("../r_scripts/zoc_functions.R")
 source("../r_scripts/fast_recovery.R")
 recover_record(filepath = "../sample_data")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
-# I created this to quickly read-in data without having to tab through this 
+# I created this to quickly read in data without having to tab through this 
 # file, and also for future diveMove analysis. This was more important for my 
 # private repo with the whole data set for this project. 
 
@@ -247,7 +247,7 @@ ggplot(trace_smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # post-dive surface intervals. 
 trace <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
                                        nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                                       window = nrow(trace)/200,
+                                       window = signif(floor(nrow(trace) * 0.002), 1),
                                        depth_thresh = 10)
 
 # here is what this smoothing method looks like-- bout is light blue line 
