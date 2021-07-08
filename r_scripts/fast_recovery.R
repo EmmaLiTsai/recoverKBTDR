@@ -14,7 +14,7 @@
 #
 #   - center_y: height of the pivot point of the transducer arm from depth = 0 
 #               in cm. Changes across all records, but I have helper functions 
-#               to help provide esimates (see find_center_y_functions.R). 
+#               to provide estimates (see find_center_y_functions.R). 
 #
 #   - dist_timedot: distance in cm used for centering the record. All time dots 
 #               will be centered along y = dist_timedot. 
