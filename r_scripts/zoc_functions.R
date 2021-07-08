@@ -7,11 +7,11 @@
 # offset correction is needed before the arc in the data is removed. While the 
 # sample data in this repo is somewhat free of this drift, there are a few older 
 # records with extreme level shifts and drift in depth = 0 within a bout of 
-# dives. Therefore, I thought it might be helpful to include this (still 
-# preliminary) file in the github repo.  
+# dives. Therefore, I thought it might be helpful to include this file in the 
+# github repo.  
 
 ###############################################################################
-# Function: zoc(trace, k = c(3, 500), probs = c(0.5, 0.02), depth.bounds = c(-1, 1))
+# Function: zoc(trace, k_h = 500, depth_bounds = c(-1, 1))
 # Author:   EmmaLi Tsai
 # Date:     6/1/2021
 # 
@@ -32,21 +32,26 @@
 # 
 #   - trace       : tidy trace data frame, contains the x and y values of the 
 #                   trace
-#   
-#   - depth.bounds: restricted search window for where depth = 0 should likely 
-#                   be. For the records, this should be in cm. Defualt set 
-#                   c(-5, 1)
 #
-#   - k           : size of window used for first and second filters. 
-#                   default set to c(3, 500)
-#
-#   - probs       : quantiles to extract for each step of k. 
-#                   default set to c(0.5, 0.02)
-#
+#   - k_h         : size of the larger window used for the second filter. This 
+#                   default is set to 500, but should be smaller for records 
+#                   with extreme drift 
+# 
+#   - depth_bounds: restricted search window for where y = 0 should likely 
+#                   be. For the records, this should be in cm. Default set 
+#                   c(-1, 1).
+# 
 # Output: 
 #   - zoc_trace   : trace data frame after it has been zero-offset corrected
 ###############################################################################
-zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1)){
+zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
+  
+  # defining the window sizes. k_h is the larger window, and needs to be smaller 
+  # for records with extreme drift 
+  k = c(2, k_h)
+  # probabilities to use for the first and second quantiles. This is constant 
+  # across all records. 
+  probs = c(0.5, 0.02)
   
   # logical vector if there is an NA depth
   d_na <- is.na(trace$y_val)
@@ -57,11 +62,11 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1,
   # creating a matrix of y_values for each filter: 
   filters <- matrix(trace$y_val, ncol = 1)
   
-  # for each k window of smoothing: 
+  # for each k window: 
   for (i in seq(length(k))) {
     # add a column of y values from the trace df
     filters <- cbind(filters, trace$y_val)
-    # grab the depths that are near depth = 0 for the window of smoothing:
+    # grab the depths that are near depth = 0 for the window:
     dd <- filters[d_ok, i]
     # calls the runquantile function, which creates a rolling quantile across the 
     # window. This function also relies of the EndRule function which takes the 
@@ -99,6 +104,7 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1,
   
   # adding the offset 
   zoc_trace$y_val <- zoc_trace$y_val + zoc_offset
+ 
   # returning the final output 
   return(zoc_trace)
 }
@@ -112,7 +118,15 @@ zoc <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1,
 # a rolling mean of the same window, to help smooth out the minimum line for 
 # y-val correction (similar to the centering scan process). Then, the centered 
 # record is corrected using the original zoc function. 
-zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_bounds = c(-1, 1)){
+zoc_big_drift <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
+  
+  # defining the window sizes. k_h is the larger window, and needs to be smaller 
+  # for records with extreme drift.  
+  k = c(2, k_h)
+  # probabilities to use for the first and second quantiles. This is constant 
+  # across all records. 
+  probs = c(0.5, 0.02)
+  
   # detecting drift line across the record 
   min <- caTools::runmin(trace$y_val, k = 2000)
   mean <- caTools::runmean(min, k = 2000)
@@ -122,6 +136,7 @@ zoc_big_drift <- function(trace, k = c(3, 500), probs = c(0.5, 0.02), depth_boun
   # changing names for zoc 
   drift_correct <- drift_correct[, names(drift_correct) %in% c("x_val", "corr")]
   names(drift_correct) <- c("x_val", "y_val")
+  
   # final zoc 
   zoc_trace <- zoc(drift_correct, k = k, probs = probs, depth_bounds = depth_bounds)
   

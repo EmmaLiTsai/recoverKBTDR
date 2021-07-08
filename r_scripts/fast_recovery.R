@@ -1,10 +1,66 @@
-# fast-lane recovery code using an argument file that passes values to all 
-# functions in the repository. This was mainly created to start thinking about 
-# user interface, but also so I could easily read in files with the appropriate 
-# arguments. This was more important for my private repo with all the records. 
-recover_record <- function(filepath = "../sample_data"){
+###############################################################################
+# Function: fast_recovery(filepath = "../sample_data")
+# Author:   EmmaLi Tsai
+# Date:     6/29/21
+# 
+# Wrapper function that allows for fast recovery of a trace using an argument 
+# file that passes all function arguments to the functions in this repository. 
+# The argument file contains 14 different arguments: 
+#
+#   - radius  : the length of the radius arm in cm. This is constant across all 
+#               records, but some of the earlier records that I have were 
+#               magnified by a slightly larger amount, and therefore the scale  
+#               is slightly different. 
+#
+#   - center_y: height of the pivot point of the transducer arm from depth = 0 
+#               in cm. Changes across all records, but I have helper functions 
+#               to help provide esimates (see find_center_y_functions.R). 
+#
+#   - dist_timedot: distance in cm used for centering the record. All time dots 
+#               will be centered along y = dist_timedot. 
+# 
+#   - time_period_min: time elapsed between two time dots. 
+# 
+#   - spar_h  : spar value used for high depths of the records to increase 
+#               resolution for the smooth_trace_dive() function. 
+# 
+#   - depth_bounds_smooth: depth threshold to use for the rolling mean function 
+#               to determine what depths should be considered diving behavior. 
+# 
+#   - date_start: start of the record in ymd_hms format 
+# 
+#   - max_depth: maximum depth to use for depth transformation. Only for records
+#                older than 1981 without a psi calibration curve 
+# 
+#   - k_h     : larger window to use for zoc() function, if needed
+# 
+#   - depth_bounds_l, depth_bounds_h: low and high depth bounds that encapsulate 
+#               where depth = 0 is likely to be. Used for zoc() function. 
+# 
+#   - window  : just a helper window that gives a nice segment of the record for
+#               plotting. This can be taken out later, but was mainly just for 
+#               me to note the position of different bouts in a record. 
+# 
+#   - on_seal : time the tdr was placed on seal. In ymd_hms format. 
+# 
+#   - off_seal: time the tdr was taken off seal. In ymd_hms format.
+#
+# This was mainly created to start thinking about user interface, but also so I 
+# could quickly read in traces with the appropriate arguments. This was more 
+# important for my private repo with all the records. 
+# 
+# Input: 
+#   - filepath   : file path that points to all the csv files needed for 
+#                  recovery (trace, time_dots, and args file)   
+# Output: 
+#   - trace      : fully recovered record (centered, zoc (if needed), time and 
+#                  depth transformation, smoothed, with POSIXct dates and times 
+#                  added) 
+###############################################################################
+fast_recovery <- function(filepath = "../sample_data"){
   # read data 
   read_trace(filepath = filepath)
+  
   # get radius value (usually constant across all records, but earlier ones were 
   # magnified by 8x instead of 7x, so scale is slightly different)
   source("../r_scripts/dive_trace_tidy_functions.R")
@@ -22,14 +78,12 @@ recover_record <- function(filepath = "../sample_data"){
     # if there is big drift:
     if(args$depth_bound_h > 1){
       trace <- zoc_big_drift(trace, 
-                             k = c(2, args$k_h), 
-                             probs = c(0.5, 0.02), 
+                             k_h = args$k_h, 
                              depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
       
     } else { # if drift is minor:
       trace <- zoc(trace, 
-                   k = c(2, args$k_h), 
-                   probs = c(0.5, 0.02), 
+                   k_h = args$k_h, 
                    depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
     }
   }
@@ -47,14 +101,12 @@ recover_record <- function(filepath = "../sample_data"){
     trace <- transform_todepth(trace, max_depth = args$max_depth)
   }
   
-  # smooth the record
-  trace <- smooth_trace_bout(trace, 
-                             spar = c(0.8, args$spar_h), 
-                             nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                             window = signif(floor(nrow(trace) * 0.002), 1), 
+  # smooth the record using the bout method 
+  trace <- smooth_trace_dive(trace, 
+                             spar_h = args$spar_h, 
                              depth_thresh = args$depth_bounds_smooth)
 
-  # add dates and times
+  # add dates and times and put the output in the global environment
   trace <<- add_dates_times(trace, 
                            start_time = args$date_start, 
                            on_seal = args$on_seal, 

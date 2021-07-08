@@ -1,2 +1,2 @@
 radius,center_y,dist_timedot,time_period_min,spar_h,depth_bounds_smooth,date_start,max_depth,k_h,depth_bounds_l,depth_bounds_h,window,on_seal,off_seal
-21.14,11.19,0.9,12,0.27,10,1981:01:16 15:10:00,NA,NA,NA,NA,120000:140000,1981-01-16 17:58:00,1981-01-23 15:30:00
+21.14,11.19,0.9,12,0.27,10,1981:01:16 15:10:00,NA,NA,NA,NA,80000:95000,1981:01:16 17:58:00,1981:01:23 15:30:00

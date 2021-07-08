@@ -42,10 +42,11 @@ source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
-# fast-track recovery function that works with an argument csv file (args) to 
-# pass trace-specific arguments to all the functions in this repository: 
+# Fast-track recovery function that works with an argument csv file (args) to 
+# pass trace-specific arguments to all the functions in this repository. 
+# Basically a wrapper function for fast recovery.
 source("../r_scripts/fast_recovery.R")
-recover_record(filepath = "../sample_data")
+fast_recovery(filepath = "../sample_data")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
 # I created this to quickly read in data without having to tab through this 
 # file, and also for future diveMove analysis. This was more important for my 
@@ -107,10 +108,7 @@ find_center_y_psi(1142.945, 0, 1140.55, 9.3, 21.14, 0.16, psi_calibration)
 # reliable arc removal. If the trace has extreme drift in depth = 0 after 
 # centering, use the function zoc_big_drift, which adds another correction 
 # filter before zoc. 
-zoc_trace <- zoc(trace, 
-                 k = c(2, 500), 
-                 probs = c(0.5, 0.02), 
-                 depth_bounds = c(-1, 1))
+zoc_trace <- zoc(trace, k_h = 500, depth_bounds = c(-1, 1))
 
 # plotting to view data after zoc
 ggplot(zoc_trace[1000:19000,], aes(x = x_val, y = y_val)) + geom_point() + 
@@ -128,10 +126,11 @@ ggplot(zoc_trace, aes(x = x_val, y = y_val)) + geom_point() +
 # -- end unique case -- 
 
 # Before running this code below, confirm that the correct center_y value has 
-# been calculated for the transform_coordinates function.
+# been calculated for the transform_coordinates() function.
 
 # calling the function to transform x-axis here: 
-trace <- transform_coordinates(trace, time_dots, 
+trace <- transform_coordinates(trace, 
+                               time_dots, 
                                center_y = 11.19, 
                                time_period_min = 12)
 # any observations removed were points that happened after the last time dot, 
@@ -218,9 +217,7 @@ ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) +
 
 ## Three possible smoothing methods: ## 
 # function smooth_trace is a simple spline smoothing function: 
-trace_smooth <- smooth_trace(trace, 
-                             spar = 0.27, 
-                             nknots = signif(nrow(trace) * .03, 1))
+trace_smooth <- smooth_trace(trace, spar = 0.27)
 
 # function smooth_trace_bounded is a more complex recursive spline smoothing
 # function with depth bounds, such that shallower depths have a higher spar 
@@ -228,9 +225,8 @@ trace_smooth <- smooth_trace(trace,
 # wiggles in the dives at depth. Supposed to be an improvement from 
 # smooth_trace function above. 
 trace_smooth_bounded <- smooth_trace_bounded(trace, 
-                              spar = c(0.8, 0.27), 
-                              nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                              depth_bound = 10)
+                                             spar_h = 0.27, 
+                                             depth_bound = 10)
 # this function would be sound considering there is less tension on the 
 # transducer arm at shallow depths, which produced extra noise in the record 
 # when the seal was resting at the surface or hauled out. 
@@ -245,10 +241,7 @@ ggplot(trace_smooth_bounded[1000:11000,], aes(x = time, y = depth)) +
 # smoothing when the seal is in a bout of dives. This function is similar to the 
 # smoothing method above, but would help retain the resolution between dives for 
 # post-dive surface intervals. 
-trace <- smooth_trace_bout(trace, spar = c(0.8, 0.27), 
-                                       nknots = c(1000, signif(nrow(trace) * .03, 1)), 
-                                       window = signif(floor(nrow(trace) * 0.002), 1),
-                                       depth_thresh = 10)
+trace <- smooth_trace_dive(trace, spar_h = 0.27, depth_thresh = 10)
 
 # here is what this smoothing method looks like-- bout is light blue line 
 ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
@@ -286,7 +279,8 @@ ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "gre
   geom_line(data = trace_smooth_bounded[130000:160000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
   theme(legend.position = "none")
 
-# also added dive component assignment within the smoothing functions: 
+# also added dive component assignment within the smoothing functions. I can 
+# always remove this, but just wanted to experiment with it here: 
 ggplot(trace[143000:157000,], aes(x = time, y = smooth_depth)) +
   geom_line(aes(time, depth), color= "gray", size = 0.2) +
   geom_point(aes(color = deriv > 0)) +
@@ -307,8 +301,8 @@ max(trace$smooth_depth[1:210000])
 # calling the function to add dates and times to the data 
 trace <- add_dates_times(trace, 
                          start_time = "1981:01:16 15:10:00", 
-                         on_seal = "1981-01-16 17:58:00", 
-                         off_seal = "1981-01-23 15:30:00")
+                         on_seal = "1981:01:16 17:58:00", 
+                         off_seal = "1981:01:23 15:30:00")
 
 # plotting 
 ggplot(trace[120000:nrow(trace),], aes(x = date_time, y = depth)) + 

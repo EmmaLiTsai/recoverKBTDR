@@ -1,5 +1,8 @@
 # very simple function for spline smoothing of trace data 
-smooth_trace <- function(trace, spar = 0.3, nknots = 5900){ 
+# Function likely deprecated, replaced by smooth_trace_dive()
+smooth_trace <- function(trace, spar = 0.3){ 
+  # finding the number of knots to use for the record based on the record length
+  nknots = signif(nrow(trace) * .03, 1)
   # need to order first: 
   trace <- trace[order(trace$time),]
   # creating smoothing fit with the spar and knots the user defines
@@ -16,6 +19,7 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
 }
 
 # Another possible spline smoothing function: 
+# Function likely deprecated, replaced by smooth_trace_dive()
 # More complex spline smoothing function with depth bounds. This function
 # smooths at a lower resolution for depths < depth_bound (defaults set to 
 # spar = 0.8 and 1000 knots), and higher resolution at depths > depth_bound 
@@ -25,7 +29,14 @@ smooth_trace <- function(trace, spar = 0.3, nknots = 5900){
 # method would be sound considering there would be less tension on the 
 # transducer arm at shallow depths, which produced unnecessary noise in the 
 # record. Here, I also added dive component assignment. 
-smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), depth_bound = 5){ 
+smooth_trace_bounded <- function(trace, spar_h =  0.3, depth_bound = 5){ 
+  
+  # creating spar and nknots values for low depth values (spar = 0.8 and 
+  # nknots = 1000), and high depth values (spar = spar_h, and nknots depending
+  # on the length of ht record)
+  spar = c(0.8, spar_h)
+  nknots = c(1000, signif(nrow(trace) * .03, 1))
+  
   # need to order first: 
   trace <- trace[order(trace$time),]
   # separating shallow parts of the record 
@@ -69,16 +80,51 @@ smooth_trace_bounded <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 590
   return(smooth_trace)
 }
 
-
-# here is another possible smoothing method that attempts to increase resolution 
-# in spline smoothing when the seal is undergoing a bout of dives. It is very 
-# similar to the method above, but uses a rolling mean to detect instances where
-# the average depth is >= 10 meters and we can therefore assume that a bout of 
-# dives is happening. It then increases the resolution of the smoothing spline. 
-smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900), window = 50, depth_thresh = 10){
+## another possible smoothing method using a dive detector ## 
+###############################################################################
+# Function: smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+# Author:   EmmaLi Tsai
+# Date:     6/15/2021
+# 
+# Function takes the trace (after time and depth have been transformed) to 
+# perform penalized spline smoothing on the data. First, it uses a rolling mean 
+# function to detect when the average depth is >= depth_thresh, where it is 
+# possible to assume that the seal is diving. The window size used for this 
+# rolling mean is ~0.2% of the rows in the record. When a dive is detected, it 
+# increases the resolution of spline smoothing by decreasing the smoothing 
+# penalty to spar_h, and knots = ~3% of the rows in the record. This was an 
+# attempt to increase the resolution of smoothing when the seal was in a bout of 
+# dives and to retain the surface intervals between dives (which would be lost 
+# in a smoothing method bounded by just depth). This also decreases the 
+# resolution of spline smoothing when the seal is not diving (to spar = 0.8, 
+# knots = 1000), to reduce chatter created by the transducer arm at shallow 
+# depths. 
+# 
+# Input: 
+# 
+#   - trace        : trace dataframe after time and depth axis transformation. 
+#
+#   - spar_h       : spar value to use at higher depths. Should be < 0.8, and 
+#                    default is set to 0.3. 
+# 
+#   - depth_thresh : depth threshold to use for the rolling mean. Default is set 
+#                    to 5m, such that rolling means >= 5m would be considered 
+#                    diving behavior. 
+# 
+# Output: 
+#   - smooth_trace : trace data frame with smoothed values (smooth_depth), and 
+#                    also with dive component assignment. 
+###############################################################################
+smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
+  # defining spar, nknots, and window values: 
+  spar = c(0.8, spar_h)
+  nknots = c(1000, signif(nrow(trace) * .03, 1)) 
+  window = signif(floor(nrow(trace) * 0.002), 1)
+  
   # ordering 
   trace <- trace[order(trace$time),]
-  # detecting a bout of dives using the runmean function: 
+  # detecting a bout of dives using the runmean function on a window of the 
+  # data: 
   detect_bout <- data.frame(runmean = (caTools::runmean(trace$depth, window)), 
                             depth = trace$depth, 
                             time = trace$time)
@@ -108,7 +154,8 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
   # recursive and final smoothing 
   spline_mod_bout <- smooth.spline(smooth_trace$time, smooth_trace$smooth, 
                               spar = spar[2], nknots = nknots[2])
-  # added final smoothing and dive component assignment 
+  # added final smoothing and dive component assignment -- this can be removed 
+  # later but I was experimenting with it here
   smooth_trace <- dplyr::mutate(smooth_trace, 
                                 smooth_depth = predict(spline_mod_bout, smooth_trace$time)$y,
                                 deriv = predict(spline_mod_bout, smooth_trace$time, deriv=1)$y,
@@ -120,7 +167,7 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
   smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
   # removing excess noise at the surface 
   smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
-  
+  # final return 
   return(smooth_trace)
 }
 
@@ -128,7 +175,6 @@ smooth_trace_bout <- function(trace, spar = c(0.8, 0.3), nknots = c(1000, 5900),
 # cross validation methods: 
 # leave-one-out cross validation method- inefficient and slow due to nested for 
 # loop. 
-
 find_spar_loocv <- function(trace){
   # creating smaller trace data frame 
   trace_cv <- trace[sample(1:nrow(trace), 1000),]

@@ -18,10 +18,12 @@
 ###############################################################################
 # Global constants: 
 
-# radius of the KBTDR arm when scaled up to the size of the physical traces
+# Radius of the KBTDR arm when scaled up to the size of the physical traces. 
+# This is usually constant across all records (21.14 cm), but earlier records
+# were magnified by 8x instead of 7x, so scale is slightly different
 RADIUS <- 21.14
 
-# this was used for the psi to depth calculation, for every 1m increase in 
+# This was used for the psi to depth calculation, for every 1m increase in 
 # depth, there is 1.4696 increase in PSI in saltwater
 PSI_TO_DEPTH <- 1.4696
 
@@ -283,7 +285,7 @@ transform_todepth <- function(trace, max_depth){
 # order to read this file in as a TDR object in the diveMove package: 
 
 # this could be tagged on to step 2 of this file? 
-add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981-01-16 17:58:00", off_seal = "1981-01-23 15:30:00"){
+add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981-01-23 15:30:00"){
   # adding dates and times from lubridate package 
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
@@ -292,6 +294,11 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
   # together and got assigned the same time. Dive analysis packages cannot 
   # handle duplicated times
   trace <- trace[!duplicated(trace$date_time),]
+  
+  # convert to ymd_hms format, if needed
+  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
+  
   # filtering the data based on the time the TDR was placed on the seal to when 
   # it was taken off
   trace <- trace %>% dplyr::filter(date_time >= as.POSIXct(on_seal, tz = "Antarctica/McMurdo") & date_time <= as.POSIXct(off_seal, tz = "Antarctica/McMurdo"))
