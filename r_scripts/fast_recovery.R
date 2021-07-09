@@ -76,7 +76,7 @@ fast_recovery <- function(filepath = "../sample_data"){
   # zoc, if needed
   if (!is.na(args$k_h)){
     # if there is big drift:
-    if(args$depth_bound_h > 1){
+    if(args$depth_bounds_h > 1){
       trace <- zoc_big_drift(trace, 
                              k_h = args$k_h, 
                              depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
