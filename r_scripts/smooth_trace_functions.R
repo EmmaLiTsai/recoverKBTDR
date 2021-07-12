@@ -166,7 +166,9 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   # removing extra column 
   smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
   # removing excess noise at the surface 
-  smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
+  if (any(smooth_trace$smooth_depth < 0)){
+    smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
+  }
   # final return 
   return(smooth_trace)
 }
