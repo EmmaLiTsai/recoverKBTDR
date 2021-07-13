@@ -21,7 +21,7 @@ Contains:
 				    and extract the main trace from the thickness of the line. These functions have been broken out into the 
 				    smooth_trace_functions.R file since I am still in the process of comparing different methods. 
 				(6) Final tidying: this will add dates and times to these data, such that it can be read into other available 
-				    dive analysis packages. 
+				    dive analysis packages. This will also involve creating a regular time series. 
 			
 			  - testing_code.R      -- contains testing code for functions created in all R files in this project. This was needed to 
 						   separate testing and production code, and uses the trace and time_dots csv files in the 
