@@ -107,10 +107,14 @@ fast_recovery <- function(filepath = "../sample_data"){
                              depth_thresh = args$depth_bounds_smooth)
 
   # add dates and times and put the output in the global environment
-  trace <<- add_dates_times(trace, 
+  trace <- add_dates_times(trace, 
                            start_time = args$date_start, 
                            on_seal = args$on_seal, 
                            off_seal = args$off_seal)
+  # adding regular time series 
+  trace <<- create_regular_ts(trace, 
+                              on_seal = args$on_seal, 
+                              off_seal = args$off_seal)
 
   # eventually write this output into csv file in a different folder(results 
   # folder?), to read into diveMove package...
