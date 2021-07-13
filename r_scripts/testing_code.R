@@ -30,6 +30,7 @@ library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize(),
 library(tidyr) # for separate()
 library(lubridate) # for ymd_hms() 
 library(caTools) # for runmean() and runquantile() 
+library(zoo) # for na.approx()
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
@@ -303,7 +304,6 @@ trace <- add_dates_times(trace,
                          start_time = "1981:01:16 15:10:00", 
                          on_seal = "1981:01:16 17:58:00", 
                          off_seal = "1981:01:23 15:30:00")
-
 # plotting 
 ggplot(trace[120000:nrow(trace),], aes(x = date_time, y = depth)) + 
   geom_line(color = "grey") + 
@@ -311,6 +311,23 @@ ggplot(trace[120000:nrow(trace),], aes(x = date_time, y = depth)) +
 # checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
 # defined by the 1990's team, which checks out! For this record they defined the 
 # end of the record after the last dive was made by the seal. 
+
+# transforming from irregular time series into regular time series, since the 
+# diveMove package was built to work with regular time series. This will 
+# help with analysis, and might be tagged on the add_dates_times function in 
+# later commits
+trace <- create_regular_ts(trace, 
+                           on_seal = "1981:01:16 17:58:00", 
+                           off_seal = "1981:01:23 15:30:00")
+# plotting the regular time series 
+ggplot(trace, aes(x = date_time, y = interp_depth)) + 
+  geom_line()
+
+# After this final step, the proposed workflow is to export the final trace data 
+# to a csv file, which can be read for further dive analysis in the diveMove 
+# package. The diveMove package creates an S4 object using the date_time column 
+# and depth. 
+
 
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
@@ -321,7 +338,3 @@ ggplot(trace, aes(x = x_val, y = y_val)) + geom_point() +
 # I only see a trend in a handful of the records, but this could also mean that 
 # the seal might've just not hauled out in some of the records (like this one).
 
-# After this final step, the proposed workflow is to export the final trace data 
-# to a csv file, which can be read for further dive analysis in the diveMove 
-# package. The diveMove package creates an S4 object using the date_time column 
-# and depth. 

@@ -285,7 +285,7 @@ transform_todepth <- function(trace, max_depth){
 # order to read this file in as a TDR object in the diveMove package: 
 
 # this could be tagged on to step 2 of this file? 
-add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981-01-23 15:30:00"){
+add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00"){
   # adding dates and times from lubridate package 
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
@@ -296,13 +296,39 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
   trace <- trace[!duplicated(trace$date_time),]
   
   # convert to ymd_hms format, if needed
-  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
+  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
   
   # filtering the data based on the time the TDR was placed on the seal to when 
   # it was taken off
   trace <- trace %>% dplyr::filter(date_time >= as.POSIXct(on_seal, tz = "Antarctica/McMurdo") & date_time <= as.POSIXct(off_seal, tz = "Antarctica/McMurdo"))
   # returning the trace 
   return(trace)
+}
+
+# function to transform irregular time series to regular, since diveMove package 
+# was built to handle regular time series. This function might eventually be 
+# absorbed into the add_dates_times function in later commits 
+create_regular_ts <- function(trace, on_seal, off_seal){
+  # convert to ymd_hms format, if needed
+  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
+  
+  # creating regular time series 
+  reg_time <- seq(on_seal, off_seal, by = "sec")
+  # transform to data frame
+  reg_time <- data.frame(reg_time = reg_time)
+  # merge regular time series into irregular time series
+  trace_reg <- merge(trace, reg_time, by.x = "date_time", by.y = "reg_time", all.y = TRUE)
+  # replacing NAs with linearly interpolated values 
+  interp <- zoo::na.approx(trace_reg$smooth_depth, trace_reg$date_time)
+  # cutting to match 
+  interp <- interp[1:nrow(trace_reg)]
+  # interpolated depth for regular time series 
+  trace_reg$interp_depth <- interp
+  # removing NA values at the tail end of the record
+  trace_reg <- trace_reg[which(!is.na(trace_reg$interp_depth)),]
+  # final return
+  return(trace_reg)
 }
 
