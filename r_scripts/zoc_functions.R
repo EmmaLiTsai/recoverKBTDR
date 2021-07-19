@@ -119,14 +119,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 # y-val correction (similar to the centering scan process). Then, the centered 
 # record is corrected using the original zoc function. 
 zoc_big_drift <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
-  
-  # defining the window sizes. k_h is the larger window, and needs to be smaller 
-  # for records with extreme drift.  
-  k = c(2, k_h)
-  # probabilities to use for the first and second quantiles. This is constant 
-  # across all records. 
-  probs = c(0.5, 0.02)
-  
+
   # detecting drift line across the record 
   min <- caTools::runmin(trace$y_val, k = 2000)
   mean <- caTools::runmean(min, k = 2000)
@@ -138,7 +131,7 @@ zoc_big_drift <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
   names(drift_correct) <- c("x_val", "y_val")
   
   # final zoc 
-  zoc_trace <- zoc(drift_correct, k = k, probs = probs, depth_bounds = depth_bounds)
+  zoc_trace <- zoc(drift_correct, k_h = k_h, depth_bounds = depth_bounds)
   
   # final return 
   return(zoc_trace)

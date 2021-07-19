@@ -426,7 +426,6 @@ find_spar_loocv <- function(trace){
   
   # creating an empty vector to store values in the loop 
   cv_error_spar <- rep(NA, length(spar_seq))
-  
   # looping through the spar sequence ... I don't like this nested for loop
   for (i in 1:length(spar_seq)){
     # grabbing the spar value
@@ -491,6 +490,5 @@ view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
   # returning the final output 
   return(spar_long)
 }
-
 
 

@@ -22,7 +22,7 @@ Contains:
 				(6) Smoothing: this step smooths these data to simplify the trace. This is needed to help remove noise 
 				    and extract the main trace from the thickness of the line, and for future dive analysis. This step also 
 				    contains some sample cross validation methods for choosing the best smoothing parameters (in development). 
-			
+
 			  - testing_code.R      -- contains testing code for functions created in all R files in this project. This was needed to 
 						   separate testing and production code, and uses the trace and time_dots csv files in the 
 						   sample data folder in this repository. 

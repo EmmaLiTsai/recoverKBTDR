@@ -30,6 +30,7 @@ library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize(),
 library(tidyr) # for separate()
 library(lubridate) # for ymd_hms() 
 library(caTools) # for runmean() and runquantile() 
+library(zoo) # for na.approx()
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
@@ -267,6 +268,11 @@ ggplot(trace, aes(x = date_time, y = smooth_depth)) +
   scale_x_continuous(position = "top") + 
   scale_y_reverse()
 
+# After this final step, the proposed workflow is to export the final trace data 
+# to a csv file, which can be read for further dive analysis in the diveMove 
+# package. The diveMove package creates an S4 object using the date_time column 
+# and depth. 
+
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
 # slows from Antarctic air temperatures). But there doesn't seem to be a clear 
@@ -276,7 +282,3 @@ ggplot(trace, aes(x = x_val, y = y_val)) + geom_point() +
 # I only see a trend in a handful of the records, but this could also mean that 
 # the seal might've just not hauled out in some of the records (like this one).
 
-# After this final step, the proposed workflow is to export the final trace data 
-# to a csv file, which can be read for further dive analysis in the diveMove 
-# package. The diveMove package creates an S4 object using the date_time column 
-# and depth. 
