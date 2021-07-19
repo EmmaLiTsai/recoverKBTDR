@@ -28,7 +28,7 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
   # First, I am transforming y2 and y1 to depth in meters. This was needed to 
   # estimate the amount of time it would've taken for the seal to descend to 
   # this depth. 
-  y_vals_df <- data.frame(y_vals = c(y2, y1))
+  y_vals_df <- data.frame(interp_y = c(y2, y1))
   depth_2 <- transform_psitodepth(y_vals_df, psi_calibration)$depth[1]
   # finding time it took for seal to descend to that depth assuming it is 
   # descending at 1.1 m/s (Williams et al., 2015) and transforming it to 

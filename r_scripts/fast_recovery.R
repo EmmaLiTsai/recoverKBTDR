@@ -58,17 +58,14 @@
 #                  added) 
 ###############################################################################
 fast_recovery <- function(filepath = "../sample_data"){
-  # read data 
+  
+  # read in the record 
   read_trace(filepath = filepath)
   
-  # get radius value (usually constant across all records, but earlier ones were 
-  # magnified by 8x instead of 7x, so scale is slightly different)
-  source("../r_scripts/dive_trace_tidy_functions.R")
-  
-  # center scan
+  # center the scan 
   trace <- center_scan(trace, time_dots, dist_timedot = args$dist_timedot)
   
-  # psi calibration curve, if available
+  # getting the centered psi calibration curve, if the record has one 
   if (is.na(args$max_depth)){
     psi_calibration <- centered_psi_calibration(trace)
   }
@@ -76,7 +73,7 @@ fast_recovery <- function(filepath = "../sample_data"){
   # zoc, if needed
   if (!is.na(args$k_h)){
     # if there is big drift:
-    if(args$depth_bound_h > 1){
+    if(args$depth_bounds_h > 1){
       trace <- zoc_big_drift(trace, 
                              k_h = args$k_h, 
                              depth_bounds = c(args$depth_bounds_l, args$depth_bounds_h))
@@ -88,30 +85,30 @@ fast_recovery <- function(filepath = "../sample_data"){
     }
   }
   
-  # remove arc and time assignment
-  trace <- transform_coordinates(trace, time_dots, 
-                                 center_y = args$center_y, 
-                                 time_period_min = args$time_period_min)
-  
-  # if the record has a psi calibration curve or simply a max depth value:
-  if (is.na(args$max_depth)){
-    trace <- transform_psitodepth(trace, psi_calibration, 
-                                  max_psi = 900, max_position = 22.45)
-  } else {
-    trace <- transform_todepth(trace, max_depth = args$max_depth)
-  }
-  
-  # smooth the record using the bout method 
-  trace <- smooth_trace_dive(trace, 
-                             spar_h = args$spar_h, 
-                             depth_thresh = args$depth_bounds_smooth)
+  # transforming x-axis to time (minutes from the start)
+  trace <- transform_coordinates(trace, time_dots, center_y = args$center_y, time_period_min = args$time_period_min)
 
-  # add dates and times and put the output in the global environment
-  trace <<- add_dates_times(trace, 
+  # dates and times with interpolated points 
+  trace <- add_dates_times(trace, 
                            start_time = args$date_start, 
                            on_seal = args$on_seal, 
                            off_seal = args$off_seal)
+  
+  # coding for if the record has a psi calibration curve at the end or not 
+  if (is.na(args$max_depth)){
+      trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+    } else {
+    trace <- transform_todepth(trace, max_depth = args$max_depth)
+  }
+  
+  # smooth 
+  trace <<- smooth_trace_dive(trace, 
+                              spar_h = args$spar_h, 
+                              depth_thresh = args$depth_bounds_smooth)
 
-  # eventually write this output into csv file in a different folder(results 
-  # folder?), to read into diveMove package...
+  # writing to csv file in results folder: 
+  # base_name <- unlist(strsplit(filepath, "/"))[3]
+  # results_filepath <- paste("../results/", base_name, ".csv", sep = "")
+  # write.csv(trace, results_filepath)
+  # 
 }

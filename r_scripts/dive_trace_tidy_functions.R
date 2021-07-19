@@ -7,10 +7,10 @@
 
 # 1. Recenter and fix misalignment (both data inputs)
 # 2. Transform coordinates by radius arm eqn
-# 3. Transform x axis according to time dots
-# 4. Transform y axis to depth 
-# 5. Smoothing
-# 6. Dive statistics, direction flagging, etc.
+# 3. Transform x axis to dates & times
+# 4. Interpolate between missing time points 
+# 5. Transform y axis to depth 
+# 6. Smoothing
 
 # For all functions below, testing code can be found in the testing_code.R 
 # file. 
@@ -156,8 +156,60 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
+# transforming time in minutes to dates and times, with interpolated time points
+# to resolve issues with discontinuous records
+add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981-01-16 17:58:00", off_seal = "1981-01-23 15:30:00"){
+  # adding dates and times from lubridate package 
+  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
+    minutes(as.integer(trace$time)) + 
+    seconds(as.integer((trace$time %% 1) * 60))
+  # removing duplicated times -- this happened when two points were very close 
+  # together and got assigned the same time. Dive analysis packages cannot 
+  # handle duplicated times
+  trace <- trace[!duplicated(trace$date_time),]
+  
+  # need to convert to ymd_hms format 
+  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
+  
+  # filtering the data based on the time the TDR was placed on the seal to when 
+  # it was taken off
+  trace <- trace %>% dplyr::filter(date_time >= on_seal & date_time <= off_seal)
+  
+  trace <- create_regular_ts(trace, on_seal, off_seal)
+  # returning the trace 
+  return(trace)
+}
+
+# creating a regular time series. This was necessary to make future dive 
+# analysis more reliable, since the diveMove package was really only built to 
+# handle regular time series. Some records are discontinuous, so this was 
+# necessary. However, this does come at a cost of larger files and longer run
+# time. This function is nested in the add_dates_times function above. 
+create_regular_ts <- function(trace, on_seal, off_seal){
+  # convert to ymd_hms format, if needed
+  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
+  # creating regular time series 
+  reg_time <- seq(on_seal, off_seal, by = "sec")
+  # transform to data frame
+  reg_time <- data.frame(reg_time = reg_time)
+  # merge regular time series into irregular time series
+  trace_reg <- merge(trace, reg_time, by.x = "date_time", by.y = "reg_time", all.y = TRUE)
+  # replacing NAs with linearly interpolated values 
+  interp <- zoo::na.approx(trace_reg$y_val, trace_reg$date_time)
+  # cutting to match 
+  interp <- interp[1:nrow(trace_reg)]
+  # interpolated depth for regular time series 
+  trace_reg$interp_y <- interp
+  # removing NA values at the tail end of the record
+  trace_reg <- trace_reg[which(!is.na(trace_reg$interp_y)),]
+  # final return
+  return(trace_reg)
+}
+
 ################################################################################
-## STEP FOUR: Transform Y Axis to Depth ########################################
+## STEP FIVE: Transform Y Axis to Depth ########################################
 ################################################################################
 
 # THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
@@ -182,6 +234,8 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 # It should also be noted that this requires a segmented calibration, since 
 # the scale changes between psi intervals. This made the code slightly more 
 # complicated. 
+#
+# Function updated to run on new interpolated values. 
 # 
 # Input: 
 # 
@@ -206,7 +260,7 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   
   # defining the breaks and adding the maximum position of the TDR and also the 
   # minimum position to capture the lower values 
-  breaks <- c(min(trace$y_val), psi_calibration$psi_position, max_position)
+  breaks <- c(min(trace$interp_y, na.rm = TRUE), psi_calibration$psi_position, max_position)
   
   # combining the breaks and labels for future calculations
   labels_combined <- paste(labels, breaks, sep = ":")
@@ -214,27 +268,21 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
   
   # cutting the data frame using the above breaks and labels 
-  psi_interval_both <- as.data.frame(cut(trace$y_val, 
-                                         breaks = breaks,
-                                         include.lowest = TRUE, 
-                                         labels = labels_combined))
+  psi_interval_both <- as.data.frame(cut(trace$interp_y, breaks = breaks,
+                                         include.lowest = TRUE, labels = labels_combined))
   # changing name of column 
   names(psi_interval_both) <- "psi_interval_both"
   
   # splitting the label created by the cut function in to four separate columns 
-  # since this made the calculations easier. I'm basically going to use the 
-  # intervals as scales to do a segmented calibration on the record, since the 
-  # scale between each psi interval changes. 
-  # this step makes the function very slow, but I think I can find a quicker way 
-  # to do this 
+  # since this made the calculations easier 
   psi_interval_sep <- tidyr::separate(psi_interval_both, col = 1, 
-                           sep = ":", 
-                           into = c("psi_interval_1", "psi_position_1", 
-                                    "psi_interval_2", "psi_position_2"))
+                                      sep = ":", 
+                                      into = c("psi_interval_1", "psi_position_1", 
+                                               "psi_interval_2", "psi_position_2"))
   
   # changing to numeric values 
   tidy_cols <- as.data.frame(sapply(psi_interval_sep, function(x) as.numeric(paste(x))))
-
+  
   # helper vectors for future calculations. I basically needed to do a segmented 
   # calibration since the scales between psi intervals are different. 
   # finding the difference in psi between intervals 
@@ -243,15 +291,15 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
   diff_pos <- tidy_cols$psi_position_2 - tidy_cols$psi_position_1
   # finding difference in y value from the lower psi value of the interval it
   # fell into 
-  diff_y_val <- trace$y_val - tidy_cols$psi_position_1
+  diff_y_val <- trace$interp_y - tidy_cols$psi_position_1
   
-  # calculating psi -- had to be modified for y_vals that were < 0, where only
-  # interval 2 would be used as a scale. Y_vals that fell in higher intervals 
+  # calculating psi -- had to be modified for y-values that were < 0, where only
+  # interval 2 would be used as a scale. Y-vals that fell in higher intervals 
   # had to be scaled differently. 
-  trace$psi <- dplyr::case_when(tidy_cols$psi_interval_1 == 0 ~ (tidy_cols$psi_interval_2 * trace$y_val) / tidy_cols$psi_position_2,
+  trace$psi <- dplyr::case_when(tidy_cols$psi_interval_1 == 0 ~ (tidy_cols$psi_interval_2 * trace$interp_y) / tidy_cols$psi_position_2,
                                 tidy_cols$psi_interval_1 > 0 ~ tidy_cols$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
   
-  # final transformation -- linear relationship between psi and depth 
+  # final transformation 
   trace$depth <- trace$psi / PSI_TO_DEPTH
   # returning the trace 
   return(trace)
@@ -266,43 +314,183 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
 transform_todepth <- function(trace, max_depth){
   # calculating depth using the max depth the user defines and the max 
   # value of the trace: 
-  trace$depth <- ((trace$y_val * max_depth) / max(trace$y_val))
+  trace$depth <- ((trace$interp_y * max_depth) / max(trace$interp_y, na.rm = TRUE))
   # returning trace 
   return(trace)
 }
 
 ################################################################################
-## STEP FIVE: Smoothing ########################################################
+## STEP SIX: Smoothing #########################################################
 ################################################################################
-# currently a work in progress -- see options in testing_code.R and functions 
-# present in the r_scripts/smooth_trace_functions.R file
-
-
-################################################################################
-## STEP SIX:  Dive statistics, direction flagging, etc##########################
-################################################################################
-# creating date_time column using the lubridate package, this was needed in 
-# order to read this file in as a TDR object in the diveMove package: 
-
-# this could be tagged on to step 2 of this file? 
-add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981-01-23 15:30:00"){
-  # adding dates and times from lubridate package 
-  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
-    minutes(as.integer(trace$time)) + 
-    seconds(as.integer((trace$time %% 1) * 60))
-  # removing duplicated times -- this happened when two points were very close 
-  # together and got assigned the same time. Dive analysis packages cannot 
-  # handle duplicated times
-  trace <- trace[!duplicated(trace$date_time),]
+###############################################################################
+# Function: smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+# Author:   EmmaLi Tsai
+# Date:     6/15/2021
+# 
+# Function takes the trace (after time and depth have been transformed) to 
+# perform penalized spline smoothing on the data. First, it uses a rolling mean 
+# function to detect when the average depth is >= depth_thresh, where it is 
+# possible to assume that the seal is diving. The window size used for this 
+# rolling mean is ~0.2% of the rows in the record. When a dive is detected, it 
+# increases the resolution of spline smoothing by decreasing the smoothing 
+# penalty to spar_h, and knots = ~3% of the rows in the record. This was an 
+# attempt to increase the resolution of smoothing when the seal was in a bout of 
+# dives and to retain the surface intervals between dives (which would be lost 
+# in a smoothing method bounded by just depth). This also decreases the 
+# resolution of spline smoothing when the seal is not diving (to spar = 0.8, 
+# knots = 1000), to reduce chatter created by the transducer arm at shallow 
+# depths. 
+# 
+# Input: 
+# 
+#   - trace        : trace dataframe after time and depth axis transformation. 
+#
+#   - spar_h       : spar value to use at higher depths. Should be < 0.8, and 
+#                    default is set to 0.3. 
+# 
+#   - depth_thresh : depth threshold to use for the rolling mean. Default is set 
+#                    to 5m, such that rolling means >= 5m would be considered 
+#                    diving behavior. 
+# 
+# Output: 
+#   - smooth_trace : trace data frame with smoothed values (smooth_depth), and 
+#                    also with dive component assignment. 
+###############################################################################
+smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
+  # defining spar, nknots, and window values: 
+  spar = c(0.8, spar_h)
+  nknots = c(100, signif(nrow(trace) * .02, 1)) 
+  window = signif(floor(nrow(trace) * 0.001), 1)
   
-  # convert to ymd_hms format, if needed
-  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
+  # ordering 
+  trace <- trace[order(unclass(trace$date_time)),]
+  # detecting a bout of dives using the runmean function on a window of the 
+  # data: 
+  detect_bout <- data.frame(runmean = (caTools::runmean(trace$depth, window)), 
+                            depth = trace$depth, 
+                            date_time = trace$date_time)
+  # defining a bout as when the mean depth is >= 10 meters in that window 
+  trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1, 
+                                 detect_bout$runmean < depth_thresh ~ 0)
+  # separating parts of the record not in about
+  trace_nobout <- trace[which(trace$bout == 0), ]
+  # separating parts of the record in a bout
+  trace_bout <- trace[which(trace$bout == 1), ]
+  # spline smoothing for the parts of the record not in bout
+  smooth_fit_nobout <- smooth.spline(trace_nobout$date_time, trace_nobout$depth, 
+                                     spar = spar[1], nknots = nknots[1])
+  # predicting for the parts of the record not in a bout 
+  trace_nobout$smooth <- predict(smooth_fit_nobout, unclass(trace_nobout$date_time))$y
+  # spline smoothing for the parts of the record in a bout
+  smooth_fit_bout <- smooth.spline(trace_bout$date_time, trace_bout$depth, 
+                                   spar = spar[2], nknots = nknots[2])
+  # predicting for the parts of the record in a bout 
+  trace_bout$smooth <- predict(smooth_fit_bout, unclass(trace_bout$date_time))$y
   
-  # filtering the data based on the time the TDR was placed on the seal to when 
-  # it was taken off
-  trace <- trace %>% dplyr::filter(date_time >= as.POSIXct(on_seal, tz = "Antarctica/McMurdo") & date_time <= as.POSIXct(off_seal, tz = "Antarctica/McMurdo"))
-  # returning the trace 
-  return(trace)
+  # recombining the two: 
+  smooth_trace <- rbind(trace_nobout, trace_bout)
+  # ordering 
+  smooth_trace <- smooth_trace[order(smooth_trace$date_time),]
+  
+  # recursive and final smoothing 
+  spline_mod_bout <- smooth.spline(smooth_trace$date_time, smooth_trace$smooth, 
+                                   spar = spar[2], nknots = nknots[2])
+  # added final smoothing and dive component assignment -- this can be removed 
+  # later but I was experimenting with it here
+  smooth_trace <- dplyr::mutate(smooth_trace,
+                                smooth_depth = predict(spline_mod_bout, unclass(smooth_trace$date_time))$y,
+                                deriv = predict(spline_mod_bout, unclass(smooth_trace$date_time), deriv=1)$y,
+                                ascent = deriv < 0,
+                                deriv_diff = lag(sign(deriv)) - sign(deriv),
+                                peak = case_when(deriv_diff < 0 ~ "TOP",
+                                                 deriv_diff > 0 ~ "BOTTOM"))
+  # removing extra column 
+  smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
+  # removing excess noise at the surface 
+  if (any(smooth_trace$smooth_depth < 0)) {
+    smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
+  }
+  
+  # final return 
+  return(smooth_trace)
 }
+
+# possible cross validation methods: 
+# leave-one-out cross validation method- inefficient and slow due to nested for 
+# loop. 
+find_spar_loocv <- function(trace){
+  # creating smaller trace data frame 
+  trace_cv <- trace[sample(1:nrow(trace), 1000),]
+  # spar sequence 
+  spar_seq <- seq(from = 0.05, to = 1.0, by = 0.02)
+  
+  # creating an empty vector to store values in the loop 
+  cv_error_spar <- rep(NA, length(spar_seq))
+  
+  # looping through the spar sequence ... I don't like this nested for loop
+  for (i in 1:length(spar_seq)){
+    # grabbing the spar value
+    spar_i <- spar_seq[i]
+    # cross validation error 
+    cv_error <- rep(NA, nrow(trace_cv))
+    # looping through the trace segment to determine cross validation error 
+    for (v in 1:nrow(trace_cv)){
+      # testing data
+      x_val <- trace_cv$date_time[v]
+      y_val <- trace_cv$depth[v]
+      # training data, by leaving out the first row 
+      x_train <- trace_cv$date_time[-v]
+      y_train <- trace_cv$depth[-v]
+      # smooth fit and prediction using the training data set 
+      smooth_fit <- smooth.spline(x = unclass(x_train), y = y_train, spar = spar_i)
+      # predict on the training data set 
+      y_predict <- predict(smooth_fit, x = unclass(x_val))
+      # calculating the error from the testing data 
+      cv_error[v] <- (y_val - y_predict$y)^2
+    }
+    # getting mean error for that value of spar 
+    cv_error_spar[i] <- mean(cv_error)
+  }
+  
+  # plotting prediction error 
+  plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "blue",
+       xlab = "Value of 'spar'", ylab = "LOOCV prediction error")
+  
+  # finding the spar value that had the lowest prediction error 
+  return(spar_seq[which(cv_error_spar == min(cv_error_spar))])
+}
+
+# function to help find a good spar value. The function runs through a sequence 
+# of spar values and returns a long data frame that can be used to visualize 
+# different outputs in ggplot
+view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
+  # defining knots and spar sequence
+  spar_seq <- seq(0, 1, by = increase_spar)
+  spar_gcv <- rep(NA, length(spar_seq))
+  nknots <- nknots
+  # ordering trace 
+  trace <- trace[order(trace$date_time),]
+  data_i <- trace
+  # looping through each spar value, keeping note of the gcv value for future 
+  # comparisons 
+  for(i in 1:length(spar_seq)){
+    smooth_fit_i <- smooth.spline(unclass(trace$date_time), trace$depth, 
+                                  spar = spar_seq[i], nknots = 5900)
+    spar_gcv[i] <- smooth_fit_i$cv.crit
+    predict_i <- predict(smooth_fit_i, unclass(trace$date_time))$y
+    data_i <- cbind(data_i, predict_i)
+  }
+  # organizing and tidying for final graph 
+  spar_names <- paste("spar_", spar_seq, sep = "")
+  spar_names <- paste(spar_names, round(spar_gcv, 2), sep = "_")
+  names(data_i)[(ncol(trace)+1):ncol(data_i)] <- spar_names
+  # just grabbing spar values, time, and depth for graphing
+  just_spar <- data_i[, grep("^(s|d|t)", names(data_i))]
+  # pivor longer for easier graphing
+  spar_long <- tidyr::pivot_longer(just_spar, all_of(spar_names))
+  # returning the final output 
+  return(spar_long)
+}
+
+
 
