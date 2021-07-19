@@ -10,12 +10,12 @@
 # Similar to the dive_traces_tidy.R file, this file has been broken up into the 
 # main steps outlined for this project: 
 
-#   1. Recenter and fix misalignment (both data inputs)
-#   2. Transform coordinates by radius arm eqn
-#   3. Transform x axis according to time dots
-#   4. Transform y axis to depth
-#   5. Smoothing
-#   6. Dive statistics, direction flagging, etc.
+# 1. Recenter and fix misalignment (both data inputs)
+# 2. Transform coordinates by radius arm eqn
+# 3. Transform x axis to dates & times
+# 4. Interpolate between missing time points 
+# 5. Transform y axis to depth 
+# 6. Smoothing
 
 ################################################################################
 # Reading in example data: #####################################################
@@ -180,7 +180,7 @@ ggplot(trace, aes(x = date_time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 319 meters, which is very close to the one 
 # calculated here but will decrease with smoothing 
-max(trace[1:nrow(trace),]$depth)
+max(trace$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
 # bout one 
@@ -219,7 +219,7 @@ smooth.spline(unclass(trace$date_time), trace$depth, nknots = 5900, cv = FALSE)
 # A helper function to visually compare different spar values: 
 spar_options <- view_spar_options(trace, increase_spar = 0.05)
 # plotting-- this takes a bit to run 
-ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) + 
+ggplot(spar_options[1000:300000,], aes(x = date_time, y = value, color = name)) + 
   geom_line() + 
   facet_wrap(~name) + 
   theme_bw() + 
@@ -231,7 +231,8 @@ ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) +
 # dives for post-dive surface intervals. 
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 15)
 
-# here is what this smoothing method looks like-- bout is light blue line 
+# here is what this smoothing method looks like-- bout is light blue line and 
+# no bout is dark blue line
 ggplot(trace, aes(x = date_time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = date_time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
@@ -271,7 +272,8 @@ ggplot(trace, aes(x = date_time, y = smooth_depth)) +
 # After this final step, the proposed workflow is to export the final trace data 
 # to a csv file, which can be read for further dive analysis in the diveMove 
 # package. The diveMove package creates an S4 object using the date_time column 
-# and depth. 
+# and depth, and assumes a regular time series (which is why interpolating was 
+# necessary).
 
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
