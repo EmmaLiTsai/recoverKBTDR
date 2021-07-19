@@ -39,7 +39,6 @@ source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
-source("../r_scripts/smooth_trace_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
@@ -143,7 +142,25 @@ ggplot(trace[1000:11000,], aes(x = time, y = y_val)) + geom_line()
 # times here align with the times I produced with my original code.
 
 ################################################################################
-# STEP FOUR: Transform Y axis from psi to depth ################################
+# STEP FOUR: Interpolate between missing time points  ##########################
+################################################################################
+# calling the function to add dates and times to the data, and to also 
+# interpolate between missing data points 
+trace <- add_dates_times(trace, 
+                         start_time = "1981:01:16 15:10:00", 
+                         on_seal = "1981:01:16 17:58:00", 
+                         off_seal = "1981:01:23 15:30:00")
+
+# plotting 
+ggplot(trace[550000:nrow(trace),], aes(x = date_time, y = interp_y)) + 
+  geom_point(color = "grey") + 
+  geom_line(aes(x = date_time, y = interp_y), color = "red")
+# checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
+# defined by the 1990's team, which checks out! For this record they defined the 
+# end of the record after the last dive was made by the seal. 
+
+################################################################################
+# STEP FIVE: Transform Y axis from psi to depth ################################
 ################################################################################
 # calling the function to transform y-axis to depth: 
 trace <- transform_psitodepth(trace, 
@@ -159,35 +176,27 @@ trace <- transform_psitodepth(trace,
 # -- end unique case -- 
 
 # plotting 
-ggplot(trace, aes(x = time, y = depth)) + geom_line()
+ggplot(trace, aes(x = date_time, y = depth)) + geom_line()
 
 # max depth value in the bulletin is 319 meters, which is very close to the one 
 # calculated here but will decrease with smoothing 
-max(trace[1:210000,]$depth)
+max(trace[1:nrow(trace),]$depth)
 
 # looking at different bouts of dives to assess how this method worked: 
 # bout one 
-ggplot(trace[1000:9000,], aes(x = time, y = depth)) + geom_line()
+ggplot(trace[1000:19000,], aes(x = date_time, y = depth)) + geom_line()
 
 # bout two 
-ggplot(trace[39000:45000,], aes(x = time, y = depth)) + geom_line() 
+ggplot(trace[179000:245000,], aes(x = date_time, y = depth)) + geom_line() 
 
 # bout three 
-ggplot(trace[76000:84800,], aes(x = time, y = depth)) + geom_line() 
+ggplot(trace[330000:434800,], aes(x = date_time, y = depth)) + geom_line() 
 
 # bout four, this one contains the deepest dive 
-ggplot(trace[145000:160000,], aes(x = time, y = depth)) + geom_line() 
-
-# plotting again... this is close to what the final product should be. 
-ggplot(trace, aes(x = time, y = depth)) + 
-  geom_line() +
-  theme_bw() + 
-  labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
-  scale_x_continuous(position = "top") + 
-  scale_y_reverse()
+ggplot(trace[445000:580000,], aes(x = date_time, y = depth)) + geom_line() 
 
 ################################################################################
-## STEP FIVE: Smoothing ########################################################
+## STEP SIX: Smoothing ########################################################
 ################################################################################
 
 ## First, here are some possible cross validation methods: ##
@@ -200,9 +209,9 @@ find_spar_loocv(trace)
 # values for some of the other records... 
 
 # This is an example using ordinary leave-one-out methods: 
-smooth.spline(trace$time, trace$depth, nknots = 5900, cv = TRUE)
+smooth.spline(unclass(trace$date_time), trace$depth, nknots = 5900, cv = TRUE)
 # and another example using generalized cross validation:
-smooth.spline(trace$time, trace$depth, nknots = 5900, cv = FALSE)
+smooth.spline(unclass(trace$date_time), trace$depth, nknots = 5900, cv = FALSE)
 # seems to be a delicate balance between knots and smoothing penalties, but the 
 # general approach from the literature is to have a high number of knots and let 
 # the smoothing penalties control the fit (Perperoglou et al., 2019).
@@ -216,118 +225,53 @@ ggplot(spar_options[1000:300000,], aes(x = time, y = value, color = name)) +
   theme_bw() + 
   theme(legend.position = "none")
 
-## Three possible smoothing methods: ## 
-# function smooth_trace is a simple spline smoothing function: 
-trace_smooth <- smooth_trace(trace, spar = 0.27)
-
-# function smooth_trace_bounded is a more complex recursive spline smoothing
-# function with depth bounds, such that shallower depths have a higher spar 
-# value to  reduce chatter created by the transducer arm, while retaining 
-# wiggles in the dives at depth. Supposed to be an improvement from 
-# smooth_trace function above. 
-trace_smooth_bounded <- smooth_trace_bounded(trace, 
-                                             spar_h = 0.27, 
-                                             depth_bound = 10)
-# this function would be sound considering there is less tension on the 
-# transducer arm at shallow depths, which produced extra noise in the record 
-# when the seal was resting at the surface or hauled out. 
-# plotting
-ggplot(trace_smooth_bounded[1000:11000,], aes(x = time, y = depth)) + 
-  geom_line(color = "grey") +
-  geom_line(aes(x = time, y = smooth_depth), color = "red", size = 1)
-# this method is pretty good, I wonder if this smoothing method is better than 
-# the bout smoothing method below? 
-
-# this is another possible method that increases the resolution of spline 
-# smoothing when the seal is in a bout of dives. This function is similar to the 
-# smoothing method above, but would help retain the resolution between dives for 
-# post-dive surface intervals. 
-trace <- smooth_trace_dive(trace, spar_h = 0.27, depth_thresh = 10)
+## spline smoothing ##
+# this is method increases the resolution of spline smoothing when the seal is 
+# in a bout of dives. This function would help retain the resolution between 
+# dives for post-dive surface intervals. 
+trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 15)
 
 # here is what this smoothing method looks like-- bout is light blue line 
-ggplot(trace, aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) + 
+ggplot(trace, aes(x = date_time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(aes(x = date_time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
+
 # you can certainly see the different bouts of dives in this method! I created 
 # this smoothing method because it might help increase the resolution of 
-# post-dive surface intervals. The gcv and residual sums of squares value for 
-# this model is lowest in this model in comparison to the two above. 
-# here is another look at this method: 
-ggplot(trace[118000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) + 
-  theme(legend.position = "none")
-
-# comparing the three smoothing methods with the original data: 
-# smoothing with depth bounds is in blue, normal smoothing is in red, and bout 
-# smoothing method is in dark blue 
-ggplot(trace[120000:140000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
-  geom_line(data = trace_smooth[120000:140000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bounded[120000:140000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
-  theme(legend.position = "none")
-
-# comparing another section of the record, where the methods diverge: 
-ggplot(trace[1000:11000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
-  geom_line(data = trace_smooth[1000:11000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bounded[1000:11000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
-  theme(legend.position = "none")
-
-# comparing another section with the max depth: 
-ggplot(trace[130000:160000,], aes(x = time, y = depth)) + geom_line(color = "grey") + 
-  geom_line(aes(x = time, y = smooth_depth, color = bout), size = 1) +  
-  geom_line(data = trace_smooth[130000:160000,], aes(x = time, y = smooth_depth), color = "red", size = 1) + 
-  geom_line(data = trace_smooth_bounded[130000:160000,], aes(x = time, y = smooth_depth), color = "blue", size = 0.5) + 
+# post-dive surface intervals within a bout (which is an improved method from 
+# just smoothing based on depth)
+ggplot(trace[458000:560000,], aes(x = date_time, y = depth)) + geom_line(color = "grey") + 
+  geom_line(aes(x = date_time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
 
 # also added dive component assignment within the smoothing functions. I can 
 # always remove this, but just wanted to experiment with it here: 
-ggplot(trace[143000:157000,], aes(x = time, y = smooth_depth)) +
-  geom_line(aes(time, depth), color= "gray", size = 0.2) +
+ggplot(trace[458000:560000,], aes(x = date_time, y = smooth_depth)) +
+  geom_line(aes(date_time, depth), color= "gray", size = 0.2) +
   geom_point(aes(color = deriv > 0)) +
   geom_line() + 
   scale_color_discrete(name = "", labels = c("Ascent", "Descent"))
 
 # Looking at the difference between the depth and smoothed values 
 # to make sure nothing weird is happening here: 
-ggplot(trace, aes(x = time, y = (depth - smooth_depth))) + geom_line()
+ggplot(trace, aes(x = date_time, y = (depth - smooth_depth))) + geom_line()
 
 # Looking at the new maximum depth: this one should be as close as possible to 
-# 319 meters, but has definitely changed with smoothing 
-max(trace$smooth_depth[1:210000])
+# 319 meters, but has definitely decreased with smoothing 
+max(trace$smooth_depth)
 
-################################################################################
-## STEP SIX:  Dive statistics, direction flagging, etc##########################
-################################################################################
-# calling the function to add dates and times to the data 
-trace <- add_dates_times(trace, 
-                         start_time = "1981:01:16 15:10:00", 
-                         on_seal = "1981:01:16 17:58:00", 
-                         off_seal = "1981:01:23 15:30:00")
-# plotting 
-ggplot(trace[120000:nrow(trace),], aes(x = date_time, y = depth)) + 
-  geom_line(color = "grey") + 
-  geom_line(aes(x = date_time, y = smooth_depth))
-# checking out the end slice -- the end time should be 1/23/1981 11:10:00, as 
-# defined by the 1990's team, which checks out! For this record they defined the 
-# end of the record after the last dive was made by the seal. 
-
-# transforming from irregular time series into regular time series, since the 
-# diveMove package was built to work with regular time series. This will 
-# help with analysis, and might be tagged on the add_dates_times function in 
-# later commits
-trace <- create_regular_ts(trace, 
-                           on_seal = "1981:01:16 17:58:00", 
-                           off_seal = "1981:01:23 15:30:00")
-# plotting the regular time series 
-ggplot(trace, aes(x = date_time, y = interp_depth)) + 
-  geom_line()
+# plotting again... this is close to what the final product should be. 
+ggplot(trace, aes(x = date_time, y = smooth_depth)) + 
+  geom_line() +
+  theme_bw() + 
+  labs(x = "Time (min)", y = "Depth (m)", title = "WS_25_1981") + 
+  scale_x_continuous(position = "top") + 
+  scale_y_reverse()
 
 # After this final step, the proposed workflow is to export the final trace data 
 # to a csv file, which can be read for further dive analysis in the diveMove 
 # package. The diveMove package creates an S4 object using the date_time column 
 # and depth. 
-
 
 # I was wondering if I could detect haul-out behavior from the difference 
 # between time dots (dots should be closer since the motor rolling the film  
