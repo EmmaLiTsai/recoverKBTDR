@@ -31,6 +31,10 @@ library(tidyr) # for separate()
 library(lubridate) # for ymd_hms() 
 library(caTools) # for runmean() and runquantile() 
 library(zoo) # for na.approx()
+library(diveMove) # this is only for finding the best spar value, where I see  
+# how different spar values influence bottom distance. I hope to remove this 
+# dependency in future commits.
+
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
 
@@ -39,6 +43,7 @@ source("../r_scripts/read_trace.R")
 source("../r_scripts/centering_functions.R")
 source("../r_scripts/find_center_y_functions.R")
 source("../r_scripts/dive_trace_tidy_functions.R")
+source("../r_scripts/find_spar_value_functions.R")
 ## Functions to handle unique issues in the records:
 source("../r_scripts/zoc_functions.R")
 
@@ -46,7 +51,7 @@ source("../r_scripts/zoc_functions.R")
 # pass trace-specific arguments to all the functions in this repository. 
 # Basically a wrapper function for fast recovery.
 source("../r_scripts/fast_recovery.R")
-fast_recovery(filepath = "../sample_data")
+fast_recovery(filepath = "../sample_data/WS_25_1981")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
 # I created this to quickly read in data without having to tab through this 
 # file, and also for future diveMove analysis. This was more important for my 
@@ -54,7 +59,7 @@ fast_recovery(filepath = "../sample_data")
 
 # step-by-step functions
 # reading in full trace data (i.e., trace, time dots, and argument file): 
-read_trace(filepath = "../sample_data")
+read_trace(filepath = "../sample_data/WS_25_1981")
 
 ################################################################################
 # STEP ONE: re-centering and misalignment functions: ###########################
@@ -199,7 +204,8 @@ ggplot(trace[445000:580000,], aes(x = date_time, y = depth)) + geom_line()
 ## STEP SIX: Smoothing ########################################################
 ################################################################################
 
-## First, here are some possible cross validation methods: ##
+## Cross validation methods to find the best spar value: ##
+
 # A potential cross validation function in smooth_trace.R, see issue #17 in 
 # GitHub. This attempts to find the best spar value for smoothing using leave  
 # one out cross validation (loocv) method on a random sample of the trace data. 
@@ -225,11 +231,29 @@ ggplot(spar_options[1000:300000,], aes(x = date_time, y = value, color = name)) 
   theme_bw() + 
   theme(legend.position = "none")
 
+## Find the best spar value using dive statistics: ##
+
+# Here is another method created using the find_spar_value_functions.R file, 
+# which recovers a record 21 separate times using different spar values 
+# [0-1], by = 0.05, and retrieves the dive statistics for each spar scenario. 
+# This function takes a long time to run, so I saved the output as a csv file 
+# to avoid having to run it again: 
+dive_stats <- read.csv("../sample_data/WS_25_1981/WS_25_1981_dive_stats.csv")
+# plotting how bottom distance changes across spar values: 
+ggplot(dive_stats, aes(x = as.factor(spar_val), y = bottdist)) + 
+  geom_point(aes(color = as.factor(spar_val))) + 
+  theme_bw() + 
+  labs(x = "Spar Value", y = "Bottom Distance (m)") + 
+  theme(legend.position = "none", axis.text.x = element_text(angle = 90))
+# finding the ideal spar value: 
+best_spar(dive_stats)
+# spar value should be 0.22 for this record! 
+
 ## spline smoothing ##
 # this is method increases the resolution of spline smoothing when the seal is 
 # in a bout of dives. This function would help retain the resolution between 
 # dives for post-dive surface intervals. 
-trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 15)
+trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 15)
 
 # here is what this smoothing method looks like-- bout is light blue line and 
 # no bout is dark blue line

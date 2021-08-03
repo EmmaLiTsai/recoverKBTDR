@@ -1,5 +1,5 @@
 ###############################################################################
-# Function: fast_recovery(filepath = "../sample_data")
+# Function: fast_recovery(filepath = "../sample_data/WS_25_1981")
 # Author:   EmmaLi Tsai
 # Date:     6/29/21
 # 
@@ -57,7 +57,7 @@
 #                  depth transformation, smoothed, with POSIXct dates and times 
 #                  added) 
 ###############################################################################
-fast_recovery <- function(filepath = "../sample_data"){
+fast_recovery <- function(filepath = "../sample_data/WS_25_1981"){
   
   # read in the record 
   read_trace(filepath = filepath)
