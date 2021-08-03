@@ -42,9 +42,9 @@
 #                   argument file that is used for fast recovery. 
 #   
 # Output: 
-#   - adds a new data frame (dive_stats) to the global environment, and also 
-#     returns a small data frame that contains the spar value that minimized
-#     average bottom distance and the "ideal" spar value that should be used.
+#   - dive_stats  : tidy dive_stats data frame with all of the dive stats 
+#                   for the different spar scenarios, complete with dive numbers
+#                   and spar value. 
 ###############################################################################
 spar_dive_stats <- function(filepath = "../sample_data/WS_25_1981"){
   # read in data 
@@ -204,7 +204,8 @@ clean_divestats <- function(dive_stats){
 }
 
 # function that calculates the spar value that minimizes average bottom distance 
-# and computes the ideal spar value for that record
+# and divides this spar value by two to identify the ideal spar value for that 
+# record
 best_spar <- function(dive_stats){
   
   # finding spar value that minimizes bottom distance:

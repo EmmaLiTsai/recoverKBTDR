@@ -46,16 +46,28 @@ Contains:
 
 			  - read_trace.R 	-- contains a function to read in all sample data (trace, time dots, and argument files) into the 
 						   global environment. First attempt at data abstraction, and contains code to tidy the trace and time 
-						   dot csv files.   
+						   dot csv files. Also reads in the dive_stats file, which is the output of the 
+						   find_spar_value_functions.R file. 
 
 			  - fast_recovery.R     -- contains a wrapper function that uses an args.csv file to pass trace-specific arguments to all 
 					           functions in this repository. Intended to make recovery faster instead of having to tab through the 
 						   whole testing_code.R file, and to begin brainstorming user interface. This function is more important 
 						   for my private repository with the whole dataset for this project. 
+
+			  - find_spar_value_functions.R -- contains functions to find the best smoothing penalty value for the record. It essentially 
+							  recovers a record 21 separate times (spar vales ranging from [0-1] by 0.05) and uses the 
+							  diveMove package to assess how different spar values influence dive statistics. The functions 
+							  here take a long time to run, so I wrote the output of these functions to avoid having 
+							  to run them again (sample_data/WS_25_1981/WS_25_1981_dive_stats.csv). When bottom distance is 
+							  graphed with different spar values, you can see a unimodal distribution with a negative skew. 
+							  This distribution is then used to find the ideal spar value for that record using the 
+							  best_spar() function.  
  
- (2) sample_data   - contains XY coordinates of trace and timing dots data (from Weddell seal #25) as .csv files, and a .txt file that outlines the image 
-                     processing methods used to create this record. This folder also contains an args.csv file that is only used in the fast_recovery.R 
-		     file. Description of the contents in this argument file can be found in the function header of the fast_recovery() function.
+ (2) sample_data   - contains a folder of the XY coordinates of trace and timing dots data (from Weddell seal #25) as .csv files, and a .txt file that 
+		     outlines the image processing methods used to create this record. This folder also contains an args.csv file that is only used 
+		     in the fast_recovery.R and find_best_spar_functions.R files. Description of the contents in this argument file can be found in 
+		     the function header of the fast_recovery() function. There is also a dive_stats.csv file, which is the output of the 
+		     find_spar_value_functions.R file described above. 
 
  (3) results       - folder that contains results for this project.
  
