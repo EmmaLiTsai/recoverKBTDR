@@ -32,8 +32,8 @@ library(lubridate) # for ymd_hms()
 library(caTools) # for runmean() and runquantile() 
 library(zoo) # for na.approx()
 library(diveMove) # this is only for finding the best spar value, where I see  
-# how different spar values influence bottom distance. I hope to remove this 
-# dependency in future commits.
+# how different spar values influence bottom distance. I know this dependency 
+# isn't ideal, but I hope to remove it in future commits.
 
 # within functions, I have them tagged as :: so we know what functions come 
 # from what package. 
@@ -49,7 +49,7 @@ source("../r_scripts/zoc_functions.R")
 
 # Fast-track recovery function that works with an argument csv file (args) to 
 # pass trace-specific arguments to all the functions in this repository. 
-# Basically a wrapper function for fast recovery.
+# Basically a wrapper function for fast recovery. 
 source("../r_scripts/fast_recovery.R")
 fast_recovery(filepath = "../sample_data/WS_25_1981")
 # output is a fully recovered trace with dates, times, and smoothed depths. 
@@ -204,41 +204,17 @@ ggplot(trace[445000:580000,], aes(x = date_time, y = depth)) + geom_line()
 ## STEP SIX: Smoothing ########################################################
 ################################################################################
 
-## Cross validation methods to find the best spar value: ##
+## Finding the best spar value using dive statistics: ##
 
-# A potential cross validation function in smooth_trace.R, see issue #17 in 
-# GitHub. This attempts to find the best spar value for smoothing using leave  
-# one out cross validation (loocv) method on a random sample of the trace data. 
-# It is really slow with a nested for loop... 
-find_spar_loocv(trace)
-# seems to usually produce 0.27, but this method seems to produce extremely low 
-# values for some of the other records... 
-
-# This is an example using ordinary leave-one-out methods: 
-smooth.spline(unclass(trace$date_time), trace$depth, nknots = 5900, cv = TRUE)
-# and another example using generalized cross validation:
-smooth.spline(unclass(trace$date_time), trace$depth, nknots = 5900, cv = FALSE)
-# seems to be a delicate balance between knots and smoothing penalties, but the 
-# general approach from the literature is to have a high number of knots and let 
-# the smoothing penalties control the fit (Perperoglou et al., 2019).
-
-# A helper function to visually compare different spar values: 
-spar_options <- view_spar_options(trace, increase_spar = 0.05)
-# plotting-- this takes a bit to run 
-ggplot(spar_options[1000:300000,], aes(x = date_time, y = value, color = name)) + 
-  geom_line() + 
-  facet_wrap(~name) + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-## Find the best spar value using dive statistics: ##
-
-# Here is another method created using the find_spar_value_functions.R file, 
+# I tried many different cross-validation methods, but I believe this method 
+# is the most reliable out of the ones that I tried. 
+# Here is a method created using the find_spar_value_functions.R file, 
 # which recovers a record 21 separate times using different spar values 
 # [0-1], by = 0.05, and retrieves the dive statistics for each spar scenario. 
 # This function takes a long time to run, so I saved the output as a csv file 
-# to avoid having to run it again: 
+# to avoid others having to run it again: 
 dive_stats <- read.csv("../sample_data/WS_25_1981/WS_25_1981_dive_stats.csv")
+
 # plotting how bottom distance changes across spar values: 
 ggplot(dive_stats, aes(x = as.factor(spar_val), y = bottdist)) + 
   geom_point(aes(color = as.factor(spar_val))) + 
@@ -249,28 +225,28 @@ ggplot(dive_stats, aes(x = as.factor(spar_val), y = bottdist)) +
 best_spar(dive_stats)
 # spar value should be 0.22 for this record! 
 
-## spline smoothing ##
+## spline smoothing: ##
+
 # this is method increases the resolution of spline smoothing when the seal is 
-# in a bout of dives. This function would help retain the resolution between 
-# dives for post-dive surface intervals. 
+# in diving or in a bout of dives. In comparison to just smoothing based off 
+# depth, this function would help retain the resolution between dives for 
+# post-dive surface intervals. 
 trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 15)
 
-# here is what this smoothing method looks like-- bout is light blue line and 
-# no bout is dark blue line
+# here is what this smoothing method looks like-- dive detected smoothing is 
+# light blue line and no dive detected smoothing is dark blue line
 ggplot(trace, aes(x = date_time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = date_time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
 
-# you can certainly see the different bouts of dives in this method! I created 
-# this smoothing method because it might help increase the resolution of 
-# post-dive surface intervals within a bout (which is an improved method from 
-# just smoothing based on depth)
+# you can certainly see the different bouts of dives in this method! 
 ggplot(trace[458000:560000,], aes(x = date_time, y = depth)) + geom_line(color = "grey") + 
   geom_line(aes(x = date_time, y = smooth_depth, color = bout), size = 1) + 
   theme(legend.position = "none")
 
 # also added dive component assignment within the smoothing functions. I can 
-# always remove this, but just wanted to experiment with it here: 
+# always remove this, but just wanted to experiment with it here to see if it 
+# would be possible to remove the diveMove depencency: 
 ggplot(trace[458000:560000,], aes(x = date_time, y = smooth_depth)) +
   geom_line(aes(date_time, depth), color= "gray", size = 0.2) +
   geom_point(aes(color = deriv > 0)) +

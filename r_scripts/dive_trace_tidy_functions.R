@@ -156,13 +156,41 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
-# transforming time in minutes to dates and times, with interpolated time points
-# to resolve issues with discontinuous records
-add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981-01-16 17:58:00", off_seal = "1981-01-23 15:30:00"){
+###############################################################################
+# Function: add_dates_times(trace, start_time, on_seal, off_seal)
+# Author:   EmmaLi Tsai
+# Date:     4/10/21
+# 
+# Function takes the trace data frame after arc removal, the time the TDR was 
+# turned on, and the time the TDR was placed on/off the seal to assign POSIXct 
+# times to the record. This also contains an internal function 
+# (create_regular_ts) which transforms the record into a regular time series. 
+# This was particularly needed for discontinuous records where the TDR didn't 
+# pick up on the ascent/descent behavior of the seal, and all dive analysis 
+# packages that I know of assume a regular time series. This function also snips 
+# the trace data frame to only contain data from [on_seal:off_seal,].
+# 
+# Input: 
+#  
+#   - trace       : tidy trace data frame following arc removal containing 
+#                   an x-axis that is time in minutes from the start. 
+# 
+#   - start_time  : time the TDR was turned on in ymd_hms format. 
+#  
+#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format. 
+# 
+#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
+# 
+# Output: 
+#   - trace       : trace data frame complete with POSIXct dates, times, and a 
+#                   regular time series containing interpolayed y-values. 
+###############################################################################
+add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00"){
   # adding dates and times from lubridate package 
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
     minutes(as.integer(trace$time)) + 
     seconds(as.integer((trace$time %% 1) * 60))
+  
   # removing duplicated times -- this happened when two points were very close 
   # together and got assigned the same time. Dive analysis packages cannot 
   # handle duplicated times
@@ -175,17 +203,46 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
   # filtering the data based on the time the TDR was placed on the seal to when 
   # it was taken off
   trace <- trace %>% dplyr::filter(date_time >= on_seal & date_time <= off_seal)
-  
+  # transforming to regular time series
   trace <- create_regular_ts(trace, on_seal, off_seal)
   # returning the trace 
   return(trace)
 }
 
+################################################################################
+## STEP FOUR: Create regular time series #######################################
+################################################################################
+
+###############################################################################
+# Function: create_regular_ts(trace, on_seal, off_seal)
+# Author:   EmmaLi Tsai
+# Date:     6/20/21
+# 
 # creating a regular time series. This was necessary to make future dive 
 # analysis more reliable, since the diveMove package was really only built to 
-# handle regular time series. Some records are discontinuous, so this was 
-# necessary. However, this does come at a cost of larger files and longer run
-# time. This function is nested in the add_dates_times function above. 
+# handle regular time series. Some records were also very discontinuous, so this 
+# step also helps with future spline smoothing. However, this does come at a 
+# cost of larger files and longer run time. This function is nested in the 
+# add_dates_times function above, and will likely become an internal function in
+# future commits. Essentially, it creates a data frame containing a row for 
+# every second the TDR was on the seal. I then do a complete merge with the
+# original trace data frame, which retains all original data points. I then 
+# linearly interpolate to fill all NAs created after the merge with y-values, 
+# while keeping all original data. 
+# 
+# Input: 
+#  
+#   - trace       : tidy trace data frame following arc removal containing 
+#                   an irregular time series that is POSIXct date&time object.  
+#  
+#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format. 
+# 
+#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
+# 
+# Output: 
+#   - trace       : trace data frame complete with POSIXct dates, times, and a 
+#                   regular time series containing interpolayed y-values. 
+###############################################################################
 create_regular_ts <- function(trace, on_seal, off_seal){
   # convert to ymd_hms format, if needed
   on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
@@ -194,7 +251,8 @@ create_regular_ts <- function(trace, on_seal, off_seal){
   reg_time <- seq(on_seal, off_seal, by = "sec")
   # transform to data frame
   reg_time <- data.frame(reg_time = reg_time)
-  # merge regular time series into irregular time series
+  # merge regular time series into irregular time series, keeping all original 
+  # data
   trace_reg <- merge(trace, reg_time, by.x = "date_time", by.y = "reg_time", all.y = TRUE)
   # replacing NAs with linearly interpolated values 
   interp <- zoo::na.approx(trace_reg$y_val, trace_reg$date_time)
@@ -414,81 +472,3 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   # final return 
   return(smooth_trace)
 }
-
-# possible cross validation methods: 
-# leave-one-out cross validation method- inefficient and slow due to nested for 
-# loop. 
-find_spar_loocv <- function(trace){
-  # creating smaller trace data frame 
-  trace_cv <- trace[sample(1:nrow(trace), 1000),]
-  # spar sequence 
-  spar_seq <- seq(from = 0.05, to = 1.0, by = 0.02)
-  
-  # creating an empty vector to store values in the loop 
-  cv_error_spar <- rep(NA, length(spar_seq))
-  # looping through the spar sequence ... I don't like this nested for loop
-  for (i in 1:length(spar_seq)){
-    # grabbing the spar value
-    spar_i <- spar_seq[i]
-    # cross validation error 
-    cv_error <- rep(NA, nrow(trace_cv))
-    # looping through the trace segment to determine cross validation error 
-    for (v in 1:nrow(trace_cv)){
-      # testing data
-      x_val <- trace_cv$date_time[v]
-      y_val <- trace_cv$depth[v]
-      # training data, by leaving out the first row 
-      x_train <- trace_cv$date_time[-v]
-      y_train <- trace_cv$depth[-v]
-      # smooth fit and prediction using the training data set 
-      smooth_fit <- smooth.spline(x = unclass(x_train), y = y_train, spar = spar_i)
-      # predict on the training data set 
-      y_predict <- predict(smooth_fit, x = unclass(x_val))
-      # calculating the error from the testing data 
-      cv_error[v] <- (y_val - y_predict$y)^2
-    }
-    # getting mean error for that value of spar 
-    cv_error_spar[i] <- mean(cv_error)
-  }
-  
-  # plotting prediction error 
-  plot(x = spar_seq, y = cv_error_spar, type = "b", lwd = 3, col = "blue",
-       xlab = "Value of 'spar'", ylab = "LOOCV prediction error")
-  
-  # finding the spar value that had the lowest prediction error 
-  return(spar_seq[which(cv_error_spar == min(cv_error_spar))])
-}
-
-# function to help find a good spar value. The function runs through a sequence 
-# of spar values and returns a long data frame that can be used to visualize 
-# different outputs in ggplot
-view_spar_options <- function(trace, increase_spar = 0.05, nknots = 5900){
-  # defining knots and spar sequence
-  spar_seq <- seq(0, 1, by = increase_spar)
-  spar_gcv <- rep(NA, length(spar_seq))
-  nknots <- nknots
-  # ordering trace 
-  trace <- trace[order(trace$date_time),]
-  data_i <- trace
-  # looping through each spar value, keeping note of the gcv value for future 
-  # comparisons 
-  for(i in 1:length(spar_seq)){
-    smooth_fit_i <- smooth.spline(unclass(trace$date_time), trace$depth, 
-                                  spar = spar_seq[i], nknots = 5900)
-    spar_gcv[i] <- smooth_fit_i$cv.crit
-    predict_i <- predict(smooth_fit_i, unclass(trace$date_time))$y
-    data_i <- cbind(data_i, predict_i)
-  }
-  # organizing and tidying for final graph 
-  spar_names <- paste("spar_", spar_seq, sep = "")
-  spar_names <- paste(spar_names, round(spar_gcv, 2), sep = "_")
-  names(data_i)[(ncol(trace)+1):ncol(data_i)] <- spar_names
-  # just grabbing spar values, time, and depth for graphing
-  just_spar <- data_i[, grep("^(s|d|t)", names(data_i))]
-  # pivor longer for easier graphing
-  spar_long <- tidyr::pivot_longer(just_spar, all_of(spar_names))
-  # returning the final output 
-  return(spar_long)
-}
-
-

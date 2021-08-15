@@ -1,6 +1,6 @@
 ###############################################################################
 # Function: center_scan(trace, time_dots, dist_timedot = 1.1)
-# Author:   Dr. Dylan Schwilk
+# Author:   Dr. Dylan W. Schwilk
 #  
 # Function takes the trace and timedots files and uses the y values of the 
 # time dots to move the trace up/down to center the scan, such that all the 
@@ -39,9 +39,9 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   return(trace)
 }
 
-# Simple rolling mean function. Window size is n. function returns a vector
-# that is shorter than original and does not pad with NAs. An alternative would
-# be create a rolling mean fx with filter():
+# Simple rolling mean function wrapped inside center_scan above. Window size is 
+# n. function returns a vector that is shorter than original and does not pad 
+# with NAs. An alternative would be create a rolling mean fx with filter():
 # ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
 # But I suspect cumsum is faster and I like not getting the NAs.
 rollmean <- function(x, n) {
