@@ -7,7 +7,7 @@
 # value, in this case) that would effectively capture all of the dives without 
 # overfitting (producing ghost wiggles) or underfitting (not capturing
 # inflections in the record at depth). As expected, this function takes awhile 
-# to run but outputs of the functions (i.e., dive_stats csv file, 
+# to run but output of these functions (i.e., dive_stats csv file, 
 # sample_data/WS_25_1981/WS_25_1981_dive_stats.csv) can be found in the sample
 # data folder in this repository. 
 # 
@@ -38,10 +38,12 @@
 #         data. 
 # 
 # Input: 
+# 
 #   - filepath    : folder that contains all files for the record, including the 
 #                   argument file that is used for fast recovery. 
 #   
 # Output: 
+# 
 #   - dive_stats  : tidy dive_stats data frame with all of the dive stats 
 #                   for the different spar scenarios, complete with dive numbers
 #                   and spar value. 

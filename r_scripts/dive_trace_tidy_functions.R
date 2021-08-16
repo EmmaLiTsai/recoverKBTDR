@@ -71,6 +71,7 @@ PSI_TO_DEPTH <- 1.4696
 #         earlier to estimate the time value of a specific point. 
 # 
 # Input: 
+# 
 #   - time_dots   : tidy time_dots data frame, contains the x and y values of  
 #                   the time dots for a trace 
 # 
@@ -87,6 +88,7 @@ PSI_TO_DEPTH <- 1.4696
 #                       most traces. 
 #   
 # Output: 
+# 
 #   - trace      : trace data frame complete with time periods, and time 
 #                  of an x value in minutes from when the device started 
 #                  gathering data. I kept all columns to ensure that the 
@@ -182,6 +184,7 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 #   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
 # 
 # Output: 
+# 
 #   - trace       : trace data frame complete with POSIXct dates, times, and a 
 #                   regular time series containing interpolayed y-values. 
 ###############################################################################
@@ -203,7 +206,8 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
   # filtering the data based on the time the TDR was placed on the seal to when 
   # it was taken off
   trace <- trace %>% dplyr::filter(date_time >= on_seal & date_time <= off_seal)
-  # transforming to regular time series
+  # transforming to regular time series, this will probably be an internal 
+  # function (see function below-- achieves step 4 of the recovery process)
   trace <- create_regular_ts(trace, on_seal, off_seal)
   # returning the trace 
   return(trace)
@@ -240,6 +244,7 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 #   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
 # 
 # Output: 
+# 
 #   - trace       : trace data frame complete with POSIXct dates, times, and a 
 #                   regular time series containing interpolayed y-values. 
 ###############################################################################
@@ -307,6 +312,7 @@ create_regular_ts <- function(trace, on_seal, off_seal){
 #                                           psi interval in cm
 #   
 # Output: 
+# 
 #   - trace      : trace data frame complete with the psi value and depth. I 
 #                  kept both so we can ensure that the psi calibration curve at 
 #                  the end of the record is precise. 
@@ -411,6 +417,7 @@ transform_todepth <- function(trace, max_depth){
 #                    diving behavior. 
 # 
 # Output: 
+# 
 #   - smooth_trace : trace data frame with smoothed values (smooth_depth), and 
 #                    also with dive component assignment. 
 ###############################################################################

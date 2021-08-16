@@ -15,6 +15,7 @@
 # be easily handled in future zoc functions. 
 #
 # Input: 
+# 
 #   - trace        : tidy trace file 
 #   - time_dots    : tidy time_dots file
 #   - dist_timedot : the y-axis the user would like to use to center the scan. 
@@ -24,6 +25,7 @@
 #                    records. 
 #
 # Output: 
+# 
 #   - trace : centered trace with two columns: x_val and y_val
 ###############################################################################
 center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
@@ -70,6 +72,7 @@ rollmean <- function(x, n) {
 #                     record. Default is set to 100, 200, 400, 600, and 800 psi. 
 #   
 # Output: 
+# 
 #   - psi_calibration : data frame that contains the new psi positions after 
 #                       the trace had been centered
 ###############################################################################

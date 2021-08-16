@@ -207,7 +207,7 @@ ggplot(trace[445000:580000,], aes(x = date_time, y = depth)) + geom_line()
 ## Finding the best spar value using dive statistics: ##
 
 # I tried many different cross-validation methods, but I believe this method 
-# is the most reliable out of the ones that I tried. 
+# is the most reliable out of the ones that I explored.  
 # Here is a method created using the find_spar_value_functions.R file, 
 # which recovers a record 21 separate times using different spar values 
 # [0-1], by = 0.05, and retrieves the dive statistics for each spar scenario. 
