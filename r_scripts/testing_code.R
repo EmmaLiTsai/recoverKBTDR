@@ -27,7 +27,7 @@ library(ggplot2)
 # dependencies: 
 library(dplyr) # for select(), mutate(), case_when(), group_by(), summarize(), 
 # filter()
-library(tidyr) # for separate()
+library(tidyr) # for separate() and drop_na() 
 library(lubridate) # for ymd_hms() 
 library(caTools) # for runmean() and runquantile() 
 library(zoo) # for na.approx()
