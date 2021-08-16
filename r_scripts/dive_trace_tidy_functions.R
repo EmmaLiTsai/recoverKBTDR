@@ -427,7 +427,7 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   detect_bout <- data.frame(runmean = (caTools::runmean(trace$depth, window)), 
                             depth = trace$depth, 
                             date_time = trace$date_time)
-  # defining a bout as when the mean depth is >= 10 meters in that window 
+  # defining a bout as when the mean depth is >= depth threshold in that window 
   trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1, 
                                  detect_bout$runmean < depth_thresh ~ 0)
   # separating parts of the record not in about
