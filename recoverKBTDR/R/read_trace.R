@@ -7,10 +7,10 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' read_trace("../data-raw")
+#' read_trace("../data")
 #' }
 #'
-read_trace <- function(filepath = "../data-raw"){
+read_trace <- function(filepath = "../data"){
   # listing the files
   trace_list <- list.files(path = filepath, pattern = "*.csv", full.names = TRUE)
   # extracting the names of the files to read them in
