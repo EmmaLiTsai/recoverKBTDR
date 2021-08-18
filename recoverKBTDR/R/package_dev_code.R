@@ -1,11 +1,4 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
+# useful package development notes
 #
 # Some useful keyboard shortcuts for package authoring:
 #
@@ -13,12 +6,6 @@
 #   Check Package:             'Ctrl + Shift + E'
 #   Test Package:              'Ctrl + Shift + T'
 
-hello <- function() {
-  print("Hello, world!")
-}
-
-
-install.packages("usethis")
 library(usethis)
 # crating readme
 use_readme_md()
@@ -36,5 +23,8 @@ use_directory("inst")
 # including data for package
 trace <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_trace.csv")
 time_dots <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_time_dots.csv")
+args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
+
 use_data(trace, compress = "xz")
 use_data(time_dots, compress = "xz")
+use_data(args, compress = "xz")
