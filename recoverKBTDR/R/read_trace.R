@@ -7,7 +7,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' read_trace("../data")
+#' read_trace("data/")
 #' }
 #'
 read_trace <- function(filepath = "data/"){
