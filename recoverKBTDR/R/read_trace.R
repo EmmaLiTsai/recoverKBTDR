@@ -10,8 +10,9 @@
 #' read_trace("../data")
 #' }
 #'
-read_trace <- function(filepath = "../data"){
+read_trace <- function(filepath = "data/"){
   # listing the files
+  # package stores these as .rda files?
   trace_list <- list.files(path = filepath, pattern = "*.csv", full.names = TRUE)
   # extracting the names of the files to read them in
   names <- sub('\\.csv$', '', basename(trace_list))
@@ -35,7 +36,8 @@ read_trace <- function(filepath = "../data"){
   # accounting for default origin values in ImageJ
   trace$Y <<- -trace$Y
   # selecting the correct columns and removing unnecessary ones
-  trace <<- dplyr::select(trace, c("X", "Y"))
+  # trace <<- dplyr::select(trace, c("X", "Y"))
+  trace <<- trace[, which(names(trace) %in% c("X", "Y"))]
   # changing the column names
   names(trace) <<- c("x_val", "y_val")
   # ordering the trace by increasing x value
@@ -47,7 +49,8 @@ read_trace <- function(filepath = "../data"){
   # changing y-values due to odd ImageJ origin placement
   time_dots$Y <<- -time_dots$Y
   # selecting correct columns
-  time_dots <<- dplyr::select(time_dots, c("X", "Y"))
+  # time_dots <<- dplyr::select(time_dots, c("X", "Y"))
+  time_dots <<- trace[, which(names(time_dots) %in% c("X", "Y"))]
   # changing names
   names(time_dots) <<- c("x_val", "y_val")
 }
