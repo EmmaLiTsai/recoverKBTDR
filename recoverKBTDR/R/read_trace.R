@@ -1,6 +1,5 @@
-#' Correct time dots and trace csv files for a record after image processing and read them in to the global environment.
+#' Correct time dots and trace csv files.
 #' @param filepath the path to the folder containing both csv files, time dots and trace, for a single record.
-#' @param ... Optional. Columns in the data frame
 #' @return Two data frames of the trace and timing dots after correcting ImageJ's default origin placement.
 #' @import
 #' @importFrom dplyr select
@@ -10,6 +9,16 @@
 #' read_trace("data/")
 #' }
 #'
+
+# Function below takes the file path that contains all files for a single record
+# and reads in the trace, time dots, and psi_calibration csv files as data
+# frames to the global environment. It also renames the columns from defaults
+# in ImageJ from X, Y to x_val and y_val, and corrects default y-axis values to
+# tidy the data for future functions.
+
+# With this function, the user would direct the function to a folder that
+# contains all files for a single record.
+
 read_trace <- function(filepath = "data/"){
   # listing the files
   trace_list <- list.files(path = filepath, pattern = "*.rda", full.names = TRUE)
