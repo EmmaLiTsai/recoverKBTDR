@@ -143,9 +143,9 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   # to calculate time, which uses this scale value and relates this information 
   # to the time period. 
   trace <- dplyr::mutate(trace, 
-                         diff = new_x - start_x, 
-                         diff_with_scale = diff * scale, 
-                         time = diff_with_scale + (as.numeric(time_period)-1) * time_period_min)
+                         diff = .data$new_x - .data$start_x, 
+                         diff_with_scale = diff * .data$scale, 
+                         time = diff_with_scale + (as.numeric(.data$time_period)-1) * time_period_min)
   
   # removing extra columns created by the function 
   trace <- trace[,!(names(trace) %in% c("start_x", "scale", "end_x", "diff", "diff_with_scale", "time_period"))]
@@ -205,10 +205,10 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
   
   # filtering the data based on the time the TDR was placed on the seal to when 
   # it was taken off
-  trace <- trace %>% dplyr::filter(date_time >= on_seal & date_time <= off_seal)
+  trace <- trace %>% dplyr::filter(.data$date_time >= on_seal & .data$date_time <= off_seal)
   # transforming to regular time series, this will probably be an internal 
   # function (see function below-- achieves step 4 of the recovery process)
-  trace <- create_regular_ts(trace, on_seal, off_seal)
+  trace <- .create_regular_ts(trace, on_seal, off_seal)
   # returning the trace 
   return(trace)
 }
@@ -248,7 +248,7 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 #   - trace       : trace data frame complete with POSIXct dates, times, and a 
 #                   regular time series containing interpolayed y-values. 
 ###############################################################################
-create_regular_ts <- function(trace, on_seal, off_seal){
+.create_regular_ts <- function(trace, on_seal, off_seal){
   # convert to ymd_hms format, if needed
   on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
   off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
