@@ -28,3 +28,8 @@ args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
 use_data(trace, compress = "xz")
 use_data(time_dots, compress = "xz")
 use_data(args, compress = "xz")
+# ^ these can be loaded into global environment using
+# data() feature
+
+# creating a sample vignette
+use_vignette("recoverKBTDR")

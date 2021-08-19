@@ -12,10 +12,9 @@
 #'
 read_trace <- function(filepath = "data/"){
   # listing the files
-  # package stores these as .rda files?
-  trace_list <- list.files(path = filepath, pattern = "*.csv", full.names = TRUE)
+  trace_list <- list.files(path = filepath, pattern = "*.rda", full.names = TRUE)
   # extracting the names of the files to read them in
-  names <- sub('\\.csv$', '', basename(trace_list))
+  names <- sub('\\.rda', '', basename(trace_list))
   # splitting the file to break up the file name string -- this might be changed
   # later in package development depending on how people store and manage their
   # files
