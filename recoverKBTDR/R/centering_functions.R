@@ -4,7 +4,6 @@
 #' @param dist_timedot the horizontal line to center the timing dots along
 #' @return Centered trace data frame
 #' @import
-#' @importFrom
 #' @export
 #' @examples
 #' \dontrun{
@@ -59,7 +58,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param n window size
 #' @return numeric vector of rolling means
 #' @import
-#' @importFrom
 #' @export
 #' @examples
 #' \dontrun{
@@ -80,7 +78,6 @@ rollmean <- function(x, n) {
 #' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future calculations
 #' @import dplyr
-#' @importFrom
 #' @export
 #' @examples
 #' \dontrun{

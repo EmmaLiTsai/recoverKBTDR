@@ -4,6 +4,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
+## Overview
+
 This package contains a suite of functions for recovering dive records from 1960's film-based Kooyman-Billups Time Depth Records (KBTDRs). This TDR was among the first placed on a free-ranging marine organism, but the film-based format of the behavioral data makes long-term comparisons exceptionally challenging. This package returns a corrected, continuous, and digitized file of a KBTDR record complete with dates, times, and depth that can be easily read into dive analysis software. 
 
 There are six main recovery steps that are achieved in this package: 
