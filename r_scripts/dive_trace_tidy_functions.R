@@ -8,22 +8,22 @@
 # 1. Recenter and fix misalignment (both data inputs)
 # 2. Transform coordinates by radius arm eqn
 # 3. Transform x axis to dates & times
-# 4. Interpolate between missing time points 
-# 5. Transform y axis to depth 
+# 4. Interpolate between missing time points
+# 5. Transform y axis to depth
 # 6. Smoothing
 
-# For all functions below, testing code can be found in the testing_code.R 
-# file. 
+# For all functions below, testing code can be found in the testing_code.R
+# file.
 
 ###############################################################################
-# Global constants: 
+# Global constants:
 
-# Radius of the KBTDR arm when scaled up to the size of the physical traces. 
+# Radius of the KBTDR arm when scaled up to the size of the physical traces.
 # This is usually constant across all records (21.14 cm), but earlier records
 # were magnified by 8x instead of 7x, so scale is slightly different
 RADIUS <- 21.14
 
-# This was used for the psi to depth calculation, for every 1m increase in 
+# This was used for the psi to depth calculation, for every 1m increase in
 # depth, there is 1.4696 increase in PSI in saltwater
 PSI_TO_DEPTH <- 1.4696
 
@@ -31,19 +31,19 @@ PSI_TO_DEPTH <- 1.4696
 # STEP ONE: Recenter and fix misalignment (both data inputs) ###################
 ################################################################################
 
-# Code here is absent because this is really more related to image processing 
+# Code here is absent because this is really more related to image processing
 # methods, but I created code that would fix this step and center the scan in
-# the scan_tidying_functions.R file. This function tidies the trace and csv 
-# files that were created from the ImageJ defaults using two functions: 
+# the scan_tidying_functions.R file. This function tidies the trace and csv
+# files that were created from the ImageJ defaults using two functions:
 # tidy_trace(trace) and tidy_timedots(time_dots)
 #
-# There, I also centered the scan using the center_scan(trace, time_dots) 
-# function. This function did a fuzzy distance full merge using the "fuzzyjoin" 
-# package to use the y-values of the time dots to center the scan in the trace 
-# file. 
+# There, I also centered the scan using the center_scan(trace, time_dots)
+# function. This function did a fuzzy distance full merge using the "fuzzyjoin"
+# package to use the y-values of the time dots to center the scan in the trace
+# file.
 
-# Functions to complete this step were tested in step one of the 
-# testing_code.R file. 
+# Functions to complete this step were tested in step one of the
+# testing_code.R file.
 
 ################################################################################
 ## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
@@ -53,108 +53,108 @@ PSI_TO_DEPTH <- 1.4696
 # Function: transform_coordinates(trace, time_dots, center_y = 11.1, time_period_min = 12)
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
-# 
-# Function takes the tidy trace and time dots files to complete two steps: 
-# 
-#   (2) - apply radius arm transformation using the geometry of the KBTDR device 
+#
+# Function takes the tidy trace and time dots files to complete two steps:
+#
+#   (2) - apply radius arm transformation using the geometry of the KBTDR device
 #         which uses the globally defined constants above.
 #
-#   (3) - transform the x axis from time using the timing dots. To do this, I 
-#         created a helper data frame with the start and end points of a 
-#         time period and the corresponding scale value. This data frame is  
-#         needed to help make the cut() function easier, so I can break 
-#         the trace up into sections that would identify which time period a 
-#         specific x value belongs to along a trace. Then, I do a merge() with 
-#         the trace data frame. Using this merged data frame, I do a mutate() 
-#         for some simple calculations that will use the distance a point is 
-#         from the start point of a time period and the scale value I made 
-#         earlier to estimate the time value of a specific point. 
-# 
-# Input: 
-# 
-#   - time_dots   : tidy time_dots data frame, contains the x and y values of  
-#                   the time dots for a trace 
-# 
-#   - trace       : tidy trace data frame, contains the x and y values of the 
+#   (3) - transform the x axis from time using the timing dots. To do this, I
+#         created a helper data frame with the start and end points of a
+#         time period and the corresponding scale value. This data frame is
+#         needed to help make the cut() function easier, so I can break
+#         the trace up into sections that would identify which time period a
+#         specific x value belongs to along a trace. Then, I do a merge() with
+#         the trace data frame. Using this merged data frame, I do a mutate()
+#         for some simple calculations that will use the distance a point is
+#         from the start point of a time period and the scale value I made
+#         earlier to estimate the time value of a specific point.
+#
+# Input:
+#
+#   - time_dots   : tidy time_dots data frame, contains the x and y values of
+#                   the time dots for a trace
+#
+#   - trace       : tidy trace data frame, contains the x and y values of the
 #                   trace
-# 
-#   - center_y    : height of the pivot point of the transducer arm from depth 
-#                   = 0. This varies slightly across traces, but sample 
+#
+#   - center_y    : height of the pivot point of the transducer arm from depth
+#                   = 0. This varies slightly across traces, but sample
 #                   calculations can be found in the r_scripts/find_center_y.R
-#                   file. This value also needs to be visually confirmed (i.e., 
+#                   file. This value also needs to be visually confirmed (i.e.,
 #                   no abnormal skew across the record)
 #
-#   - time_period_min : minutes between each time period. This is 12 minutes for 
-#                       most traces. 
-#   
-# Output: 
-# 
-#   - trace      : trace data frame complete with time periods, and time 
-#                  of an x value in minutes from when the device started 
-#                  gathering data. I kept all columns to ensure that the 
-#                  function was working properly. 
+#   - time_period_min : minutes between each time period. This is 12 minutes for
+#                       most traces.
+#
+# Output:
+#
+#   - trace      : trace data frame complete with time periods, and time
+#                  of an x value in minutes from when the device started
+#                  gathering data. I kept all columns to ensure that the
+#                  function was working properly.
 ###############################################################################
 transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period_min = 12) {
-  ## Start Step Two: Transform Coordinates by Radius Arc Eqns ################# 
-  
+  ## Start Step Two: Transform Coordinates by Radius Arc Eqns #################
+
   # applying my new equation, basically just the equation of a circle but takes
   # the original x/y and calculates where the center of the circle would be
   # (h), and uses this new center to find the x value when depth = 0. I did
-  # some algebra to fit this math into one line of code, but it should be noted 
-  # that points close to the origin and < 0 will often get transformed in the 
-  # -x direction and placed before the origin. This is likely unimportant 
-  # because this would be exactly when the TDR was was turned on and therefore 
-  # not attached to the animal yet. 
+  # some algebra to fit this math into one line of code, but it should be noted
+  # that points close to the origin and < 0 will often get transformed in the
+  # -x direction and placed before the origin. This is likely unimportant
+  # because this would be exactly when the TDR was was turned on and therefore
+  # not attached to the animal yet.
   trace$new_x <- -sqrt((RADIUS^2) - (center_y^2)) +
     (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - center_y)^2))
-  
-  # ordering the file based on new_x value-- this is needed to create accurate 
+
+  # ordering the file based on new_x value-- this is needed to create accurate
   # time periods in step three below
   trace <- trace[order(trace$new_x),]
-  
+
   ## Starting Step Three: scale X based on time dots ###########################
-  # creating zero stating time dot for time assignment 
+  # creating zero stating time dot for time assignment
   time_dots_zero <- c(0, time_dots$x_val)
-  
-  # creating a data frame with time periods and start/end points for the time 
-  # period... this will be used to cut the data 
+
+  # creating a data frame with time periods and start/end points for the time
+  # period... this will be used to cut the data
   tp_df <- data.frame(time_period = seq(1:length(time_dots_zero)),
-                      start_x = time_dots_zero, 
-                      end_x = lead(time_dots_zero), 
+                      start_x = time_dots_zero,
+                      end_x = lead(time_dots_zero),
                       stringsAsFactors = FALSE)
-  
-  # adding the scale value for each time period, which will be multiplied by: 
+
+  # adding the scale value for each time period, which will be multiplied by:
   # (trace$new_x - tp_df$start_x) to assign a time to each new_x
   tp_df$scale = time_period_min / (tp_df$end_x - tp_df$start_x)
-  
+
   # adding this as a time period variable to the trace using the cut() function
-  trace$time_period <- cut(trace$new_x, 
-                           breaks = tp_df$start_x, 
-                           include.lowest = TRUE, 
+  trace$time_period <- cut(trace$new_x,
+                           breaks = tp_df$start_x,
+                           include.lowest = TRUE,
                            labels = tp_df$time_period[1:(nrow(tp_df) - 1)])
-  
-  # merging the trace file with the time points data frame, which uses time 
-  # periods as an ID variable: 
+
+  # merging the trace file with the time points data frame, which uses time
+  # periods as an ID variable:
   trace <- merge(trace, tp_df, by = 'time_period', all.x = TRUE)
-  
-  # mutating to create the time scale. This mutate function first calculates 
-  # the difference between the new x value and the start x value of the time 
-  # period, and then multiplies this by the scale value. I needed this value 
-  # to calculate time, which uses this scale value and relates this information 
-  # to the time period. 
-  trace <- dplyr::mutate(trace, 
-                         diff = .data$new_x - .data$start_x, 
-                         diff_with_scale = diff * .data$scale, 
+
+  # mutating to create the time scale. This mutate function first calculates
+  # the difference between the new x value and the start x value of the time
+  # period, and then multiplies this by the scale value. I needed this value
+  # to calculate time, which uses this scale value and relates this information
+  # to the time period.
+  trace <- dplyr::mutate(trace,
+                         diff = .data$new_x - .data$start_x,
+                         diff_with_scale = diff * .data$scale,
                          time = diff_with_scale + (as.numeric(.data$time_period)-1) * time_period_min)
-  
-  # removing extra columns created by the function 
+
+  # removing extra columns created by the function
   trace <- trace[,!(names(trace) %in% c("start_x", "scale", "end_x", "diff", "diff_with_scale", "time_period"))]
- 
-  # returning final trace -- there will be some NAs from points that happened 
-  # after the last time dot (and therefore couldn't be assigned a time), or 
-  # points that were negative and very close to the origin (and therefore arc 
-  # removal moved them over in the -x direction and before the origin). I also 
-  # order the record here. 
+
+  # returning final trace -- there will be some NAs from points that happened
+  # after the last time dot (and therefore couldn't be assigned a time), or
+  # points that were negative and very close to the origin (and therefore arc
+  # removal moved them over in the -x direction and before the origin). I also
+  # order the record here.
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
@@ -162,54 +162,54 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 # Function: add_dates_times(trace, start_time, on_seal, off_seal)
 # Author:   EmmaLi Tsai
 # Date:     4/10/21
-# 
-# Function takes the trace data frame after arc removal, the time the TDR was 
-# turned on, and the time the TDR was placed on/off the seal to assign POSIXct 
-# times to the record. This also contains an internal function 
-# (create_regular_ts) which transforms the record into a regular time series. 
-# This was particularly needed for discontinuous records where the TDR didn't 
-# pick up on the ascent/descent behavior of the seal, and all dive analysis 
-# packages that I know of assume a regular time series. This function also snips 
+#
+# Function takes the trace data frame after arc removal, the time the TDR was
+# turned on, and the time the TDR was placed on/off the seal to assign POSIXct
+# times to the record. This also contains an internal function
+# (create_regular_ts) which transforms the record into a regular time series.
+# This was particularly needed for discontinuous records where the TDR didn't
+# pick up on the ascent/descent behavior of the seal, and all dive analysis
+# packages that I know of assume a regular time series. This function also snips
 # the trace data frame to only contain data from [on_seal:off_seal,].
-# 
-# Input: 
-#  
-#   - trace       : tidy trace data frame following arc removal containing 
-#                   an x-axis that is time in minutes from the start. 
-# 
-#   - start_time  : time the TDR was turned on in ymd_hms format. 
-#  
-#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format. 
-# 
-#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
-# 
-# Output: 
-# 
-#   - trace       : trace data frame complete with POSIXct dates, times, and a 
-#                   regular time series containing interpolayed y-values. 
+#
+# Input:
+#
+#   - trace       : tidy trace data frame following arc removal containing
+#                   an x-axis that is time in minutes from the start.
+#
+#   - start_time  : time the TDR was turned on in ymd_hms format.
+#
+#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format.
+#
+#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format.
+#
+# Output:
+#
+#   - trace       : trace data frame complete with POSIXct dates, times, and a
+#                   regular time series containing interpolayed y-values.
 ###############################################################################
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00"){
-  # adding dates and times from lubridate package 
-  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") + 
-    minutes(as.integer(trace$time)) + 
+  # adding dates and times from lubridate package
+  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") +
+    minutes(as.integer(trace$time)) +
     seconds(as.integer((trace$time %% 1) * 60))
-  
-  # removing duplicated times -- this happened when two points were very close 
-  # together and got assigned the same time. Dive analysis packages cannot 
+
+  # removing duplicated times -- this happened when two points were very close
+  # together and got assigned the same time. Dive analysis packages cannot
   # handle duplicated times
   trace <- trace[!duplicated(trace$date_time),]
-  
-  # need to convert to ymd_hms format 
-  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
-  
-  # filtering the data based on the time the TDR was placed on the seal to when 
+
+  # need to convert to ymd_hms format
+  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
+
+  # filtering the data based on the time the TDR was placed on the seal to when
   # it was taken off
   trace <- trace %>% dplyr::filter(.data$date_time >= on_seal & .data$date_time <= off_seal)
-  # transforming to regular time series, this will probably be an internal 
+  # transforming to regular time series, this will probably be an internal
   # function (see function below-- achieves step 4 of the recovery process)
   trace <- .create_regular_ts(trace, on_seal, off_seal)
-  # returning the trace 
+  # returning the trace
   return(trace)
 }
 
@@ -221,49 +221,49 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 # Function: create_regular_ts(trace, on_seal, off_seal)
 # Author:   EmmaLi Tsai
 # Date:     6/20/21
-# 
-# creating a regular time series. This was necessary to make future dive 
-# analysis more reliable, since the diveMove package was really only built to 
-# handle regular time series. Some records were also very discontinuous, so this 
-# step also helps with future spline smoothing. However, this does come at a 
-# cost of larger files and longer run time. This function is nested in the 
+#
+# creating a regular time series. This was necessary to make future dive
+# analysis more reliable, since the diveMove package was really only built to
+# handle regular time series. Some records were also very discontinuous, so this
+# step also helps with future spline smoothing. However, this does come at a
+# cost of larger files and longer run time. This function is nested in the
 # add_dates_times function above, and will likely become an internal function in
-# future commits. Essentially, it creates a data frame containing a row for 
+# future commits. Essentially, it creates a data frame containing a row for
 # every second the TDR was on the seal. I then do a complete merge with the
-# original trace data frame, which retains all original data points. I then 
-# linearly interpolate to fill all NAs created after the merge with y-values, 
-# while keeping all original data. 
-# 
-# Input: 
-#  
-#   - trace       : tidy trace data frame following arc removal containing 
-#                   an irregular time series that is POSIXct date&time object.  
-#  
-#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format. 
-# 
-#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format. 
-# 
-# Output: 
-# 
-#   - trace       : trace data frame complete with POSIXct dates, times, and a 
-#                   regular time series containing interpolayed y-values. 
+# original trace data frame, which retains all original data points. I then
+# linearly interpolate to fill all NAs created after the merge with y-values,
+# while keeping all original data.
+#
+# Input:
+#
+#   - trace       : tidy trace data frame following arc removal containing
+#                   an irregular time series that is POSIXct date&time object.
+#
+#   - on_seal     : time the TDR was placed on the seal, in ymd_hms format.
+#
+#   - off_seal    : time the TDR was taken off the seal, in ymd_hms format.
+#
+# Output:
+#
+#   - trace       : trace data frame complete with POSIXct dates, times, and a
+#                   regular time series containing interpolayed y-values.
 ###############################################################################
 .create_regular_ts <- function(trace, on_seal, off_seal){
   # convert to ymd_hms format, if needed
-  on_seal <- lubridate::ymd_hms(args$on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(args$off_seal, tz = "Antarctica/McMurdo")
-  # creating regular time series 
+  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
+  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
+  # creating regular time series
   reg_time <- seq(on_seal, off_seal, by = "sec")
   # transform to data frame
   reg_time <- data.frame(reg_time = reg_time)
-  # merge regular time series into irregular time series, keeping all original 
+  # merge regular time series into irregular time series, keeping all original
   # data
   trace_reg <- merge(trace, reg_time, by.x = "date_time", by.y = "reg_time", all.y = TRUE)
-  # replacing NAs with linearly interpolated values 
+  # replacing NAs with linearly interpolated values
   interp <- zoo::na.approx(trace_reg$y_val, trace_reg$date_time)
-  # cutting to match 
+  # cutting to match
   interp <- interp[1:nrow(trace_reg)]
-  # interpolated depth for regular time series 
+  # interpolated depth for regular time series
   trace_reg$interp_y <- interp
   # removing NA values at the tail end of the record
   trace_reg <- trace_reg[which(!is.na(trace_reg$interp_y)),]
@@ -275,111 +275,111 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 ## STEP FIVE: Transform Y Axis to Depth ########################################
 ################################################################################
 
-# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have 
-# psi calibration at the end of the trace, previous ones do not. I have two 
-# functions here to handle both. 
+# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have
+# psi calibration at the end of the trace, previous ones do not. I have two
+# functions here to handle both.
 
 ###############################################################################
 # Function: transform_psitodepth(trace, psi_calibration)
 # Author:   EmmaLi Tsai
 # Date:     4/09/21
-# 
-# This function takes the tidy trace file (containing x and y values of the 
-# trace) and a csv file (psi_calibration) containing the intervals and positions 
-# of the psi calibration curve at the end of the trace to determine the psi 
-# values of the trace. Essentially, this function creates breaks and labels out 
-# of the psi_calibration csv file to cut() the trace into different categories 
-# based on the y_val of a point. From these categories and the labels defined, 
-# this function then uses proportions to calculate the psi value of a specific 
-# point. These psi values can then be transformed to depth (in meters) using a 
-# simple calculation.  
-# 
-# It should also be noted that this requires a segmented calibration, since 
-# the scale changes between psi intervals. This made the code slightly more 
-# complicated. 
 #
-# Function updated to run on new interpolated values. 
-# 
-# Input: 
-# 
-#   - trace       : tidy trace data frame, contains the x and y values of the 
-#                   trace after centering. 
+# This function takes the tidy trace file (containing x and y values of the
+# trace) and a csv file (psi_calibration) containing the intervals and positions
+# of the psi calibration curve at the end of the trace to determine the psi
+# values of the trace. Essentially, this function creates breaks and labels out
+# of the psi_calibration csv file to cut() the trace into different categories
+# based on the y_val of a point. From these categories and the labels defined,
+# this function then uses proportions to calculate the psi value of a specific
+# point. These psi values can then be transformed to depth (in meters) using a
+# simple calculation.
 #
-#   - psi_calibration : centered file that contains two columns for the cut(): 
-#                           - psi_interval: the psi intervals at the end of the 
+# It should also be noted that this requires a segmented calibration, since
+# the scale changes between psi intervals. This made the code slightly more
+# complicated.
+#
+# Function updated to run on new interpolated values.
+#
+# Input:
+#
+#   - trace       : tidy trace data frame, contains the x and y values of the
+#                   trace after centering.
+#
+#   - psi_calibration : centered file that contains two columns for the cut():
+#                           - psi_interval: the psi intervals at the end of the
 #                                           record (i.e., 100psi, 200psi, etc.)
-#                           - psi_position: the y_val that corresponds to that 
+#                           - psi_position: the y_val that corresponds to that
 #                                           psi interval in cm
-#   
-# Output: 
-# 
-#   - trace      : trace data frame complete with the psi value and depth. I 
-#                  kept both so we can ensure that the psi calibration curve at 
-#                  the end of the record is precise. 
+#
+# Output:
+#
+#   - trace      : trace data frame complete with the psi value and depth. I
+#                  kept both so we can ensure that the psi calibration curve at
+#                  the end of the record is precise.
 ###############################################################################
 transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
-  
+
   # defining labels and adding the maximum psi of the TDR
   labels <- c(0, psi_calibration$psi_interval, max_psi)
-  
-  # defining the breaks and adding the maximum position of the TDR and also the 
-  # minimum position to capture the lower values 
+
+  # defining the breaks and adding the maximum position of the TDR and also the
+  # minimum position to capture the lower values
   breaks <- c(min(trace$interp_y, na.rm = TRUE), psi_calibration$psi_position, max_position)
-  
+
   # combining the breaks and labels for future calculations
   labels_combined <- paste(labels, breaks, sep = ":")
-  # combining the labels again to capture the full interval a y_val falls into 
+  # combining the labels again to capture the full interval a y_val falls into
   labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
-  
-  # cutting the data frame using the above breaks and labels 
+
+  # cutting the data frame using the above breaks and labels
   psi_interval_both <- as.data.frame(cut(trace$interp_y, breaks = breaks,
                                          include.lowest = TRUE, labels = labels_combined))
-  # changing name of column 
+  # changing name of column
   names(psi_interval_both) <- "psi_interval_both"
-  
-  # splitting the label created by the cut function in to four separate columns 
-  # since this made the calculations easier 
-  psi_interval_sep <- tidyr::separate(psi_interval_both, col = 1, 
-                                      sep = ":", 
-                                      into = c("psi_interval_1", "psi_position_1", 
+
+  # splitting the label created by the cut function in to four separate columns
+  # since this made the calculations easier
+  psi_interval_sep <- tidyr::separate(psi_interval_both, col = 1,
+                                      sep = ":",
+                                      into = c("psi_interval_1", "psi_position_1",
                                                "psi_interval_2", "psi_position_2"))
-  
-  # changing to numeric values 
+
+  # changing to numeric values
   tidy_cols <- as.data.frame(sapply(psi_interval_sep, function(x) as.numeric(paste(x))))
-  
-  # helper vectors for future calculations. I basically needed to do a segmented 
-  # calibration since the scales between psi intervals are different. 
-  # finding the difference in psi between intervals 
+
+  # helper vectors for future calculations. I basically needed to do a segmented
+  # calibration since the scales between psi intervals are different.
+  # finding the difference in psi between intervals
   diff_psi <- tidy_cols$psi_interval_2 - tidy_cols$psi_interval_1
-  # calculating the difference in position between two intervals 
+  # calculating the difference in position between two intervals
   diff_pos <- tidy_cols$psi_position_2 - tidy_cols$psi_position_1
   # finding difference in y value from the lower psi value of the interval it
-  # fell into 
+  # fell into
   diff_y_val <- trace$interp_y - tidy_cols$psi_position_1
-  
+
   # calculating psi -- had to be modified for y-values that were < 0, where only
-  # interval 2 would be used as a scale. Y-vals that fell in higher intervals 
-  # had to be scaled differently. 
+  # interval 2 would be used as a scale. Y-vals that fell in higher intervals
+  # had to be scaled differently.
   trace$psi <- dplyr::case_when(tidy_cols$psi_interval_1 == 0 ~ (tidy_cols$psi_interval_2 * trace$interp_y) / tidy_cols$psi_position_2,
                                 tidy_cols$psi_interval_1 > 0 ~ tidy_cols$psi_interval_1 + ((diff_y_val * diff_psi) / diff_pos))
-  
-  # final transformation 
+
+  # final transformation
   trace$depth <- trace$psi / PSI_TO_DEPTH
-  # returning the trace 
+  # returning the trace
   return(trace)
 }
 
-# testing code for this function can be found in the testing_code.R file 
+# testing code for this function can be found in the testing_code.R file
 
-# This is a simple function for the 1978 and 1979 traces without a psi 
-# calibration curve at the end. I don't have the calibration records for these 
-# traces, so I'll have to calibrate depth using the max depths from the 
-# Castellini et al., 1992 bulletin. 
+# This is a simple function for the 1978 and 1979 traces without a psi
+# calibration curve at the end. I don't have the calibration records for these
+# traces, so I'll have to calibrate depth using the max depths from the
+# Castellini et al., 1992 bulletin.
 transform_todepth <- function(trace, max_depth){
-  # calculating depth using the max depth the user defines and the max 
-  # value of the trace: 
+  # calculating depth using the max depth the user defines and the max
+  # value of the trace:
   trace$depth <- ((trace$interp_y * max_depth) / max(trace$interp_y, na.rm = TRUE))
-  # returning trace 
+  # returning trace
   return(trace)
 }
 
@@ -390,77 +390,77 @@ transform_todepth <- function(trace, max_depth){
 # Function: smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 # Author:   EmmaLi Tsai
 # Date:     6/15/2021
-# 
-# Function takes the trace (after time and depth have been transformed) to 
-# perform penalized spline smoothing on the data. First, it uses a rolling mean 
-# function to detect when the average depth is >= depth_thresh, where it is 
-# possible to assume that the seal is diving. The window size used for this 
-# rolling mean is ~0.2% of the rows in the record. When a dive is detected, it 
-# increases the resolution of spline smoothing by decreasing the smoothing 
-# penalty to spar_h, and knots = ~3% of the rows in the record. This was an 
-# attempt to increase the resolution of smoothing when the seal was in a bout of 
-# dives and to retain the surface intervals between dives (which would be lost 
-# in a smoothing method bounded by just depth). This also decreases the 
-# resolution of spline smoothing when the seal is not diving (to spar = 0.8, 
-# knots = 1000), to reduce chatter created by the transducer arm at shallow 
-# depths. 
-# 
-# Input: 
-# 
-#   - trace        : trace dataframe after time and depth axis transformation. 
 #
-#   - spar_h       : spar value to use at higher depths. Should be < 0.8, and 
-#                    default is set to 0.3. 
-# 
-#   - depth_thresh : depth threshold to use for the rolling mean. Default is set 
-#                    to 5m, such that rolling means >= 5m would be considered 
-#                    diving behavior. 
-# 
-# Output: 
-# 
-#   - smooth_trace : trace data frame with smoothed values (smooth_depth), and 
-#                    also with dive component assignment. 
+# Function takes the trace (after time and depth have been transformed) to
+# perform penalized spline smoothing on the data. First, it uses a rolling mean
+# function to detect when the average depth is >= depth_thresh, where it is
+# possible to assume that the seal is diving. The window size used for this
+# rolling mean is ~0.2% of the rows in the record. When a dive is detected, it
+# increases the resolution of spline smoothing by decreasing the smoothing
+# penalty to spar_h, and knots = ~3% of the rows in the record. This was an
+# attempt to increase the resolution of smoothing when the seal was in a bout of
+# dives and to retain the surface intervals between dives (which would be lost
+# in a smoothing method bounded by just depth). This also decreases the
+# resolution of spline smoothing when the seal is not diving (to spar = 0.8,
+# knots = 1000), to reduce chatter created by the transducer arm at shallow
+# depths.
+#
+# Input:
+#
+#   - trace        : trace dataframe after time and depth axis transformation.
+#
+#   - spar_h       : spar value to use at higher depths. Should be < 0.8, and
+#                    default is set to 0.3.
+#
+#   - depth_thresh : depth threshold to use for the rolling mean. Default is set
+#                    to 5m, such that rolling means >= 5m would be considered
+#                    diving behavior.
+#
+# Output:
+#
+#   - smooth_trace : trace data frame with smoothed values (smooth_depth), and
+#                    also with dive component assignment.
 ###############################################################################
 smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
-  # defining spar, nknots, and window values: 
+  # defining spar, nknots, and window values:
   spar = c(0.8, spar_h)
-  nknots = c(100, signif(nrow(trace) * .02, 1)) 
+  nknots = c(100, signif(nrow(trace) * .02, 1))
   window = signif(floor(nrow(trace) * 0.001), 1)
-  
-  # ordering 
+
+  # ordering
   trace <- trace[order(unclass(trace$date_time)),]
-  # detecting a bout of dives using the runmean function on a window of the 
-  # data: 
-  detect_bout <- data.frame(runmean = (caTools::runmean(trace$depth, window)), 
-                            depth = trace$depth, 
+  # detecting a bout of dives using the runmean function on a window of the
+  # data:
+  detect_bout <- data.frame(runmean = (caTools::runmean(trace$depth, window)),
+                            depth = trace$depth,
                             date_time = trace$date_time)
-  # defining a bout as when the mean depth is >= depth threshold in that window 
-  trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1, 
+  # defining a bout as when the mean depth is >= depth threshold in that window
+  trace$bout <- dplyr::case_when(detect_bout$runmean >= depth_thresh ~ 1,
                                  detect_bout$runmean < depth_thresh ~ 0)
   # separating parts of the record not in about
   trace_nobout <- trace[which(trace$bout == 0), ]
   # separating parts of the record in a bout
   trace_bout <- trace[which(trace$bout == 1), ]
   # spline smoothing for the parts of the record not in bout
-  smooth_fit_nobout <- smooth.spline(trace_nobout$date_time, trace_nobout$depth, 
+  smooth_fit_nobout <- smooth.spline(trace_nobout$date_time, trace_nobout$depth,
                                      spar = spar[1], nknots = nknots[1])
-  # predicting for the parts of the record not in a bout 
+  # predicting for the parts of the record not in a bout
   trace_nobout$smooth <- predict(smooth_fit_nobout, unclass(trace_nobout$date_time))$y
   # spline smoothing for the parts of the record in a bout
-  smooth_fit_bout <- smooth.spline(trace_bout$date_time, trace_bout$depth, 
+  smooth_fit_bout <- smooth.spline(trace_bout$date_time, trace_bout$depth,
                                    spar = spar[2], nknots = nknots[2])
-  # predicting for the parts of the record in a bout 
+  # predicting for the parts of the record in a bout
   trace_bout$smooth <- predict(smooth_fit_bout, unclass(trace_bout$date_time))$y
-  
-  # recombining the two: 
+
+  # recombining the two:
   smooth_trace <- rbind(trace_nobout, trace_bout)
-  # ordering 
+  # ordering
   smooth_trace <- smooth_trace[order(smooth_trace$date_time),]
-  
-  # recursive and final smoothing 
-  spline_mod_bout <- smooth.spline(smooth_trace$date_time, smooth_trace$smooth, 
+
+  # recursive and final smoothing
+  spline_mod_bout <- smooth.spline(smooth_trace$date_time, smooth_trace$smooth,
                                    spar = spar[2], nknots = nknots[2])
-  # added final smoothing and dive component assignment -- this can be removed 
+  # added final smoothing and dive component assignment -- this can be removed
   # later but I was experimenting with it here
   smooth_trace <- dplyr::mutate(smooth_trace,
                                 smooth_depth = predict(spline_mod_bout, unclass(smooth_trace$date_time))$y,
@@ -469,13 +469,13 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
                                 deriv_diff = lag(sign(deriv)) - sign(deriv),
                                 peak = case_when(deriv_diff < 0 ~ "TOP",
                                                  deriv_diff > 0 ~ "BOTTOM"))
-  # removing extra column 
+  # removing extra column
   smooth_trace <- smooth_trace[,!(names(smooth_trace) %in% c("smooth"))]
-  # removing excess noise at the surface 
+  # removing excess noise at the surface
   if (any(smooth_trace$smooth_depth < 0)) {
     smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
   }
-  
-  # final return 
+
+  # final return
   return(smooth_trace)
 }

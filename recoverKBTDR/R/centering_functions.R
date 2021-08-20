@@ -74,7 +74,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future calculations
-#' @import dplyr
+#' @importFrom dplyr group_by case_when summarize
 #' @export
 #' @examples
 #' \dontrun{
@@ -111,9 +111,9 @@ centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600,
   # snipping the tail end of the record to capture the psi calibration
   trace_snip <- trace[start_row:nrow(trace),]
   # grouping by rounded y-value and finding the mean
-  psi_summary <- dplyr::group_by(trace_snip, round(.data$y_val)) %>% summarize(mean = mean(.data$y_val), .groups = "drop")
+  psi_summary <- dplyr::group_by(trace_snip, round(.data$y_val)) %>% dplyr::summarize(mean = mean(.data$y_val), .groups = "drop")
   # recursive grouping to help handle values between two integers
-  psi_simple <- dplyr::group_by(psi_summary, floor = floor(.data$mean)) %>% summarize(mean = mean(.data$mean), .groups = "drop")
+  psi_simple <- dplyr::group_by(psi_summary, floor = floor(.data$mean)) %>% dplyr::summarize(mean = mean(.data$mean), .groups = "drop")
   # cutting values that wouldn't be with the psi calibration
   psi_simple <- psi_simple[psi_simple$floor > 0,]
 

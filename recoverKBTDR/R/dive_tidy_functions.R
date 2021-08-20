@@ -317,6 +317,12 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 # psi calibration at the end of the trace, previous ones do not. I have two
 # functions here to handle both.
 
+# TODO: create a small wrapper function for the two depth functions. If a psi
+# curve is at the end of the record, also make sure to center it using the
+# centered_psi_calibration function (I hope to make this function internal
+# later).
+
+
 #' Transform the y-axis from position to depth in meters using the psi calibration curve
 #' @param trace tidy trace data frame after arc removal, contains the x and y values of the trace.
 #' @param psi_calibration data frame containing the centered psi calibration curve.

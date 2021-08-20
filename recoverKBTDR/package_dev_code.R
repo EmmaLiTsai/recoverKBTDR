@@ -9,6 +9,7 @@
 library(usethis)
 library(devtools)
 library(Rcpp)
+library(ggplot2)
 
 # helpful lines of code for setting up the package #############################
 # crating readme
@@ -53,7 +54,8 @@ data(time_dots)
 # scan centering
 ?center_scan
 trace <- center_scan(trace, time_dots, 0.9)
-# get centered psi calibration curve
+# v want to make this an internal function in later commits
+?centered_psi_calibration
 psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
@@ -80,8 +82,8 @@ trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_positio
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 # wow... it works
-library(ggplot2)
 ggplot(trace, aes(x = date_time, y = depth)) +
+  geom_point(color = "grey") +
   geom_line(aes(y = smooth_depth), color = "blue")
 
 # example of reading in raw csv files and tidying them:
@@ -94,3 +96,9 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 # ^ these should be identical, unsure why they aren't. When I cbind them
 # and compare they are identical, but might be because one is a tibble and the
 # other is a data frame.
+
+# testing out the fast recovery function, which uses an arguments csv file to
+# pass arguments to all functions:
+fast_recovery(filepath)
+
+
