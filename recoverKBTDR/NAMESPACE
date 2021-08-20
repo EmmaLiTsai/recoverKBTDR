@@ -3,5 +3,7 @@
 export("%>%")
 export(center_scan)
 export(read_trace)
+export(zoc)
+import(caTools)
 import(dplyr)
 importFrom(magrittr,"%>%")

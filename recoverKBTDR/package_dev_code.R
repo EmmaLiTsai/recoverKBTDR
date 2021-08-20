@@ -62,3 +62,10 @@ identical(time_dots_raw, time_dots)
 # ^ these should be identical, unsure why they aren't. When I cbind them
 # and compare they are identical, but might be because one is a tibble and the
 # other is a data frame.
+
+# zero offset correction:
+?zoc()
+# small drift
+zoc(trace, 500, c(-1, 1))
+# big drift
+zoc(trace, 500, c(-1, 2))
