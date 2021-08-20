@@ -4,7 +4,7 @@
 \alias{read_trace}
 \title{Correct time dots and trace csv files.}
 \usage{
-read_trace(filepath = "data/")
+read_trace(filepath = "data/folder")
 }
 \arguments{
 \item{filepath}{the path to the folder containing both csv files, time dots and trace, for a single record.}
@@ -17,7 +17,7 @@ Correct time dots and trace csv files.
 }
 \examples{
 \dontrun{
-read_trace("data/")
+read_trace("data/folder")
 }
 
 }

@@ -3,7 +3,6 @@
 #' @param time_dots data frame contains the xy positions of the timing dots
 #' @param dist_timedot the horizontal line to center the timing dots along
 #' @return Centered trace data frame
-#' @import
 #' @export
 #' @examples
 #' \dontrun{
@@ -57,7 +56,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param x x-values of the timing dots
 #' @param n window size
 #' @return numeric vector of rolling means
-#' @import
 #' @export
 #' @examples
 #' \dontrun{

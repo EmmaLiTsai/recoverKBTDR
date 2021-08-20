@@ -9,8 +9,8 @@
 library(usethis)
 library(devtools)
 library(Rcpp)
-# v updating namespace
-devtools::document()
+
+# helpful lines of code for setting up the package #############################
 # crating readme
 use_readme_md()
 # pulling roxygen2 to help with documentation
@@ -24,8 +24,10 @@ use_data_raw()
 use_directory("inst")
 # adding license -- we already have the GNU one
 
+# creating a sample vignette
+use_vignette("recoverKBTDR")
 
-# including data for package -- data already tidy
+# including data for package -- data are already tidy
 trace <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_trace.csv")
 time_dots <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_time_dots.csv")
 args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
@@ -33,26 +35,27 @@ args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
 use_data(trace, compress = "xz", overwrite = TRUE)
 use_data(time_dots, compress = "xz", overwrite = TRUE)
 use_data(args, compress = "xz", overwrite = TRUE)
-# ^ these can be loaded into global environment using
-# data() feature
-data(trace)
-class(trace)
-trace <- as.data.frame(trace)
-time_dots <- as.data.frame(time_dots)
 
-?use_data_raw()
-
-# raw data files before tidying:
-system.file("extdata", "WS_25_1981_trace.csv", package = "recoverKBTDR", mustwork = TRUE)
-system.file("extdata", "WS_25_1981_time_dots.csv", package = "recoverKBTDR", mustwork = TRUE)
+# v updating namespace
+devtools::document()
 
 # I think this loads the whole package... and should be used to load functions
-# instead of the source() function. BUT be careful running this, it creates an
-# instead of the source() function. BUT be careful running this, it creates an
-# infinite loop at the moment
+# instead of the source() function.
 devtools::load_all()
 
-# creating a sample vignette
-# creating a sample vignette
-use_vignette("recoverKBTDR")
+# creating some sample tests for the functions so far: ########################
 
+# data can be loaded into global environment using
+# data() feature. This is tidy data.
+data(trace)
+data(time_dots)
+?center_scan
+center_scan(trace, time_dots, 0.9)
+# wow... it works
+
+# raw data files before tidying:
+?read_trace
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+read_trace(filepath)
+identical(trace_raw, trace)
+identical(time_dots_raw, time_dots)
