@@ -39,11 +39,11 @@ use_data(args, compress = "xz", overwrite = TRUE)
 # v updating namespace
 devtools::document()
 
+# creating some sample tests for the functions so far: ########################
+
 # I think this loads the whole package... and should be used to load functions
 # instead of the source() function.
 devtools::load_all()
-
-# creating some sample tests for the functions so far: ########################
 
 # data can be loaded into global environment using
 # data() feature. This is tidy data.
@@ -59,3 +59,6 @@ filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 read_trace(filepath)
 identical(trace_raw, trace)
 identical(time_dots_raw, time_dots)
+# ^ these should be identical, unsure why they aren't. When I cbind them
+# and compare they are identical, but might be because one is a tibble and the
+# other is a data frame.

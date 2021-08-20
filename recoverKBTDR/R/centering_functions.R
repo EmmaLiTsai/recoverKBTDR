@@ -43,7 +43,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
   # x midpoints between time dots to use for cutting
-  cutpoints <- c(0, rollmean(time_dots$x_val, 2), max(trace$x_val))
+  cutpoints <- c(0, .rollmean(time_dots$x_val, 2), max(trace$x_val))
   # Then cut to assign every trace point an index from the time_points df:
   time_dot_indices <- cut(trace$x_val, breaks = cutpoints, labels = FALSE)
   # Now do the adjustment
@@ -56,7 +56,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param x x-values of the timing dots
 #' @param n window size
 #' @return numeric vector of rolling means
-#' @export
 #' @examples
 #' \dontrun{
 #' rollmean(time_dots$x_val, 2)
@@ -66,7 +65,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 # with NAs. An alternative would be create a rolling mean fx with filter():
 # ma <- function(x, n = 2){stats::filter(x, rep(1 / n, n), sides = 2)}
 # But I suspect cumsum is faster and I like not getting the NAs.
-rollmean <- function(x, n) {
+.rollmean <- function(x, n) {
   cx <- c(0, cumsum(x))
   return((cx[(n+1):length(cx)] - cx[1:(length(cx) - n)]) / n)
 }
@@ -76,7 +75,6 @@ rollmean <- function(x, n) {
 #' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future calculations
 #' @import dplyr
-#' @export
 #' @examples
 #' \dontrun{
 #' centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
@@ -106,7 +104,7 @@ rollmean <- function(x, n) {
 #   - psi_calibration : data frame that contains the new psi positions after
 #                       the trace had been centered
 ###############################################################################
-centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
+.centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
   # grabbing the last chunk of data in the trace
   start_row <- nrow(trace) - 2000
   # snipping the tail end of the record to capture the psi calibration

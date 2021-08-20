@@ -10,14 +10,15 @@ read_trace(filepath = "data/folder")
 \item{filepath}{the path to the folder containing both csv files, time dots and trace, for a single record.}
 }
 \value{
-Two data frames of the trace and timing dots after correcting ImageJ's default origin placement.
+Two data frames of the trace and timing dots after correcting ImageJ's default origin placement are added to the global environment
 }
 \description{
 Correct time dots and trace csv files.
 }
 \examples{
 \dontrun{
-read_trace("data/folder")
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+read_trace(filepath)
 }
 
 }

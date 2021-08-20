@@ -2,8 +2,6 @@
 
 export("%>%")
 export(center_scan)
-export(centered_psi_calibration)
 export(read_trace)
-export(rollmean)
 import(dplyr)
 importFrom(magrittr,"%>%")
