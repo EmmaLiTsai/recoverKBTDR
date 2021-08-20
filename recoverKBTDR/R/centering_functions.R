@@ -75,6 +75,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future calculations
 #' @import dplyr
+#' @export
 #' @examples
 #' \dontrun{
 #' centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
@@ -104,7 +105,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #   - psi_calibration : data frame that contains the new psi positions after
 #                       the trace had been centered
 ###############################################################################
-.centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
+centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
   # grabbing the last chunk of data in the trace
   start_row <- nrow(trace) - 2000
   # snipping the tail end of the record to capture the psi calibration
