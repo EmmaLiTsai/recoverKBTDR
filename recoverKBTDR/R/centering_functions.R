@@ -2,16 +2,21 @@
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param time_dots data frame contains the xy positions of the timing dots
 #' @param dist_timedot the horizontal line to center the timing dots along
-#' @return Centered trace data frame
+#' @param psi_interval optional numeric vector of psi intervals at the end of the record, if present.
+#' @return Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
 #' @export
 #' @examples
 #' \dontrun{
+#' # if the record has a psi calibration curve at the end:
+#' center_scan(trace, time_dots, dist_timedot = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+#'
+#' # if the record does not have a psi calibration curve:
 #' center_scan(trace, time_dots, dist_timedot = 0.9)
 #' }
 
 ###############################################################################
-# Function: center_scan(trace, time_dots, dist_timedot = 1.1)
-# Author:   Dr. Dylan W. Schwilk
+# Function: center_scan(trace, time_dots, dist_timedot = 1.1, psi_interval = c(100, 200, 400, 600, 800))
+# Authors:   Dr. Dylan W. Schwilk, EmmaLi Tsai
 #
 # Function takes the trace and timedots files and uses the y values of the
 # time dots to move the trace up/down to center the scan, such that all the
@@ -34,13 +39,16 @@
 #                    fall along y = -dist_timedots. Default is set to 1.1cm from
 #                    my own personal measurements, but this value varies between
 #                    records.
+#   - psi_interval : numeric vector containing the different psi intervals for
+#                    depth calculations, if present in the record
 #
 # Output:
 #
 #   - trace : centered trace with two columns: x_val and y_val
+#   - psi_calibration: data frame containing centered psi calibration curve,
+#             needed for future depth functions
 ###############################################################################
-center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
-
+center_scan <- function(trace, time_dots, dist_timedot = 1.1, psi_interval = NULL) {
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
   # x midpoints between time dots to use for cutting
   cutpoints <- c(0, .rollmean(time_dots$x_val, 2), max(trace$x_val))
@@ -48,6 +56,11 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
   time_dot_indices <- cut(trace$x_val, breaks = cutpoints, labels = FALSE)
   # Now do the adjustment
   trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
+  # if there is a psi curve at the end of the record, return the centered psi
+  # calibration curve
+  if (!is.null(psi_interval)){
+    psi_calibration <<- .centered_psi_calibration(trace, psi_interval)
+  }
 
   return(trace)
 }
@@ -75,7 +88,6 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future calculations
 #' @importFrom dplyr group_by case_when summarize
-#' @export
 #' @examples
 #' \dontrun{
 #' centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
@@ -105,7 +117,7 @@ center_scan <- function(trace, time_dots, dist_timedot = 1.1) {
 #   - psi_calibration : data frame that contains the new psi positions after
 #                       the trace had been centered
 ###############################################################################
-centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
+.centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
   # grabbing the last chunk of data in the trace
   start_row <- nrow(trace) - 2000
   # snipping the tail end of the record to capture the psi calibration

@@ -53,10 +53,7 @@ data(time_dots)
 
 # scan centering
 ?center_scan
-trace <- center_scan(trace, time_dots, 0.9)
-# v want to make this an internal function in later commits
-?centered_psi_calibration
-psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+trace <- center_scan(trace, time_dots, 0.9, psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
 ?zoc
@@ -66,16 +63,21 @@ zoc(trace, 500, c(-1, 1))
 zoc(trace, 500, c(-1, 2))
 
 # remove arc and transform x to minutes
-?transform_coordinates
-trace <- transform_coordinates(trace, time_dots, center_y = 11.18, time_period_min = 12)
+?transform_x_vals
+trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
 
-# add posixct date/times
+# add posixct date/times -- i kept these functions separate because it takes
+# longer, but might be able to wrap this in the transform_x_vals function in
+# the futture. It just felt like too many arguments to add to one function.
 ?add_dates_times
-trace <- add_dates_times(trace)
+trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
 
 # transform psi to depth
-?transform_psitodepth
-trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+?transform_y_vals
+# if psi calibration curve is present:
+trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
+# if we just know max depth:
+trace <- transform_y_vals(trace, maxdep = 319)
 
 # spline smoothing
 ?smooth_trace_dive
@@ -99,6 +101,7 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 
 # testing out the fast recovery function, which uses an arguments csv file to
 # pass arguments to all functions:
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 
 

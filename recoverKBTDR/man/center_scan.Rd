@@ -4,7 +4,7 @@
 \alias{center_scan}
 \title{Center the data from scan misalignment}
 \usage{
-center_scan(trace, time_dots, dist_timedot = 1.1)
+center_scan(trace, time_dots, dist_timedot = 1.1, psi_interval = NULL)
 }
 \arguments{
 \item{trace}{data frame containing the xy positions of the dive trace}
@@ -12,15 +12,21 @@ center_scan(trace, time_dots, dist_timedot = 1.1)
 \item{time_dots}{data frame contains the xy positions of the timing dots}
 
 \item{dist_timedot}{the horizontal line to center the timing dots along}
+
+\item{psi_interval}{optional numeric vector of psi intervals at the end of the record, if present.}
 }
 \value{
-Centered trace data frame
+Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
 }
 \description{
 Center the data from scan misalignment
 }
 \examples{
 \dontrun{
+# if the record has a psi calibration curve at the end:
+center_scan(trace, time_dots, dist_timedot = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+
+# if the record does not have a psi calibration curve:
 center_scan(trace, time_dots, dist_timedot = 0.9)
 }
 }

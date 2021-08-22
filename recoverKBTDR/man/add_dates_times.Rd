@@ -2,7 +2,7 @@
 % Please edit documentation in R/dive_tidy_functions.R
 \name{add_dates_times}
 \alias{add_dates_times}
-\title{Add POSIXct date times and regular time series}
+\title{Add POSIXct date times and create a regular time series}
 \usage{
 add_dates_times(
   trace,
@@ -24,7 +24,7 @@ add_dates_times(
 trace data frame with POSIXct date times and interpolated points to fill sparse parts of the record.
 }
 \description{
-Add POSIXct date times and regular time series
+Add POSIXct date times and create a regular time series
 }
 \examples{
 \dontrun{
