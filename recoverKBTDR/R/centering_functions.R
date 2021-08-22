@@ -1,21 +1,21 @@
 #' Center the data from scan misalignment
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param time_dots data frame contains the xy positions of the timing dots
-#' @param dist_timedot the horizontal line to center the timing dots along
+#' @param center_along_y the horizontal line to center the timing dots along
 #' @param psi_interval optional numeric vector of psi intervals at the end of the record, if present.
 #' @return Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
 #' @export
 #' @examples
 #' \dontrun{
 #' # if the record has a psi calibration curve at the end:
-#' center_scan(trace, time_dots, dist_timedot = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+#' center_scan(trace, time_dots, center_along_y = 0.9, psi_interval = c(100, 200, 400, 600, 800))
 #'
 #' # if the record does not have a psi calibration curve:
-#' center_scan(trace, time_dots, dist_timedot = 0.9)
+#' center_scan(trace, time_dots, center_along_y = 0.9)
 #' }
 
 ###############################################################################
-# Function: center_scan(trace, time_dots, dist_timedot = 1.1, psi_interval = c(100, 200, 400, 600, 800))
+# Function: center_scan(trace, time_dots, center_along_y = 1.1, psi_interval = c(100, 200, 400, 600, 800))
 # Authors:   Dr. Dylan W. Schwilk, EmmaLi Tsai
 #
 # Function takes the trace and timedots files and uses the y values of the
@@ -34,7 +34,7 @@
 #
 #   - trace        : tidy trace file
 #   - time_dots    : tidy time_dots file
-#   - dist_timedot : the y-axis the user would like to use to center the scan.
+#   - center_along_y: the y-axis the user would like to use to center the scan.
 #                    The trace will be centered such that all time dots will
 #                    fall along y = -dist_timedots. Default is set to 1.1cm from
 #                    my own personal measurements, but this value varies between
@@ -48,7 +48,7 @@
 #   - psi_calibration: data frame containing centered psi calibration curve,
 #             needed for future depth functions
 ###############################################################################
-center_scan <- function(trace, time_dots, dist_timedot = 1.1, psi_interval = NULL) {
+center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = NULL) {
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
   # x midpoints between time dots to use for cutting
   cutpoints <- c(0, .rollmean(time_dots$x_val, 2), max(trace$x_val))

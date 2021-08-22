@@ -105,7 +105,7 @@ fast_recovery <- function(filepath = "../sample_data/WS_25_1981"){
 
   # center the scan
   trace_raw <- center_scan(trace_raw, time_dots_raw,
-                           dist_timedot = args_raw$dist_timedot)
+                           center_along_y = args_raw$dist_timedot)
 
   # getting the centered psi calibration curve, if the record has one
   if (is.na(args_raw$max_depth)){
