@@ -101,6 +101,7 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 
 # testing out the fast recovery function, which uses an arguments csv file to
 # pass arguments to all functions:
+?fast_recovery
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 

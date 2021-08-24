@@ -37,7 +37,8 @@ where depth = 0 is likely to be. Used for zoc() function.
 trace data frame after full recovery, added to global environment
 }
 \description{
-Fast recovery of record using argument file
+Recover a single record fast by using an argument csv file that passes
+arguments to different functions for recovery.
 }
 \examples{
 \dontrun{

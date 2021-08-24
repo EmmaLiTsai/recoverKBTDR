@@ -1,4 +1,8 @@
 #' Fast recovery of record using argument file
+#'
+#' Recover a single record fast by using an argument csv file that passes
+#' arguments to different functions for recovery.
+#'
 #' @param filepath file path of folder containing at least 3 files (trace, time dots, args). The argument file should contain columns for:
 #'
 #'   - radius  : the length of the radius arm in cm. This is constant across all
