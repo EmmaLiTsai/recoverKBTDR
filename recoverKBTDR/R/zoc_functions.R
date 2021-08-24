@@ -1,4 +1,9 @@
 #' Zero-offset correct tidy trace data frame
+#'
+#' Some KBTDR (and modern) records present drift and/or level shifts in surface
+#' values. This function is modeled after zero-offset correction methods in the
+#' "diveMove" package, which can be explained in (Luque & Fried, 2011).
+#'
 #' @param trace tidy trace data frame, contains the x and y values of the trace
 #' @param k_h numeric value, size of the larger window used for the second filter. This default is set to 500, but should be smaller for records with extreme drift.
 #' @param depth_bounds two concatenated numbers restricted search window for where y = 0 should likely be. For the records, this should be in cm. Default set c(-1, 1).
@@ -9,6 +14,7 @@
 #' zoc(trace, k_h = 500, depth_bounds = c(-1, 1))
 #' }
 
+# small function to handle data based on the degree of drift:
 zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
   if (depth_bounds[2] <= 1){
     .zoc_small_drift(trace, k_h, depth_bounds)
