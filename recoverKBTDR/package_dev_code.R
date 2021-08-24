@@ -105,4 +105,8 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 
-
+# helper functions
+?find_center_y_psi
+?find_center_y_nopsi
+?spar_dive_stats
+# ^ working on editing these now

@@ -15,7 +15,10 @@ dive_stats data frame containing all dive stats for each spar scenario to the
 global environment, and the best spar value to use for this record.
 }
 \description{
-Find the best spar value for spline smoothing using dive statistics
+Function recovers a record 21 separate times \link{0-1} with increments of 0.05
+and assess how each change in spar value influences the dive statistics
+gathered by the record. It also finds the ideal spar value for that record
+by assessing changes in bottom distance.
 }
 \examples{
 \dontrun{
