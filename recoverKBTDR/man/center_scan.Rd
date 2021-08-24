@@ -19,7 +19,11 @@ center_scan(trace, time_dots, center_along_y = 1.1, psi_interval = NULL)
 Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
 }
 \description{
-Center the data from scan misalignment
+The record often slightly moves while being fed into the scanner, which often
+results in unavoidable misalignment throughout the record. To ensure that any
+drift is from the TDR and not from scanning, centering the record is
+recommended as future recovery calculations assume that depth = 0 is the same
+as y = 0.
 }
 \examples{
 \dontrun{

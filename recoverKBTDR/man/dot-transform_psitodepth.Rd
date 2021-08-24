@@ -28,6 +28,6 @@ Transform the y-axis from position to depth in meters using the psi calibration 
 }
 \examples{
 \dontrun{
-trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+trace <- .transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 }
 }

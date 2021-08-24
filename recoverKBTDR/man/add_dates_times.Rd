@@ -12,7 +12,8 @@ add_dates_times(
 )
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains the x and y
+values of the trace.}
 
 \item{start_time}{time TDR was turned on, in yms_hms.}
 
@@ -21,10 +22,15 @@ add_dates_times(
 \item{off_seal}{time TDR taken off the seal.}
 }
 \value{
-trace data frame with POSIXct date times and interpolated points to fill sparse parts of the record.
+trace data frame with POSIXct date times and interpolated points to
+fill sparse parts of the record.
 }
 \description{
-Add POSIXct date times and create a regular time series
+The seal often moved faster than the transducer arm could document the dive,
+which results in large gaps as the seal is descending/ascending. This
+function transforms the record into a regular time series, which greatly
+benefits future spline smoothing and dive analysis. This also transforms
+the x-axis into POSIXct date times.
 }
 \examples{
 \dontrun{

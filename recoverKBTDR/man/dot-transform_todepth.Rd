@@ -19,6 +19,6 @@ Transform the y-axis from position to depth in meters using a known maximum dept
 }
 \examples{
 \dontrun{
-trace <- trace(trace, max_deph = 317)
+trace <- .trace(trace, max_deph = 317)
 }
 }

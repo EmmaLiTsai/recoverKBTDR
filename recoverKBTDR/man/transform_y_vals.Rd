@@ -27,7 +27,9 @@ transform_y_vals(
 trace data frame with depth in meters.
 }
 \description{
-Transform the y-axis from position to depth in meters
+Transforms the y-axis of the record from position to depth, using either
+the psi calibration curve at the end of the record, or a known maximum depth
+for that record.
 }
 \examples{
 \dontrun{

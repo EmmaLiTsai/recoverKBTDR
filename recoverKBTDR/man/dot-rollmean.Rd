@@ -19,6 +19,6 @@ Rolling mean
 }
 \examples{
 \dontrun{
-rollmean(time_dots$x_val, 2)
+.rollmean(time_dots$x_val, 2)
 }
 }

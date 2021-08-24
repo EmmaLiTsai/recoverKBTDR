@@ -17,7 +17,12 @@ smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 data frame with depth_smooth, which is the depth of the record when smoothed.
 }
 \description{
-Spline smoothing to reduce record transducer noise
+The transducer arm often produced extra chatter at depth = 0, from when there
+was less tension on the arm. This function spline smoothes the data to
+account for this noise by using a dive detector such that resolution of
+spline smoothing increases when a dive is detected, and less when the seal
+is resting. This reduces noise in depth = 0, while retaining post-dive
+surface interval information.
 }
 \examples{
 \dontrun{

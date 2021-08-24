@@ -19,10 +19,15 @@ transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
 trace data frame after arc removal.
 }
 \description{
-Remove arc in record and transform x-axis to time
+This function removes the characteristic left-leaning arc in the record by
+using the equation of the circle the KBTDR arm makes. It also uses the timing
+dots the transform the x-axis to time, in minutes from the start. This can
+later be transformed to POSIXct date times and transformed into a regular
+time series in the add_dates_times function.
 }
 \examples{
 \dontrun{
+# if the height of the transducer arm pivot point is 11.1 cm above depth = 0:
 transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
 }
 

@@ -19,6 +19,6 @@ Centered PSI calibration curve
 }
 \examples{
 \dontrun{
-centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+.centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 }
 }

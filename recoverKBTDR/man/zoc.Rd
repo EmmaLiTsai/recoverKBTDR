@@ -17,7 +17,9 @@ zoc(trace, k_h = 500, depth_bounds = c(-1, 1))
 trace data frame after it has been zero-offset corrected
 }
 \description{
-Zero-offset correct tidy trace data frame
+Some KBTDR (and modern) records present drift and/or level shifts in surface
+values. This function is modeled after zero-offset correction methods in the
+"diveMove" package, which can be explained in (Luque & Fried, 2011).
 }
 \examples{
 \dontrun{
