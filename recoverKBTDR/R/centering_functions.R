@@ -1,4 +1,11 @@
 #' Center the data from scan misalignment
+#'
+#' The record often slightly moves while being fed into the scanner, which often
+#' results in unavoidable misalignment throughout the record. To ensure that any
+#' drift is from the TDR and not from scanning, centering the record is
+#' recommended as future recovery calculations assume that depth = 0 is the same
+#' as y = 0.
+#'
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param time_dots data frame contains the xy positions of the timing dots
 #' @param center_along_y the horizontal line to center the timing dots along
@@ -71,7 +78,7 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 #' @return numeric vector of rolling means
 #' @examples
 #' \dontrun{
-#' rollmean(time_dots$x_val, 2)
+#' .rollmean(time_dots$x_val, 2)
 #' }
 # Simple rolling mean function wrapped inside center_scan above. Window size is
 # n. function returns a vector that is shorter than original and does not pad
@@ -90,7 +97,7 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 #' @importFrom dplyr group_by case_when summarize
 #' @examples
 #' \dontrun{
-#' centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+#' .centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 #' }
 ###############################################################################
 # Function: centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
