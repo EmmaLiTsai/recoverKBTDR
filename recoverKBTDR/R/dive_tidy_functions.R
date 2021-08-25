@@ -49,8 +49,35 @@ PSI_TO_DEPTH <- 1.4696
 ## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
 ################################################################################
 
+#' Remove arc in record and transform x-axis to time
+#'
+#' This function removes the characteristic left-leaning arc in the record by
+#' using the equation of the circle the KBTDR arm makes. It also uses the timing
+#' dots the transform the x-axis to time, in minutes from the start. This can
+#' later be transformed to POSIXct date times and transformed into a regular
+#' time series in the add_dates_times function.
+#'
+#' @param trace tidy trace data frame after centering, contains the x and y
+#' values of the trace.
+#' @param time_dots tidy time dots data frame, contains the x and y positions
+#' of the timing dots.
+#' @param center_y height of transducer arm pivot point. This value is usually
+#' close to 11 cm, but there is slight variaton (<1 mm) at the scale of the
+#' KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
+#' estimate this value.
+#' @param time_period_min minutes elapsed between two time periods.
+#' @return trace data frame after arc removal.
+#' @importFrom dplyr mutate
+#' @importFrom tidyr drop_na
+#' @export
+#' @examples
+#' \dontrun{
+#' # if the height of the transducer arm pivot point is 11.1 cm above depth = 0:
+#' transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
+#' }
+#'
 ###############################################################################
-# Function: transform_coordinates(trace, time_dots, center_y = 11.1, time_period_min = 12)
+# Function: transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
 #
@@ -94,7 +121,7 @@ PSI_TO_DEPTH <- 1.4696
 #                  gathering data. I kept all columns to ensure that the
 #                  function was working properly.
 ###############################################################################
-transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period_min = 12) {
+transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min = 12) {
   ## Start Step Two: Transform Coordinates by Radius Arc Eqns #################
 
   # applying my new equation, basically just the equation of a circle but takes
@@ -158,6 +185,29 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
   return(tidyr::drop_na(trace[order(trace$time),]))
 }
 
+#' Add POSIXct date times and create a regular time series
+#'
+#' The seal often moved faster than the transducer arm could document the dive,
+#' which results in large gaps as the seal is descending/ascending. This
+#' function transforms the record into a regular time series, which greatly
+#' benefits future spline smoothing and dive analysis. This also transforms
+#' the x-axis into POSIXct date times.
+#'
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param start_time time TDR was turned on, in yms_hms.
+#' @param on_seal time TDR was placed on the seal.
+#' @param off_seal time TDR taken off the seal.
+#' @return trace data frame with POSIXct date times and interpolated points to
+#' fill sparse parts of the record.
+#' @importFrom dplyr filter
+#' @importFrom lubridate ymd_hms minutes seconds
+#' @export
+#' @examples
+#' \dontrun{
+#' trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+#' }
+#'
 ###############################################################################
 # Function: add_dates_times(trace, start_time, on_seal, off_seal)
 # Author:   EmmaLi Tsai
@@ -191,8 +241,8 @@ transform_coordinates <- function(trace, time_dots, center_y = 11.1, time_period
 add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00"){
   # adding dates and times from lubridate package
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") +
-    minutes(as.integer(trace$time)) +
-    seconds(as.integer((trace$time %% 1) * 60))
+    lubridate::minutes(as.integer(trace$time)) +
+    lubridate::seconds(as.integer((trace$time %% 1) * 60))
 
   # removing duplicated times -- this happened when two points were very close
   # together and got assigned the same time. Dive analysis packages cannot
@@ -216,7 +266,19 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 ################################################################################
 ## STEP FOUR: Create regular time series #######################################
 ################################################################################
-
+#' creating regular time series for trace data
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param on_seal time TDR was placed on the seal.
+#' @param off_seal time TDR taken off the seal.
+#' @return trace data frame with POSIXct date times and interpolated points to
+#' fill sparse parts of the record.
+#' @importFrom zoo na.approx
+#' @importFrom lubridate ymd_hms
+#' @examples
+#' \dontrun{
+#' trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+#' }
 ###############################################################################
 # Function: create_regular_ts(trace, on_seal, off_seal)
 # Author:   EmmaLi Tsai
@@ -279,8 +341,68 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 # psi calibration at the end of the trace, previous ones do not. I have two
 # functions here to handle both.
 
+# TODO: create a small wrapper function for the two depth functions. If a psi
+# curve is at the end of the record, also make sure to center it using the
+# centered_psi_calibration function (I hope to make this function internal
+# later).
+
+#' Transform the y-axis from position to depth in meters
+#'
+#' Transforms the y-axis of the record from position to depth, using either
+#' the psi calibration curve at the end of the record, or a known maximum depth
+#' for that record.
+#'
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param max_depth maximum depth of trace in meters, if psi calibration curve
+#' is not present.
+#' @param psi_calibration data frame containing the centered psi calibration
+#' curve.
+#' @param max_psi maximum psi of the TDR, often not captured in psi calibration
+#' curve.
+#' @param max_position position of maximum psi reading for TDR in cm.
+#' @return trace data frame with depth in meters.
+#' @examples
+#' \dontrun{
+#'# if the record has a psi calibration curve at the end:
+#' trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+#'
+#' # if only the maximum depth is known:
+#' trace <- trace(trace, max_deph = 317)
+#' }
+transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_psi = NULL, max_position = NULL){
+  # if we just know maximum depth
+  if(!is.null(maxdep)){
+    trace <- .transform_todepth(trace, maxdep)
+  } else if(is.null(max_psi) | is.null(max_position)){ # if we have a psi calibration curve
+    # need both max_psi and max_position -- return error
+    print("ERROR: need position and maximum psi values")
+  } else {
+    trace <- .transform_psitodepth(trace, psi_calibration, max_psi, max_position)
+  }
+  return(trace)
+
+}
+
+#' Transform the y-axis from position to depth in meters using the psi
+#' calibration curve
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param psi_calibration data frame containing the centered psi calibration
+#' curve.
+#' @param max_psi maximum psi of the TDR, often not captured in psi calibration
+#' curve.
+#' @param max_position position of maximum psi reading for TDR in cm.
+#' @return trace data frame with depth in meters.
+#' @importFrom tidyr separate
+#' @importFrom dplyr case_when
+#' @examples
+#' \dontrun{
+#' trace <- .transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+#' }
+
 ###############################################################################
-# Function: transform_psitodepth(trace, psi_calibration)
+# Function: transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45))
 # Author:   EmmaLi Tsai
 # Date:     4/09/21
 #
@@ -317,8 +439,7 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 #                  kept both so we can ensure that the psi calibration curve at
 #                  the end of the record is precise.
 ###############################################################################
-transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
-
+.transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_position = 22.45) {
   # defining labels and adding the maximum psi of the TDR
   labels <- c(0, psi_calibration$psi_interval, max_psi)
 
@@ -371,11 +492,22 @@ transform_psitodepth <- function(trace, psi_calibration, max_psi = 900, max_posi
 
 # testing code for this function can be found in the testing_code.R file
 
+#' Transform the y-axis from position to depth in meters using a known maximum
+#' depth.
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param max_depth maximum depth of trace in meters.
+#' @return trace data frame with depth in meters.
+#' @examples
+#' \dontrun{
+#' trace <- .trace(trace, max_deph = 317)
+#' }
+
 # This is a simple function for the 1978 and 1979 traces without a psi
 # calibration curve at the end. I don't have the calibration records for these
 # traces, so I'll have to calibrate depth using the max depths from the
 # Castellini et al., 1992 bulletin.
-transform_todepth <- function(trace, max_depth){
+.transform_todepth <- function(trace, max_depth){
   # calculating depth using the max depth the user defines and the max
   # value of the trace:
   trace$depth <- ((trace$interp_y * max_depth) / max(trace$interp_y, na.rm = TRUE))
@@ -386,6 +518,31 @@ transform_todepth <- function(trace, max_depth){
 ################################################################################
 ## STEP SIX: Smoothing #########################################################
 ################################################################################
+#' Spline smoothing to reduce record transducer noise
+#'
+#' The transducer arm often produced extra chatter at depth = 0, from when there
+#' was less tension on the arm. This function spline smoothes the data to
+#' account for this noise by using a dive detector such that resolution of
+#' spline smoothing increases when a dive is detected, and less when the seal
+#' is resting. This reduces noise in depth = 0, while retaining post-dive
+#' surface interval information.
+#'
+#' @param trace tidy trace data frame after arc removal, contains time and depth
+#' of the trace.
+#' @param spar_h higher-resolution spar value to use during a dive. This can
+#' either be visually determined, but computation methods are available in
+#' find_best_spar(). Default set to 0.3.
+#' @param depth_thresh depth(m) threshold to use for when a dive is detected.
+#' Default set to 5 meters.
+#' @return data frame with depth_smooth, which is the depth of the record when
+#' smoothed.
+#' @importFrom caTools runmean
+#' @importFrom dplyr case_when mutate
+#' @export
+#' @examples
+#' \dontrun{
+#' trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+#' }
 ###############################################################################
 # Function: smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 # Author:   EmmaLi Tsai

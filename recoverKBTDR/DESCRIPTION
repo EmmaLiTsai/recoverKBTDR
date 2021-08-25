@@ -1,0 +1,26 @@
+Package: recoverKBTDR
+Type: Package
+Title: Recovering Records From Kooyman-Billups Time Depth Recorders (KBTDRs)
+Version: 0.1.0
+Author: person("EmmaLi", "Tsai", email = "emmali.tsai@gmail.com", role = c("aut", "cre")), person("Dylan", "Schwilk", role = c("aut", "cre"))
+Maintainer: emmali.tsai@gmail.com
+Description: Takes raw csv files of KBTDR records (trace and timing dots) and 
+    applies a series of corrections to transform the original data into a 
+    digital format that is comparable with data from modern TDRs. Functions 
+    involve scan centering, zero-offset correction, arc removal, transforming 
+    the x-axis into a regular time series, depth transformation, and spline 
+    smoothing. The final output of these methods is a continuous csv file that 
+    can be easily investigated using dive analysis software. 
+License: GPL - 3.0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    magrittr
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

@@ -99,7 +99,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
   
   # adding small amount to account for thickness of the trace: 
   shallow <- zoc_trace[which(zoc_trace$y_val < 0.5),]
-  shallow_diff_y <- dplyr::group_by(shallow, x_val) %>% summarize(diff_y = diff(y_val), .groups = "drop")
+  shallow_diff_y <- dplyr::group_by(shallow, .data$x_val) %>% summarize(diff_y = diff(.data$y_val), .groups = "drop")
   zoc_offset <- mean(shallow_diff_y$diff_y)
   
   # adding the offset 

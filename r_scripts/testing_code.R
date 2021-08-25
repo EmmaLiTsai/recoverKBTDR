@@ -91,7 +91,7 @@ trace <- center_trace
 ################################################################################
 
 # find the psi calibration curve after centering: 
-psi_calibration <- centered_psi_calibration(trace)
+psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
 # running find_center_y with sample values from this record. This function is 
 # meant to find an approximate value for center_y, but this still needs to be 

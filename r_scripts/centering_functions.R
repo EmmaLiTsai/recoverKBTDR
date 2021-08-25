@@ -82,9 +82,9 @@ centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600,
   # snipping the tail end of the record to capture the psi calibration 
   trace_snip <- trace[start_row:nrow(trace),]
   # grouping by rounded y-value and finding the mean
-  psi_summary <- dplyr::group_by(trace_snip, round(y_val)) %>% summarize(mean = mean(y_val), .groups = "drop")
+  psi_summary <- dplyr::group_by(trace_snip, round(.data$y_val)) %>% summarize(mean = mean(.data$y_val), .groups = "drop")
   # recursive grouping to help handle values between two integers
-  psi_simple <- dplyr::group_by(psi_summary, floor = floor(mean)) %>% summarize(mean = mean(mean), .groups = "drop")
+  psi_simple <- dplyr::group_by(psi_summary, floor = floor(.data$mean)) %>% summarize(mean = mean(.data$mean), .groups = "drop")
   # cutting values that wouldn't be with the psi calibration 
   psi_simple <- psi_simple[psi_simple$floor > 0,]
   
