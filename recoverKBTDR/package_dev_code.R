@@ -95,6 +95,10 @@ ggplot(trace, aes(x = date_time, y = depth)) +
   geom_point(color = "grey") +
   geom_line(aes(y = smooth_depth), color = "blue")
 
+
+################################################################################
+# example and helper functions
+################################################################################
 # example of reading in raw csv files and tidying them:
 ?read_trace
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
