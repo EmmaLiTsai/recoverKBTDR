@@ -60,6 +60,8 @@ trace <- zoc(trace, k_h  = 500, depth_bounds = c(-1, 1))
 Transform the x-axis into minutes using the timing dots, and remove the arc in the data by defining the height of the pivot point above y = 0 (center_y, in cm). 
 ```{r}
 trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
+
+# to find the center_y value for arc removal, check out the helper function find_center_y() 
 ```
 
 Add POSIXct date times and create a regular time series using the time the TDR was turned on (start_time), and the times it was placed on and off the seal: 
@@ -79,6 +81,8 @@ trace <- transform_y_vals(trace, maxdep = 319)
 Spline smoothing to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
 ```{r}
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+
+# to find the best spar value for spline smoothing, check out the helper function find_best_spar() 
 ```
 
 Then, final data frame can be exported and read into dive analysis software. 
