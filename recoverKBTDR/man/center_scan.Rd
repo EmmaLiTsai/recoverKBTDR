@@ -13,10 +13,12 @@ center_scan(trace, time_dots, center_along_y = 1.1, psi_interval = NULL)
 
 \item{center_along_y}{the horizontal line to center the timing dots along}
 
-\item{psi_interval}{optional numeric vector of psi intervals at the end of the record, if present.}
+\item{psi_interval}{optional numeric vector of psi intervals at the end of
+the record, if present.}
 }
 \value{
-Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
+Centered trace data frame and centered psi_calibration curve at the
+end of the record (printed to global environment).
 }
 \description{
 The record often slightly moves while being fed into the scanner, which often

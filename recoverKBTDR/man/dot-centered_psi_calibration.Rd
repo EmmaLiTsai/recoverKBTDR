@@ -9,10 +9,12 @@
 \arguments{
 \item{trace}{data frame containing the xy positions of the dive trace}
 
-\item{psi_interval}{psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)}
+\item{psi_interval}{psi readings for the calibration curve, i.e.,
+(100, 200, 400, 600, 800)}
 }
 \value{
-data frame containing centered psi calibration curve for future calculations
+data frame containing centered psi calibration curve for future
+calculations
 }
 \description{
 Centered PSI calibration curve

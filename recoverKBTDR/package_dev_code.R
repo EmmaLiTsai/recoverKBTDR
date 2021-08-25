@@ -51,9 +51,10 @@ devtools::load_all()
 data(trace)
 data(time_dots)
 
-# scan centering
+# scan centering -- will also produced centered psi calibration curve
 ?center_scan
-trace <- center_scan(trace, time_dots, 0.9, psi_interval = c(100, 200, 400, 600, 800))
+trace <- center_scan(trace, time_dots, 0.9,
+                     psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
 ?zoc
@@ -63,19 +64,25 @@ zoc(trace, 500, c(-1, 1))
 zoc(trace, 500, c(-1, 2))
 
 # remove arc and transform x to minutes
+# cente
 ?transform_x_vals
-trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
+trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
+                          time_period_min = 12)
 
 # add posixct date/times -- i kept these functions separate because it takes
 # longer, but might be able to wrap this in the transform_x_vals function in
 # the futture. It just felt like too many arguments to add to one function.
 ?add_dates_times
-trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+trace <- add_dates_times(trace,
+                         start_time = "1981:01:16 15:10:00",
+                         on_seal = "1981:01:16 17:58:00",
+                         off_seal = "1981:01:23 15:30:00")
 
 # transform psi to depth
 ?transform_y_vals
 # if psi calibration curve is present:
-trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
+trace <- transform_y_vals(trace, psi_calibration = psi_calibration,
+                          max_psi = 900, max_position = 22.45)
 # if we just know max depth:
 trace <- transform_y_vals(trace, maxdep = 319)
 
@@ -105,8 +112,18 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 
-# helper functions
-?find_center_y_psi
-?find_center_y_nopsi
-?spar_dive_stats
-# ^ working on editing these now
+# helper functions, these functions are a little messy, but meant to help find
+# the best arguments to different functions
+# with psi calibration curve:
+?find_center_y
+find_center_y(beg_dive = c(1142.945, 0),
+              depth_dive = c(1140.55, 9.3),
+              rate = 0.16, psi_calibration)
+# if only max depth known:
+find_center_y(beg_dive = c(65.258, 0),
+              depth_dive = c(63.442, 5.341),
+              rate = 0.21, max_depth = 484, df = trace)
+
+# v this one will take a LONG time to run, but I believe this is the best
+# method for objectively finding the right spar value.
+?find_best_spar

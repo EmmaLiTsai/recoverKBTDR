@@ -2,12 +2,14 @@
 % Please edit documentation in R/dive_tidy_functions.R
 \name{.transform_todepth}
 \alias{.transform_todepth}
-\title{Transform the y-axis from position to depth in meters using a known maximum depth.}
+\title{Transform the y-axis from position to depth in meters using a known maximum
+depth.}
 \usage{
 .transform_todepth(trace, max_depth)
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains the x and y
+values of the trace.}
 
 \item{max_depth}{maximum depth of trace in meters.}
 }
@@ -15,7 +17,8 @@
 trace data frame with depth in meters.
 }
 \description{
-Transform the y-axis from position to depth in meters using a known maximum depth.
+Transform the y-axis from position to depth in meters using a known maximum
+depth.
 }
 \examples{
 \dontrun{

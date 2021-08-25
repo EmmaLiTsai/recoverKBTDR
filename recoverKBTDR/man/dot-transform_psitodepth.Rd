@@ -2,7 +2,8 @@
 % Please edit documentation in R/dive_tidy_functions.R
 \name{.transform_psitodepth}
 \alias{.transform_psitodepth}
-\title{Transform the y-axis from position to depth in meters using the psi calibration curve}
+\title{Transform the y-axis from position to depth in meters using the psi
+calibration curve}
 \usage{
 .transform_psitodepth(
   trace,
@@ -12,11 +13,14 @@
 )
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains the x and y
+values of the trace.}
 
-\item{psi_calibration}{data frame containing the centered psi calibration curve.}
+\item{psi_calibration}{data frame containing the centered psi calibration
+curve.}
 
-\item{max_psi}{maximum psi of the TDR, often not captured in psi calibration curve.}
+\item{max_psi}{maximum psi of the TDR, often not captured in psi calibration
+curve.}
 
 \item{max_position}{position of maximum psi reading for TDR in cm.}
 }
@@ -24,7 +28,8 @@
 trace data frame with depth in meters.
 }
 \description{
-Transform the y-axis from position to depth in meters using the psi calibration curve
+Transform the y-axis from position to depth in meters using the psi
+calibration curve
 }
 \examples{
 \dontrun{

@@ -7,11 +7,16 @@
 transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
 }
 \arguments{
-\item{trace}{tidy trace data frame after centering, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after centering, contains the x and y
+values of the trace.}
 
-\item{time_dots}{tidy time dots data frame, contains the x and y positions of the timing dots.}
+\item{time_dots}{tidy time dots data frame, contains the x and y positions
+of the timing dots.}
 
-\item{center_y}{height of transducer arm pivot point.}
+\item{center_y}{height of transducer arm pivot point. This value is usually
+close to 11 cm, but there is slight variaton (<1 mm) at the scale of the
+KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
+estimate this value.}
 
 \item{time_period_min}{minutes elapsed between two time periods.}
 }

@@ -9,8 +9,10 @@
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param time_dots data frame contains the xy positions of the timing dots
 #' @param center_along_y the horizontal line to center the timing dots along
-#' @param psi_interval optional numeric vector of psi intervals at the end of the record, if present.
-#' @return Centered trace data frame and centered psi_calibration curve at the end of the record (printed to global environment).
+#' @param psi_interval optional numeric vector of psi intervals at the end of
+#' the record, if present.
+#' @return Centered trace data frame and centered psi_calibration curve at the
+#' end of the record (printed to global environment).
 #' @export
 #' @examples
 #' \dontrun{
@@ -62,7 +64,7 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
   # Then cut to assign every trace point an index from the time_points df:
   time_dot_indices <- cut(trace$x_val, breaks = cutpoints, labels = FALSE)
   # Now do the adjustment
-  trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - dist_timedot
+  trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - center_along_y
   # if there is a psi curve at the end of the record, return the centered psi
   # calibration curve
   if (!is.null(psi_interval)){
@@ -92,8 +94,10 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 
 #' Centered PSI calibration curve
 #' @param trace data frame containing the xy positions of the dive trace
-#' @param psi_interval psi readings for the calibration curve, i.e., (100, 200, 400, 600, 800)
-#' @return data frame containing centered psi calibration curve for future calculations
+#' @param psi_interval psi readings for the calibration curve, i.e.,
+#' (100, 200, 400, 600, 800)
+#' @return data frame containing centered psi calibration curve for future
+#' calculations
 #' @importFrom dplyr group_by case_when summarize
 #' @examples
 #' \dontrun{

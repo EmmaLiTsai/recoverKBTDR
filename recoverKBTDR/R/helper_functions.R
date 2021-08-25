@@ -13,11 +13,11 @@
 #' @examples
 #' \dontrun{
 #' filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-#' spar_dive_stats(filepath)
+#' find_best_spar(filepath)
 #' }
 
 ###############################################################################
-# Function: spar_dive_stats(filepath = "../sample_data/WS_25_1981)
+# Function: find_best_spar(filepath = "../sample_data/WS_25_1981)
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
 #
@@ -66,7 +66,7 @@
 #                   for the different spar scenarios, complete with dive numbers
 #                   and spar value. Also returns best spar value.
 ###############################################################################
-spar_dive_stats <- function(filepath = "../sample_data/WS_25_1981"){
+find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
   # read in the record
   read_trace(filepath = filepath)
 
@@ -281,10 +281,58 @@ spar_dive_stats <- function(filepath = "../sample_data/WS_25_1981"){
 # functions for finding the center_y value
 ################################################################################
 
-# NOTE: these functions are only ESTIMATES of center_y. These calculations need
-# to be confirmed visually to ensure that it does not introduce any abnormal
-# skew across the record. However, any variation in this height is < 1mm at the
-# scale of the KBTDR.
+
+#' Find the center_y value
+#'
+#'Center_y is the height of the pivot-point of the KBTDR trasucer arm above
+#'depth = 0, in centimetes. While most center_y values are close to 11cm, these
+#'functions are only ESTIMATES of center_y. These calculations need to be
+#'confirmed visually to ensure that it does not introduce any abnormal skew
+#'across the record. However, any variation in this height is < 1mm at the scale
+#'of the KBTDR.
+
+#' @param beg_dive numeric vector of the x & y coordinates of the beginning of
+#' the dive
+#' @param depth_dive numeric vector of the x & y coordinates of a point at depth
+#' @param rate rate of film movement, estimated by timing dots
+#' @param psi_calibration data frame of psi calibration curve, produced after
+#' center_scan if present in the record
+#' @param max_depth maximum depth, if no psi calibration curve present
+#' @param df tidy trace data frame, if no psi calibration curve present
+#' @export
+#' @return numeric value of an estimated center_y value to use for arc removal.
+#' @examples
+#' \dontrun{
+#' # if psi calibration curve is present:
+#' find_center_y(beg_dive, depth_dive, rate, psi_calibration)
+#' find_center_y(beg_dive = c(1142.945, 0), depth_dive = c(1140.55, 9.3), rate = 0.16, psi_calibration)
+#'
+#' # if only maximum depth is known:
+#' find_center_y(beg_dive, depth_dive, rate, max_depth, trace)
+#' find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341), rate = 0.21, max_depth = 484, df = trace)
+#' }
+
+# wrapper function to account for if a psi calibration curve is present or not:
+find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
+                          psi_calibration = NULL, max_depth = NULL,
+                          df = NULL){
+  # defining things to make future functions easier:
+  x1 <- beg_dive[1]
+  y1 <- beg_dive[2]
+  x2 <- depth_dive[1]
+  y2 <- depth_dive[2]
+
+  # sorting based on if psi calibration curve present
+  if(!is.null(psi_calibration)){
+    .find_center_y_psi(x1, y1, x2, y2, rate, psi_calibration)
+  } else if (is.null(max_depth) | is.null(df)){
+    print("ERROR: need to specify both max depth and trace data frame")
+  } else {
+    # or if we just know maximum depth
+    .find_center_y_nopsi(x1, y1, x2, y2, rate = rate, max_depth = max_depth, df = df)
+  }
+}
+
 
 # This function finds the center_y value of the arm given two points along the
 # descent of a dive (x1, y1; x2, y2). This dive should be rapid with little to
@@ -316,17 +364,17 @@ spar_dive_stats <- function(filepath = "../sample_data/WS_25_1981"){
 #' @param y1 y-value of the surface point, should be close if not 0.
 #' @param x2 x-value of the point at depth
 #' @param y2 y-value of the point at depth
-#' @param r length of transducer arm, 21.14cm
-#' @param rate rate of film movement, estimated by timing dots
+#' @param rate rate of film movement, estimated by timing dots in cm/min
 #' @param psi_calibration psi calibration data frame after centering
 #' @return numeric value of an estimated center_y value to use for arc removal.
-#' @export
 #' @examples
 #' \dontrun{
-#' find_center_y_psi(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration)
+#' .find_center_y_psi(x1, y1, x2, y2, rate, psi_calibration = psi_calibration)
+#'
+#' .find_center_y_psi(x1 = 1142.945, y1 = 0, x2 = 1140.55, y2 = 9.3, rate = 0.16, psi_calibration)
 #' }
 
-find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration = psi_calibration){
+.find_center_y_psi <- function(x1, y1, x2, y2, rate, psi_calibration = psi_calibration){
   # First, I am transforming y2 and y1 to depth in meters. This was needed to
   # estimate the amount of time it would've taken for the seal to descend to
   # this depth.
@@ -355,7 +403,7 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
   ya =  0.5 * (y2 - y1)
 
   a = sqrt(xa^2 + ya^2)
-  b = sqrt(r^2 - a^2)
+  b = sqrt(21.14^2 - a^2)
 
   x0 = x1 + xa
   y0 = y1 + ya
@@ -377,24 +425,24 @@ find_center_y_psi <- function(x1, y1, x2, y2, r = 21.14, rate, psi_calibration =
 #' @param y1 y-value of the surface point, should be close if not 0.
 #' @param x2 x-value of the point at depth
 #' @param y2 y-value of the point at depth
-#' @param r length of transducer arm, 21.14cm
 #' @param rate rate of film movement, estimated by timing dots
 #' @param max_depth maximum depth, if known
 #' @param trace tidy trace data frame
 #' @return numeric value of an estimated center_y value to use for arc removal.
-#' @export
 #' @examples
 #' \dontrun{
-#' find_center_y_nopsi(x1, y1, x2, y2, r = 21.14, rate, max_depth, trace)
+#' .find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, trace)
+#'
+#' .find_center_y_nopsi(x1 = 65.258, y1 = -0.056, x2 = 63.442, y2 = 5.341, rate = 0.21, max_depth = 484, trace)
 #' }
 #'
 ################################################################################
 # for records before 1981 without a psi_calibration file, but max depth value
 ################################################################################
-find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, trace){
+.find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, df){
 
   # finding the depth of y2
-  depth_2 <- ((y2 * max_depth) / max(trace$y_val, na.rm = TRUE))
+  depth_2 <- ((y2 * max_depth) / max(df$y_val, na.rm = TRUE))
 
   # finding time it took for seal to descend to that depth assuming it is
   # descending at 1.1 m/s (Williams et al., 2015) and transforming it to
@@ -407,7 +455,7 @@ find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, trac
 
   if (y1 != 0) {
     ## if the first y value is not = 0:
-    depth_1 <-((y1 * max_depth) / max(trace$y_val, na.rm = TRUE))
+    depth_1 <-((y1 * max_depth) / max(df$y_val, na.rm = TRUE))
 
     # finding time it took for seal to descend to that depth assuming it is
     # descending at 1.1 m/s (Williams et al., 2015) and transforming it to
@@ -425,7 +473,7 @@ find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, trac
   ya =  0.5 * (y2 - y1)
 
   a = sqrt(xa^2 + ya^2)
-  b = sqrt(r^2 - a^2)
+  b = sqrt(21.14^2 - a^2)
 
   x0 = x1 + xa
   y0 = y1 + ya

@@ -7,14 +7,16 @@
 .create_regular_ts(trace, on_seal, off_seal)
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains the x and y
+values of the trace.}
 
 \item{on_seal}{time TDR was placed on the seal.}
 
 \item{off_seal}{time TDR taken off the seal.}
 }
 \value{
-trace data frame with POSIXct date times and interpolated points to fill sparse parts of the record.
+trace data frame with POSIXct date times and interpolated points to
+fill sparse parts of the record.
 }
 \description{
 creating regular time series for trace data

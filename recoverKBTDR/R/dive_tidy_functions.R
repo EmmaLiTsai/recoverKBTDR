@@ -57,9 +57,14 @@ PSI_TO_DEPTH <- 1.4696
 #' later be transformed to POSIXct date times and transformed into a regular
 #' time series in the add_dates_times function.
 #'
-#' @param trace tidy trace data frame after centering, contains the x and y values of the trace.
-#' @param time_dots tidy time dots data frame, contains the x and y positions of the timing dots.
-#' @param center_y height of transducer arm pivot point.
+#' @param trace tidy trace data frame after centering, contains the x and y
+#' values of the trace.
+#' @param time_dots tidy time dots data frame, contains the x and y positions
+#' of the timing dots.
+#' @param center_y height of transducer arm pivot point. This value is usually
+#' close to 11 cm, but there is slight variaton (<1 mm) at the scale of the
+#' KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
+#' estimate this value.
 #' @param time_period_min minutes elapsed between two time periods.
 #' @return trace data frame after arc removal.
 #' @importFrom dplyr mutate
@@ -262,10 +267,12 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 ## STEP FOUR: Create regular time series #######################################
 ################################################################################
 #' creating regular time series for trace data
-#' @param trace tidy trace data frame after arc removal, contains the x and y values of the trace.
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
 #' @param on_seal time TDR was placed on the seal.
 #' @param off_seal time TDR taken off the seal.
-#' @return trace data frame with POSIXct date times and interpolated points to fill sparse parts of the record.
+#' @return trace data frame with POSIXct date times and interpolated points to
+#' fill sparse parts of the record.
 #' @importFrom zoo na.approx
 #' @importFrom lubridate ymd_hms
 #' @examples
@@ -345,10 +352,14 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 #' the psi calibration curve at the end of the record, or a known maximum depth
 #' for that record.
 #'
-#' @param trace tidy trace data frame after arc removal, contains the x and y values of the trace.
-#' @param max_depth maximum depth of trace in meters, if psi calibration curve is not present.
-#' @param psi_calibration data frame containing the centered psi calibration curve.
-#' @param max_psi maximum psi of the TDR, often not captured in psi calibration curve.
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param max_depth maximum depth of trace in meters, if psi calibration curve
+#' is not present.
+#' @param psi_calibration data frame containing the centered psi calibration
+#' curve.
+#' @param max_psi maximum psi of the TDR, often not captured in psi calibration
+#' curve.
 #' @param max_position position of maximum psi reading for TDR in cm.
 #' @return trace data frame with depth in meters.
 #' @examples
@@ -373,10 +384,14 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
 
 }
 
-#' Transform the y-axis from position to depth in meters using the psi calibration curve
-#' @param trace tidy trace data frame after arc removal, contains the x and y values of the trace.
-#' @param psi_calibration data frame containing the centered psi calibration curve.
-#' @param max_psi maximum psi of the TDR, often not captured in psi calibration curve.
+#' Transform the y-axis from position to depth in meters using the psi
+#' calibration curve
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
+#' @param psi_calibration data frame containing the centered psi calibration
+#' curve.
+#' @param max_psi maximum psi of the TDR, often not captured in psi calibration
+#' curve.
 #' @param max_position position of maximum psi reading for TDR in cm.
 #' @return trace data frame with depth in meters.
 #' @importFrom tidyr separate
@@ -477,8 +492,10 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
 
 # testing code for this function can be found in the testing_code.R file
 
-#' Transform the y-axis from position to depth in meters using a known maximum depth.
-#' @param trace tidy trace data frame after arc removal, contains the x and y values of the trace.
+#' Transform the y-axis from position to depth in meters using a known maximum
+#' depth.
+#' @param trace tidy trace data frame after arc removal, contains the x and y
+#' values of the trace.
 #' @param max_depth maximum depth of trace in meters.
 #' @return trace data frame with depth in meters.
 #' @examples
@@ -510,10 +527,15 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
 #' is resting. This reduces noise in depth = 0, while retaining post-dive
 #' surface interval information.
 #'
-#' @param trace tidy trace data frame after arc removal, contains time and depth of the trace.
-#' @param spar_h higher-resolution spar value to use during a dive. This can either be visually determined, but computation methods are available in find_best_spar(). Default set to 0.3.
-#' @param depth_thresh depth(m) threshold to use for when a dive is detected. Default set to 5 meters.
-#' @return data frame with depth_smooth, which is the depth of the record when smoothed.
+#' @param trace tidy trace data frame after arc removal, contains time and depth
+#' of the trace.
+#' @param spar_h higher-resolution spar value to use during a dive. This can
+#' either be visually determined, but computation methods are available in
+#' find_best_spar(). Default set to 0.3.
+#' @param depth_thresh depth(m) threshold to use for when a dive is detected.
+#' Default set to 5 meters.
+#' @return data frame with depth_smooth, which is the depth of the record when
+#' smoothed.
 #' @importFrom caTools runmean
 #' @importFrom dplyr case_when mutate
 #' @export

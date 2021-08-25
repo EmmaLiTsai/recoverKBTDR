@@ -13,15 +13,19 @@ transform_y_vals(
 )
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains the x and y values of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains the x and y
+values of the trace.}
 
-\item{psi_calibration}{data frame containing the centered psi calibration curve.}
+\item{psi_calibration}{data frame containing the centered psi calibration
+curve.}
 
-\item{max_psi}{maximum psi of the TDR, often not captured in psi calibration curve.}
+\item{max_psi}{maximum psi of the TDR, often not captured in psi calibration
+curve.}
 
 \item{max_position}{position of maximum psi reading for TDR in cm.}
 
-\item{max_depth}{maximum depth of trace in meters, if psi calibration curve is not present.}
+\item{max_depth}{maximum depth of trace in meters, if psi calibration curve
+is not present.}
 }
 \value{
 trace data frame with depth in meters.

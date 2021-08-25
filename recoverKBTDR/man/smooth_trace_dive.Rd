@@ -7,14 +7,19 @@
 smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 }
 \arguments{
-\item{trace}{tidy trace data frame after arc removal, contains time and depth of the trace.}
+\item{trace}{tidy trace data frame after arc removal, contains time and depth
+of the trace.}
 
-\item{spar_h}{higher-resolution spar value to use during a dive. This can either be visually determined, but computation methods are available in find_best_spar(). Default set to 0.3.}
+\item{spar_h}{higher-resolution spar value to use during a dive. This can
+either be visually determined, but computation methods are available in
+find_best_spar(). Default set to 0.3.}
 
-\item{depth_thresh}{depth(m) threshold to use for when a dive is detected. Default set to 5 meters.}
+\item{depth_thresh}{depth(m) threshold to use for when a dive is detected.
+Default set to 5 meters.}
 }
 \value{
-data frame with depth_smooth, which is the depth of the record when smoothed.
+data frame with depth_smooth, which is the depth of the record when
+smoothed.
 }
 \description{
 The transducer arm often produced extra chatter at depth = 0, from when there
