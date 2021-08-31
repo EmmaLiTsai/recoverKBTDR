@@ -112,7 +112,8 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
   }
 
   # now creating a new results folder to store files
-  base_name <- unlist(strsplit(filepath, "/"))[3]
+  base_name <- unlist(strsplit(filepath, "/"))
+  base_name <- base_name[length(base_name)]
   dir_name <- paste("../results/", base_name, sep = "")
   # checking to see if the folder is already in the directory
   if (!(dir_name %in% list.dirs("../results"))){
