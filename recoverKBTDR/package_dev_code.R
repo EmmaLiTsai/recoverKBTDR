@@ -134,3 +134,4 @@ find_center_y(beg_dive = c(65.258, 0),
 ?find_best_spar
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 find_best_spar(filepath)
+# ^ will return best spar value as 0.22

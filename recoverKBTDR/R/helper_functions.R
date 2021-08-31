@@ -279,7 +279,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
   best_spar <- dplyr::group_by(mean_bt) %>% dplyr::summarize(min_spar = mean_bt[which.min(.data$mean_bott),]$spar_val)
   # divide this by two, since you'd want the median as a compromise
   # between overfitting and underfitting the data
-  best_spar$new_spar <- round(as.numeric(best_spar$min_spar)/2, 2)
+  best_spar$best_spar <- round(as.numeric(best_spar$min_spar)/2, 2)
 
   return(best_spar)
 }
