@@ -114,9 +114,9 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
   # now creating a new results folder to store files
   base_name <- unlist(strsplit(filepath, "/"))
   base_name <- base_name[length(base_name)]
-  dir_name <- paste("../results/", base_name, sep = "")
+  dir_name <- paste("results/", base_name, sep = "")
   # checking to see if the folder is already in the directory
-  if (!(dir_name %in% list.dirs("../results"))){
+  if (!(dir_name %in% list.dirs("results"))){
     dir.create(dir_name)
   }
 
@@ -134,14 +134,15 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
     write.csv(trace_i, results_filepath)
     # just printing to the console so the user can see what iteration of the
     # loop the function is on
-    print(spar_seq[i])
+    print(paste("on spar value:", spar_seq[i]))
   }
   # adding dive stats for each spar iteration
-  dive_stats <- .get_divestats(folder = paste(dir_name, "/", sep = ""))
+  dive_stats_raw <- .get_divestats(folder = paste(dir_name, "/", sep = ""))
   # clean the results and add to global environment
-  dive_stats <<- .clean_divestats(dive_stats)
+  dive_stats <<- .clean_divestats(dive_stats_raw)
   # return the best spar value
-  return(.best_spar(dive_stats))
+  best_spar <- .best_spar(dive_stats)
+  return(best_spar)
 }
 
 #' Get the dive statistics for each spar value iteration
@@ -156,9 +157,10 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #' }
 # reads in all data for dive analysis, achieves step two of the function
 # described above
-.get_divestats <- function(folder = "../results/WS_25_1981/"){
+.get_divestats <- function(folder = "results/WS_25_1981/"){
   # getting record ID's in folder
-  record_id <- unlist(strsplit(folder, "/"))[3]
+  record_id <- unlist(strsplit(folder, "/"))
+  record_id <- record_id[length(record_id)]
   # listing all files in folder
   file_names <- list.files(folder, paste(record_id, "_", sep = ""))
 
@@ -172,13 +174,13 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
     # reading in the file to conver to tdr object
     file_i <- read.csv(file_i_name)
     # printing so user can see iteration of that loop
-    print(file_i_name)
+    print(paste("getting dive stats for:", file_i_name))
 
     # creating a TDR object
     tdr <- diveMove::readTDR(file_i_name,
                              dateCol = which(names(file_i) == "date_time"),
                              depthCol = which(names(file_i) == "smooth_depth"),
-                             subsamp = 2,
+                             subsamp = 5,
                              dtformat = "%Y-%m-%d %H:%M:%S")
 
     # calibrating TDR object
