@@ -43,6 +43,7 @@ recoverKBTDR uses two csv files from a single record: (1) the dive trace, which 
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 trace_raw <- read.csv(paste(filepath, "WS_25_1981_trace.csv", sep = "/"))
 time_dots_raw <- read.csv(paste(filepath, "WS_25_1981_time_dots.csv", sep = "/"))
+
 # raw data from ImageJ
 head(trace_raw)
 head(time_dots_raw)
@@ -52,6 +53,7 @@ As you can see, the default csv file from ImageJ lacks informative column names,
 
 ```{r}
 read_trace(filepath)
+
 head(trace_tidy)
 head(time_dots_tidy)
 ```
