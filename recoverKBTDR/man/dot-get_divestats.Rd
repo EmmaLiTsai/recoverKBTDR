@@ -4,7 +4,7 @@
 \alias{.get_divestats}
 \title{Get the dive statistics for each spar value iteration}
 \usage{
-.get_divestats(folder = "../results/WS_25_1981/")
+.get_divestats(folder = "results/WS_25_1981/")
 }
 \arguments{
 \item{filepath}{folder containing the trace, time dots, and argument files.}
