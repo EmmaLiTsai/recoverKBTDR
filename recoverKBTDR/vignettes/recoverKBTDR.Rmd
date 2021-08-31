@@ -18,4 +18,96 @@ knitr::opts_chunk$set(
 library(recoverKBTDR)
 ```
 
-# Introduction 
+# Introduction to recoverKBTDR
+
+This package provides a suite of functions for recovering dive data from Kooyman-Billups Time Depth Recorders (KBTDRs). This film-based TDR was among the first TDRs invented in the late 1960s, but the format of this historic data makes long-term comparisons exceptionally challenging. Dive records are stored on paper scrolls and present issues due to the inner mechanics of the device. After image processing, this package takes the csv files of the record and creates a continuous dive trace complete with depth and time axes, which is comparable with modern dive data. 
+
+This vignette introduces you to recoverKBTDR's tools and the overall workflow for recovering historic dive data. It is our hope that these functions will assist others in gaining access to the rich behavioral data contained in paper dive records. 
+
+-----------
+# Installation 
+
+First, we have to load the package into our environment. 
+```{r}
+install.packages("recoverKBTDR")
+library(recoverKBTDR)
+```
+
+------------
+# Data Structure
+
+recoverKBTDR uses two csv files from a single record: (1) the dive trace, which contains the behavior of the seal, and (2) the time-keeping dots below the record. These files are obtained using image processing methods in ImageJ. Here, we will use our sample dataset to illustrate the data tidying process using raw files from a record using ImageJ. 
+
+```{r}
+# creating a file path that points to our sample data
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+trace_raw <- read.csv(paste(filepath, "WS_25_1981_trace.csv", sep = "/"))
+time_dots_raw <- read.csv(paste(filepath, "WS_25_1981_time_dots.csv", sep = "/"))
+# raw data from ImageJ
+head(trace_raw)
+head(time_dots_raw)
+```
+
+As you can see, the default csv file from ImageJ lacks informative column names, and the y-axis values become more negative in the +y direction. The read_trace() function can correct these issues for you: 
+
+```{r}
+read_trace(filepath)
+head(trace_tidy)
+head(time_dots_tidy)
+```
+
+Now, the trace and time dots data fames are fully tidy. They contain more informative column names, duplicated points are removed, and the y-axis has been swapped such that values in the +y direction are positive. These data frames have been stored as sample data for you in this package. Now, we can proceed with the recovery process. 
+
+--------------
+# Workflow of recoverKBTDR
+
+There are six main recovery steps: 
+
+1. Scan centering and zero-offset correction 
+1. Arc removal 
+1. x-axis transformation to dates & times 
+1. Interpolation between missing points 
+1. y-axis transformation to depth 
+1. spline smoothing 
+
+To illustrate the workflow of this package, we will use our tidy sample data, which contains the positions of our trace and time dots in centimeters from the origin: 
+```{r}
+# position of the dive trace
+data(trace) 
+# position of the timing dots: 
+data(time_dots)
+
+head(trace)
+head(time_dots)
+```
+
+## Step 1: Scan Centering and Zero-Offset Correction 
+
+### Scan Centering: 
+The records often drifted while being fed into the scanner, which resulted in slight drift throughout our files. To ensure that any drift in the record would be from the device and not from scanning, we use the center_scan function: 
+```{r}
+# here, we are adjusting the record such that the timing dots would be centered along y = -1.1 cm. 
+df <- center_scan(trace, time_dots, center_along_y = 1.1)
+
+ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
+  geom_point() + 
+  geom_point(data = df[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2") 
+```
+
+After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. This is important for future functions. 
+
+### Zero-Offset Correction: 
+Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
+```{r}
+# here, we are using a larger window size of 500 and surface values usually drift between -1cm and 1cm. 
+df_zoc <- zoc(trace, k_h = 500, depth_bounds = c(-1,1))
+
+ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
+  geom_point() + 
+  geom_point(data = df_zoc[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2") 
+```
+
+While our sample data is somewhat free of extreme drift in surface values, this function can be particularly helpful for other records. 
+
+## Step 2: Arc Removal  
+
