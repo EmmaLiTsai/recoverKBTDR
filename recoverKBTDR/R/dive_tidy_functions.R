@@ -1,6 +1,6 @@
 ################################################################################
 # Authors: EmmaLi Tsai, Dylan W. Schwilk
-# Creates scaled time by depth data from a Kooyman-Billups TDR dive trace
+# Creates scaled time and depth axes from a Kooyman-Billups TDR dive trace
 ################################################################################
 
 # STEPS
@@ -12,15 +12,13 @@
 # 5. Transform y axis to depth
 # 6. Smoothing
 
-# For all functions below, testing code can be found in the testing_code.R
-# file.
-
 ###############################################################################
 # Global constants:
 
 # Radius of the KBTDR arm when scaled up to the size of the physical traces.
-# This is usually constant across all records (21.14 cm), but earlier records
-# were magnified by 8x instead of 7x, so scale is slightly different
+# This is usually constant across all records (21.14 cm). This might have to
+# be a user-defined value in future developments, since I don't know much other
+# labs xerographed their records.
 RADIUS <- 21.14
 
 # This was used for the psi to depth calculation, for every 1m increase in
@@ -32,18 +30,9 @@ PSI_TO_DEPTH <- 1.4696
 ################################################################################
 
 # Code here is absent because this is really more related to image processing
-# methods, but I created code that would fix this step and center the scan in
-# the scan_tidying_functions.R file. This function tidies the trace and csv
-# files that were created from the ImageJ defaults using two functions:
-# tidy_trace(trace) and tidy_timedots(time_dots)
-#
-# There, I also centered the scan using the center_scan(trace, time_dots)
-# function. This function did a fuzzy distance full merge using the "fuzzyjoin"
-# package to use the y-values of the time dots to center the scan in the trace
-# file.
-
-# Functions to complete this step were tested in step one of the
-# testing_code.R file.
+# methods, but can be found in r/centering_functions (to center the scan, and
+# center the psi calibration curve), and r/zoc_functions to zero-offset correct
+# the data.
 
 ################################################################################
 ## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
@@ -238,7 +227,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #   - trace       : trace data frame complete with POSIXct dates, times, and a
 #                   regular time series containing interpolayed y-values.
 ###############################################################################
-add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00"){
+add_dates_times <- function(trace, start_time, on_seal, off_seal){
   # adding dates and times from lubridate package
   trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") +
     lubridate::minutes(as.integer(trace$time)) +
@@ -336,16 +325,6 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 ################################################################################
 ## STEP FIVE: Transform Y Axis to Depth ########################################
 ################################################################################
-
-# THIS APPROACH WILL BE DIFFERENT FOR ALL TRACES BEFORE 1981 ! 1981 traces have
-# psi calibration at the end of the trace, previous ones do not. I have two
-# functions here to handle both.
-
-# TODO: create a small wrapper function for the two depth functions. If a psi
-# curve is at the end of the record, also make sure to center it using the
-# centered_psi_calibration function (I hope to make this function internal
-# later).
-
 #' Transform the y-axis from position to depth in meters
 #'
 #' Transforms the y-axis of the record from position to depth, using either
@@ -368,7 +347,7 @@ add_dates_times <- function(trace, start_time = "1981:01:16 15:10:00", on_seal =
 #' trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 #'
 #' # if only the maximum depth is known:
-#' trace <- trace(trace, max_deph = 317)
+#' trace <- trace(trace, max_depth = 317)
 #' }
 transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_psi = NULL, max_position = NULL){
   # if we just know maximum depth
@@ -381,7 +360,6 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
     trace <- .transform_psitodepth(trace, psi_calibration, max_psi, max_position)
   }
   return(trace)
-
 }
 
 #' Transform the y-axis from position to depth in meters using the psi
@@ -420,18 +398,24 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
 # the scale changes between psi intervals. This made the code slightly more
 # complicated.
 #
-# Function updated to run on new interpolated values.
-#
 # Input:
 #
 #   - trace       : tidy trace data frame, contains the x and y values of the
 #                   trace after centering.
 #
-#   - psi_calibration : centered file that contains two columns for the cut():
+#   - psi_calibration : centered data frame produced after centering that that
+#                       contains two columns for the cut():
 #                           - psi_interval: the psi intervals at the end of the
 #                                           record (i.e., 100psi, 200psi, etc.)
 #                           - psi_position: the y_val that corresponds to that
-#                                           psi interval in cm
+#                                           psi interval in cm.
+#
+#   - max_psi     : max psi for the TDR, which wasn't documented on the record.
+#                   default set to 900psi
+#
+#   - max_position: position of the maximum psi reading, which would be the top
+#                   border of the trace. This, combined with max_psi help catch
+#                   really deep and rare depth readings.
 #
 # Output:
 #
@@ -490,8 +474,6 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
   return(trace)
 }
 
-# testing code for this function can be found in the testing_code.R file
-
 #' Transform the y-axis from position to depth in meters using a known maximum
 #' depth.
 #' @param trace tidy trace data frame after arc removal, contains the x and y
@@ -500,7 +482,7 @@ transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_p
 #' @return trace data frame with depth in meters.
 #' @examples
 #' \dontrun{
-#' trace <- .trace(trace, max_deph = 317)
+#' trace <- .trace(trace, max_depth = 317)
 #' }
 
 # This is a simple function for the 1978 and 1979 traces without a psi
