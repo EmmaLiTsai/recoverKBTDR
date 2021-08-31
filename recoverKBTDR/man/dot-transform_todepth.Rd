@@ -22,6 +22,6 @@ depth.
 }
 \examples{
 \dontrun{
-trace <- .trace(trace, max_deph = 317)
+trace <- .trace(trace, max_depth = 317)
 }
 }

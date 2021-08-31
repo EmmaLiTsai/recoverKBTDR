@@ -25,21 +25,21 @@
 #'   - depth_bounds_smooth: depth threshold to use for the rolling mean function
 #'               to determine what depths should be considered diving behavior.
 #'
-#'   - date_start: start of the record in ymd_hms format
+#'   - date_start: start of the record in y:m:d h:m:s format.
 #'
 #'   - max_depth: maximum depth to use for depth transformation. Only for records
-#'                older than 1981 without a psi calibration curve
+#'                without a psi calibration curve.
 #'
-#'   - k_h     : larger window to use for zoc() function, if needed
+#'   - k_h     : larger window to use for zoc() function, if needed.
 #'
 #'   - depth_bounds_l, depth_bounds_h: low and high depth bounds that encapsulate
 #'               where depth = 0 is likely to be. Used for zoc() function.
 #'
-#'  - on_seal : time the tdr was placed on seal. In ymd_hms format.
+#'  - on_seal : time the tdr was placed on seal. In y:m:d h:m:s format.
 #'
-#'  - off_seal: time the tdr was taken off seal. In ymd_hms format.
+#'  - off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
 #'
-#' @return trace data frame after full recovery, added to global environment
+#' @return trace data frame after full recovery, added to global environment.
 #' @export
 #' @examples
 #' \dontrun{
@@ -102,52 +102,52 @@
 #                  depth transformation, smoothed, with POSIXct dates and times
 #                  added)
 ###############################################################################
-fast_recovery <- function(filepath = "../sample_data/WS_25_1981"){
+fast_recovery <- function(filepath = "../data/WS_folder"){
 
   # read in the record
   read_trace(filepath = filepath)
 
   # center the scan
-  trace_raw <- center_scan(trace_raw, time_dots_raw,
-                           center_along_y = args_raw$dist_timedot)
+  trace_tidy <- center_scan(trace_tidy, time_dots_tidy,
+                            center_along_y = args_tidy$dist_timedot)
 
   # getting the centered psi calibration curve, if the record has one
-  if (is.na(args_raw$max_depth)){
-    psi_calibration <- .centered_psi_calibration(trace_raw)
+  if (is.na(args_tidy$max_depth)){
+    psi_calibration <- .centered_psi_calibration(trace_tidy)
   }
 
   # zoc, if needed
-  if (!is.na(args_raw$k_h)){
-  zoc(trace_raw,
-      k_h = args_raw$k_h,
-      depth_bounds = c(args_raw$depth_bounds_l, args_raw$depth_bounds_h))
+  if (!is.na(args_tidy$k_h)){
+    trace_tidy <- zoc(trace_tidy,
+                      k_h = args_tidy$k_h,
+                      depth_bounds = c(args_tidy$depth_bounds_l, args_tidy$depth_bounds_h))
   }
 
   # transforming x-axis to time (minutes from the start)
-  trace_raw <- transform_x_vals(trace_raw, time_dots_raw,
-                                center_y = args_raw$center_y,
-                                time_period_min = args_raw$time_period_min)
+  trace_tidy <- transform_x_vals(trace_tidy, time_dots_tidy,
+                                 center_y = args_tidy$center_y,
+                                 time_period_min = args_tidy$time_period_min)
 
   # dates and times with interpolated points
-  trace_raw <- add_dates_times(trace_raw,
-                           start_time = args_raw$date_start,
-                           on_seal = args_raw$on_seal,
-                           off_seal = args_raw$off_seal)
+  trace_tidy <- add_dates_times(trace_tidy,
+                                start_time = args_tidy$date_start,
+                                on_seal = args_tidy$on_seal,
+                                off_seal = args_tidy$off_seal)
 
-  if(!is.na(args_raw$max_depth)){
-    trace_raw <- transform_y_vals(trace_raw, args_raw$max_depth)
+  if(!is.na(args_tidy$max_depth)){
+    trace_tidy <- transform_y_vals(trace_tidy, args_tidy$max_depth)
   } else {
-    trace_raw <- transform_y_vals(trace_raw,
-                                  psi_calibration = args_raw$psi_calibration,
+    trace_tidy <- transform_y_vals(trace_tidy,
+                                  psi_calibration = args_tidy$psi_calibration,
                                   max_psi = 900,
                                   max_position = 22.45)
   }
 
 
   # smooth
-  trace_raw_recovered <<- smooth_trace_dive(trace_raw,
-                                            spar_h = args_raw$spar_h,
-                                            depth_thresh = args_raw$depth_bounds_smooth)
+  trace_tidy_recovered <<- smooth_trace_dive(trace_tidy,
+                                            spar_h = args_tidy$spar_h,
+                                            depth_thresh = args_tidy$depth_bounds_smooth)
 
   # writing to csv file in results folder:
   # base_name <- unlist(strsplit(filepath, "/"))[3]

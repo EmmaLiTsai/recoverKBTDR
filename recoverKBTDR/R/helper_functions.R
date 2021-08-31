@@ -71,40 +71,41 @@ find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
   read_trace(filepath = filepath)
 
   # center the scan
-  trace_raw <- center_scan(trace_raw, time_dots_raw,
-                           center_along_y = args_raw$dist_timedot)
+  trace_tidy <- center_scan(trace_tidy, time_dots_tidy,
+                            center_along_y = args_tidy$dist_timedot)
 
   # getting the centered psi calibration curve, if the record has one
-  if (is.na(args_raw$max_depth)){
-    psi_calibration <- .centered_psi_calibration(trace_raw)
+  if (is.na(args_tidy$max_depth)){
+    psi_calibration <- .centered_psi_calibration(trace_tidy)
   }
 
 
   # zoc, if needed
-  if (!is.na(args_raw$k_h)){
-    zoc(trace_raw,
-        k_h = args_raw$k_h,
-        depth_bounds = c(args_raw$depth_bounds_l, args_raw$depth_bounds_h))
+  if (!is.na(args_tidy$k_h)){
+    trace_tidy <- zoc(trace_tidy,
+                      k_h = args_tidy$k_h,
+                      depth_bounds = c(args_tidy$depth_bounds_l,
+                                       args_tidy$depth_bounds_h))
   }
 
   # transforming x-axis to time (minutes from the start)
-  trace_raw <- transform_x_vals(trace_raw, time_dots_raw,
-                                center_y = args_raw$center_y,
-                                time_period_min = args_raw$time_period_min)
+  trace_tidy <- transform_x_vals(trace_tidy, time_dots_tidy,
+                                 center_y = args_tidy$center_y,
+                                 time_period_min = args_tidy$time_period_min)
 
   # dates and times with interpolated points
-  trace_raw <- add_dates_times(trace_raw,
-                               start_time = args_raw$date_start,
-                               on_seal = args_raw$on_seal,
-                               off_seal = args_raw$off_seal)
+  trace_tidy <- add_dates_times(trace_tidy,
+                                start_time = args_tidy$date_start,
+                                on_seal = args_tidy$on_seal,
+                                off_seal = args_tidy$off_seal)
 
-  if(!is.na(args_raw$max_depth)){
-    trace_raw <- transform_y_vals(trace_raw, args_raw$max_depth)
+  if(!is.na(args_tidy$max_depth)){
+    trace_tidy <- transform_y_vals(trace_tidy, args_tidy$max_depth)
   } else {
-    trace_raw <- transform_y_vals(trace_raw,
-                                  psi_calibration = args_raw$psi_calibration,
-                                  max_psi = 900,
-                                  max_position = 22.45)
+    trace_tidy <- transform_y_vals(trace_tidy,
+                                   psi_calibration = args_tidy$psi_calibration,
+                                   max_psi = 900,
+                                   max_position = 22.45)
   }
 
   # now creating a new results folder to store files
@@ -120,9 +121,9 @@ find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
   # start spar loop for investigating impact of different spar values on the
   # dive statistics
   for (i in 1:length(spar_seq)){
-    trace_i <- smooth_trace_dive(trace_raw,
+    trace_i <- smooth_trace_dive(trace_tidy,
                                  spar_h = spar_seq[i],
-                                 depth_thresh = args_raw$depth_bounds_smooth)
+                                 depth_thresh = args_tidy$depth_bounds_smooth)
 
     # writing to csv file in results folder:
     results_filepath <- paste(dir_name, "/", base_name, "_", spar_seq[i],".csv", sep = "")
@@ -183,7 +184,7 @@ find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
                                      dive.thr = 10)
 
     # getting the divestats
-    dive_stats_i <- diveStats(ctdr)
+    dive_stats_i <- diveMove::diveStats(ctdr)
     # getting filename value as unique identifier
     dive_stats_i$spar <- file_names[i]
     # binding it to data frame
@@ -284,21 +285,22 @@ find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
 
 #' Find the center_y value
 #'
-#'Center_y is the height of the pivot-point of the KBTDR trasucer arm above
-#'depth = 0, in centimetes. While most center_y values are close to 11cm, these
-#'functions are only ESTIMATES of center_y. These calculations need to be
+#'Center_y is the height of the pivot-point of the KBTDR transducer arm above
+#'depth = 0 in centimeters. While most center_y values are close to 11cm, these
+#'functions provide ESTIMATES of center_y. These calculations need to be
 #'confirmed visually to ensure that it does not introduce any abnormal skew
 #'across the record. However, any variation in this height is < 1mm at the scale
 #'of the KBTDR.
 
 #' @param beg_dive numeric vector of the x & y coordinates of the beginning of
-#' the dive
+#' the dive.
 #' @param depth_dive numeric vector of the x & y coordinates of a point at depth
-#' @param rate rate of film movement, estimated by timing dots
+#' along the same dive.
+#' @param rate rate of film movement, estimated by local timing dots.
 #' @param psi_calibration data frame of psi calibration curve, produced after
-#' center_scan if present in the record
-#' @param max_depth maximum depth, if no psi calibration curve present
-#' @param df tidy trace data frame, if no psi calibration curve present
+#' center_scan.
+#' @param max_depth maximum depth, if no psi calibration curve is present.
+#' @param df tidy trace data frame, if no psi calibration curve is present.
 #' @export
 #' @return numeric value of an estimated center_y value to use for arc removal.
 #' @examples

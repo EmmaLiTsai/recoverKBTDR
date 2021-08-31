@@ -184,9 +184,9 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #'
 #' @param trace tidy trace data frame after arc removal, contains the x and y
 #' values of the trace.
-#' @param start_time time TDR was turned on, in yms_hms.
-#' @param on_seal time TDR was placed on the seal.
-#' @param off_seal time TDR taken off the seal.
+#' @param start_time time TDR was turned on, in y:m:d h:m:s format.
+#' @param on_seal time TDR was placed on the seal, in y:m:d h:m:s format.
+#' @param off_seal time TDR taken off the seal, in y:m:d h:m:s format.
 #' @return trace data frame with POSIXct date times and interpolated points to
 #' fill sparse parts of the record.
 #' @importFrom dplyr filter

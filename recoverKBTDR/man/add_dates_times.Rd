@@ -4,12 +4,7 @@
 \alias{add_dates_times}
 \title{Add POSIXct date times and create a regular time series}
 \usage{
-add_dates_times(
-  trace,
-  start_time = "1981:01:16 15:10:00",
-  on_seal = "1981:01:16 17:58:00",
-  off_seal = "1981:01:23 15:30:00"
-)
+add_dates_times(trace, start_time, on_seal, off_seal)
 }
 \arguments{
 \item{trace}{tidy trace data frame after arc removal, contains the x and y

@@ -1,6 +1,6 @@
 # useful package development notes
 #
-# Some useful keyboard shortcuts for package authoring:
+# Some keyboard shortcuts for package authoring:
 #
 #   Install Package:           'Ctrl + Shift + B'
 #   Check Package:             'Ctrl + Shift + E'
@@ -64,14 +64,14 @@ zoc(trace, 500, c(-1, 1))
 zoc(trace, 500, c(-1, 2))
 
 # remove arc and transform x to minutes
-# cente
 ?transform_x_vals
 trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
                           time_period_min = 12)
 
 # add posixct date/times -- i kept these functions separate because it takes
-# longer, but might be able to wrap this in the transform_x_vals function in
-# the futture. It just felt like too many arguments to add to one function.
+# longer to run, but might be able to wrap this in the transform_x_vals function
+# in future commits. It also just felt like too many arguments to add to one
+# function, which seems like a common problem that I'm having.
 ?add_dates_times
 trace <- add_dates_times(trace,
                          start_time = "1981:01:16 15:10:00",
@@ -88,13 +88,12 @@ trace <- transform_y_vals(trace, maxdep = 319)
 
 # spline smoothing
 ?smooth_trace_dive
-trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+trace <- smooth_trace_dive(trace, spar_h = 0.2, depth_thresh = 5)
 
-# wow... it works
-ggplot(trace, aes(x = date_time, y = depth)) +
+# wow... it works!
+ggplot(trace[1:10000,], aes(x = date_time, y = depth)) +
   geom_point(color = "grey") +
   geom_line(aes(y = smooth_depth), color = "blue")
-
 
 ################################################################################
 # example and helper functions
@@ -103,12 +102,12 @@ ggplot(trace, aes(x = date_time, y = depth)) +
 ?read_trace
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 read_trace(filepath)
-identical(trace_raw, trace)
-identical(time_dots_raw, time_dots)
-center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
+identical(trace_tidy, trace)
+identical(time_dots_tidy, time_dots)
+center_scan(trace_tidy, time_dots_tidy, 0.9)  # <- this also works
 # ^ these should be identical, unsure why they aren't. When I cbind them
-# and compare they are identical, but might be because one is a tibble and the
-# other is a data frame.
+# and compare they appear identical, but might be because one is a tibble and
+# the other is a data frame.
 
 # testing out the fast recovery function, which uses an arguments csv file to
 # pass arguments to all functions:
@@ -116,8 +115,10 @@ center_scan(trace_raw, time_dots_raw, 0.9)  # <- this also works
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 
-# helper functions, these functions are a little messy, but meant to help find
-# the best arguments to different functions
+# helper functions that are meant to help find the best arguments pass to the
+# transform_x_vals() function (center_y), and smooth_trace_dive() function
+# (spar_h).
+
 # with psi calibration curve:
 ?find_center_y
 find_center_y(beg_dive = c(1142.945, 0),

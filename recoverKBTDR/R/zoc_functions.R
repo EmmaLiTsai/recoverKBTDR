@@ -5,8 +5,12 @@
 #' "diveMove" package, which can be explained in (Luque & Fried, 2011).
 #'
 #' @param trace tidy trace data frame, contains the x and y values of the trace
-#' @param k_h numeric value, size of the larger window used for the second filter. This default is set to 500, but should be smaller for records with extreme drift.
-#' @param depth_bounds two concatenated numbers restricted search window for where y = 0 should likely be. For the records, this should be in cm. Default set c(-1, 1).
+#' @param k_h numeric value, size of the larger window used for the second
+#' filter. This default is set to 500, but should be smaller for records with
+#' extreme drift.
+#' @param depth_bounds two concatenated numbers restricted search window for
+#' where y = 0 should likely be. For the records, this should be in cm.
+#' Default set c(-1, 1).
 #' @return trace data frame after it has been zero-offset corrected
 #' @export
 #' @examples

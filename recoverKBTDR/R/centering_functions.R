@@ -31,7 +31,7 @@
 # time dots to move the trace up/down to center the scan, such that all the
 # y-values of the time dots are along y = -dist_timedot that the user defines in
 # the function call. It basically creates a rolling mean function on the x_vals
-# of the timing gots to to cut the x_vals of the trace data frame, which allows
+# of the timing dots to to cut the x_vals of the trace data frame, which allows
 # for centering. This function is a large improvement from the original fuzzy
 # join methods, and also works on records with time dot issues.
 #

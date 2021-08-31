@@ -4,7 +4,7 @@
 \alias{fast_recovery}
 \title{Fast recovery of record using argument file}
 \usage{
-fast_recovery(filepath = "../sample_data/WS_25_1981")
+fast_recovery(filepath = "../data/WS_folder")
 }
 \arguments{
 \item{filepath}{file path of folder containing at least 3 files (trace, time dots, args). The argument file should contain columns for:

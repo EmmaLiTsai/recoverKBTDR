@@ -2,18 +2,20 @@
 % Please edit documentation in R/read_trace.R
 \name{read_trace}
 \alias{read_trace}
-\title{Correct time dots and trace csv files.}
+\title{Correct raw time dots and trace csv files from ImageJ}
 \usage{
-read_trace(filepath = "data/folder")
+read_trace(filepath = "data/WS_folder")
 }
 \arguments{
-\item{filepath}{the path to the folder containing both csv files, time dots and trace, for a single record.}
+\item{filepath}{the path to the folder containing both csv files, time dots
+and trace, for a single record.}
 }
 \value{
-Two data frames of the trace and timing dots after correcting ImageJ's default origin placement are added to the global environment
+Two data frames of the trace and timing dots after correcting
+ImageJ's default origin placement are added to the global environment
 }
 \description{
-Correct time dots and trace csv files.
+Correct raw time dots and trace csv files from ImageJ
 }
 \examples{
 \dontrun{

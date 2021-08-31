@@ -41,6 +41,6 @@ for that record.
 trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
 
 # if only the maximum depth is known:
-trace <- trace(trace, max_deph = 317)
+trace <- trace(trace, max_depth = 317)
 }
 }
