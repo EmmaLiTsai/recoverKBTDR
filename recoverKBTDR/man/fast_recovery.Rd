@@ -23,18 +23,18 @@ will be centered along y = dist_timedot.
 resolution for the smooth_trace_dive() function.
 \item depth_bounds_smooth: depth threshold to use for the rolling mean function
 to determine what depths should be considered diving behavior.
-\item date_start: start of the record in ymd_hms format
+\item date_start: start of the record in y:m:d h:m:s format.
 \item max_depth: maximum depth to use for depth transformation. Only for records
-older than 1981 without a psi calibration curve
-\item k_h     : larger window to use for zoc() function, if needed
+without a psi calibration curve.
+\item k_h     : larger window to use for zoc() function, if needed.
 \item depth_bounds_l, depth_bounds_h: low and high depth bounds that encapsulate
 where depth = 0 is likely to be. Used for zoc() function.
-\item on_seal : time the tdr was placed on seal. In ymd_hms format.
-\item off_seal: time the tdr was taken off seal. In ymd_hms format.
+\item on_seal : time the tdr was placed on seal. In y:m:d h:m:s format.
+\item off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
 }}
 }
 \value{
-trace data frame after full recovery, added to global environment
+trace data frame after full recovery, added to global environment.
 }
 \description{
 Recover a single record fast by using an argument csv file that passes

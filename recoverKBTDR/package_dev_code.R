@@ -68,7 +68,7 @@ zoc(trace, 500, c(-1, 2))
 trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
                           time_period_min = 12)
 
-# add posixct date/times -- i kept these functions separate because it takes
+# add posixct date/times -- I kept these functions separate because it takes
 # longer to run, but might be able to wrap this in the transform_x_vals function
 # in future commits. It also just felt like too many arguments to add to one
 # function, which seems like a common problem that I'm having.
@@ -129,6 +129,6 @@ find_center_y(beg_dive = c(65.258, 0),
               depth_dive = c(63.442, 5.341),
               rate = 0.21, max_depth = 484, df = trace)
 
-# v this one will take a LONG time to run, but I believe this is the best
+# v this one will take a longer time to run, but I believe this is the best
 # method for objectively finding the right spar value.
 ?find_best_spar

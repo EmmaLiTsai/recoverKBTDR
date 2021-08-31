@@ -10,11 +10,11 @@ add_dates_times(trace, start_time, on_seal, off_seal)
 \item{trace}{tidy trace data frame after arc removal, contains the x and y
 values of the trace.}
 
-\item{start_time}{time TDR was turned on, in yms_hms.}
+\item{start_time}{time TDR was turned on, in y:m:d h:m:s format.}
 
-\item{on_seal}{time TDR was placed on the seal.}
+\item{on_seal}{time TDR was placed on the seal, in y:m:d h:m:s format.}
 
-\item{off_seal}{time TDR taken off the seal.}
+\item{off_seal}{time TDR taken off the seal, in y:m:d h:m:s format.}
 }
 \value{
 trace data frame with POSIXct date times and interpolated points to

@@ -4,7 +4,7 @@
 \alias{find_best_spar}
 \title{Find the best spar value for spline smoothing using dive statistics}
 \usage{
-find_best_spar(filepath = "../sample_data/WS_25_1981")
+find_best_spar(filepath = "../data/WS_folder")
 }
 \arguments{
 \item{filepath}{folder containing the trace, time dots, and argument files.}
@@ -18,7 +18,10 @@ global environment, and the best spar value to use for this record.
 Function recovers a record 21 separate times \link{0-1} with increments of 0.05
 and assess how each change in spar value influences the dive statistics
 gathered by the record. It also finds the ideal spar value for that record
-by assessing changes in bottom distance.
+by assessing changes in bottom distance. This function will take a while to
+run because it is recovering the same record multiple times, calibrating it,
+and retrieving the dive statistics. However, I believe this is the best
+method for finding the best spar value.
 }
 \examples{
 \dontrun{

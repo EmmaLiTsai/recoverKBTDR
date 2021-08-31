@@ -3,7 +3,10 @@
 #' Function recovers a record 21 separate times [0-1] with increments of 0.05
 #' and assess how each change in spar value influences the dive statistics
 #' gathered by the record. It also finds the ideal spar value for that record
-#' by assessing changes in bottom distance.
+#' by assessing changes in bottom distance. This function will take a while to
+#' run because it is recovering the same record multiple times, calibrating it,
+#' and retrieving the dive statistics. However, I believe this is the best
+#' method for finding the best spar value.
 #'
 #' @param filepath folder containing the trace, time dots, and argument files.
 #' @return folder in /results that contains a csv for all spar scenarios, a
@@ -66,7 +69,7 @@
 #                   for the different spar scenarios, complete with dive numbers
 #                   and spar value. Also returns best spar value.
 ###############################################################################
-find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
+find_best_spar <- function(filepath = "../data/WS_folder"){
   # read in the record
   read_trace(filepath = filepath)
 
@@ -307,11 +310,13 @@ find_best_spar <- function(filepath = "../sample_data/WS_25_1981"){
 #' \dontrun{
 #' # if psi calibration curve is present:
 #' find_center_y(beg_dive, depth_dive, rate, psi_calibration)
-#' find_center_y(beg_dive = c(1142.945, 0), depth_dive = c(1140.55, 9.3), rate = 0.16, psi_calibration)
+#' find_center_y(beg_dive = c(1142.945, 0), depth_dive = c(1140.55, 9.3),
+#' rate = 0.16, psi_calibration)
 #'
 #' # if only maximum depth is known:
 #' find_center_y(beg_dive, depth_dive, rate, max_depth, trace)
-#' find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341), rate = 0.21, max_depth = 484, df = trace)
+#' find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341),
+#' rate = 0.21, max_depth = 484, df = trace)
 #' }
 
 # wrapper function to account for if a psi calibration curve is present or not:

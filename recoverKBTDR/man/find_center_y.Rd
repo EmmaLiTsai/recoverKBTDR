@@ -15,26 +15,27 @@ find_center_y(
 }
 \arguments{
 \item{beg_dive}{numeric vector of the x & y coordinates of the beginning of
-the dive}
+the dive.}
 
-\item{depth_dive}{numeric vector of the x & y coordinates of a point at depth}
+\item{depth_dive}{numeric vector of the x & y coordinates of a point at depth
+along the same dive.}
 
-\item{rate}{rate of film movement, estimated by timing dots}
+\item{rate}{rate of film movement, estimated by local timing dots.}
 
 \item{psi_calibration}{data frame of psi calibration curve, produced after
-center_scan if present in the record}
+center_scan.}
 
-\item{max_depth}{maximum depth, if no psi calibration curve present}
+\item{max_depth}{maximum depth, if no psi calibration curve is present.}
 
-\item{df}{tidy trace data frame, if no psi calibration curve present}
+\item{df}{tidy trace data frame, if no psi calibration curve is present.}
 }
 \value{
 numeric value of an estimated center_y value to use for arc removal.
 }
 \description{
-Center_y is the height of the pivot-point of the KBTDR trasucer arm above
-depth = 0, in centimetes. While most center_y values are close to 11cm, these
-functions are only ESTIMATES of center_y. These calculations need to be
+Center_y is the height of the pivot-point of the KBTDR transducer arm above
+depth = 0 in centimeters. While most center_y values are close to 11cm, these
+functions provide ESTIMATES of center_y. These calculations need to be
 confirmed visually to ensure that it does not introduce any abnormal skew
 across the record. However, any variation in this height is < 1mm at the scale
 of the KBTDR.
@@ -43,10 +44,12 @@ of the KBTDR.
 \dontrun{
 # if psi calibration curve is present:
 find_center_y(beg_dive, depth_dive, rate, psi_calibration)
-find_center_y(beg_dive = c(1142.945, 0), depth_dive = c(1140.55, 9.3), rate = 0.16, psi_calibration)
+find_center_y(beg_dive = c(1142.945, 0), depth_dive = c(1140.55, 9.3),
+rate = 0.16, psi_calibration)
 
 # if only maximum depth is known:
 find_center_y(beg_dive, depth_dive, rate, max_depth, trace)
-find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341), rate = 0.21, max_depth = 484, df = trace)
+find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341),
+rate = 0.21, max_depth = 484, df = trace)
 }
 }
