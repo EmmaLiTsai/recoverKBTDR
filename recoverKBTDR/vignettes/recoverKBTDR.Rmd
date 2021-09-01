@@ -89,14 +89,21 @@ head(time_dots)
 The records often drifted while being fed into the scanner, which resulted in slight drift throughout our files. To ensure that any drift in the record would be from the device and not from scanning, we use the center_scan function: 
 ```{r}
 # here, we are adjusting the record such that the timing dots would be centered along y = -1.1 cm. 
-df <- center_scan(trace, time_dots, center_along_y = 1.1)
+df <- center_scan(trace, time_dots, center_along_y = 0.9)
 
 ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
   geom_point() + 
   geom_point(data = df[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2") 
 ```
 
-After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. This is important for future functions. 
+After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. This function also adds the centered psi calibration curve to the global environment, if present in the record:
+```{r}
+df <- center_scan(trace, time_dots, 0.9,                     psi_interval = c(100, 200, 400, 600, 800))
+
+head(psi_calibration)
+```
+
+This centered psi calibration curve will be useful in transforming the y-values of the record into depth. 
 
 ### Zero-Offset Correction: 
 Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
@@ -112,4 +119,55 @@ ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
 While our sample data is somewhat free of extreme drift in surface values, this function can be particularly helpful for other records. 
 
 ## Step 2: Arc Removal  
+The KBTDR documented the diving behavior of an animal by using a pressure sensitive transducer arm that rotated an LED light along a rolling spool of film. From this design, the original records exhibit a characteristic left leaning arc. This function transform_x_vals() removes the arc in the record (new_x) and also uses the timing dots to create a time scale. Helper functions are also available to estimate center_y. For more information, type ?find_center_y()
 
+```{r}
+# removing the data frame and also transform the x-axis to time in minutes from the origin. The center_y value is an estimated height of the transducer arm pivot point in centimeters. 
+df <- transform_x_vals(df, 
+                       time_dots, 
+                       center_y = 11.18,
+                       time_period_min = 12)
+
+# plotting 
+ggplot2::ggplot(df[1000:11000,], aes(x = x_val, y = y_val)) + 
+  geom_point() + 
+  geom_point(aes(x = new_x, y = y_val), color = "#39b3b2")
+```
+
+This function removes the curvilinear nature of the original record, such that it becomes a function. The x-axis is also assigned a time, which can be transformed to a POSIXct object in recovery step number 3. 
+
+## Step 3 & 4: Interpolated date times 
+The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. As a result, the KBTDR records often have gaps between the beginning of the dive and the bottom phase. The function add_dates_times() uses the trace data frame to add a POSIXct date time object, and also interpolates between missing values to create a regular time series. Creating a regular time series wouldn't just benefit future spline smoothing, but is also a requirement for dive analysis packages. 
+
+```{r}
+df <- add_dates_times(df,
+                      start_time = "1981:01:16 15:10:00",
+                      on_seal = "1981:01:16 17:58:00",
+                      off_seal = "1981:01:23 15:30:00")
+
+# now, the record is complete with POSIXct date times: 
+head(df)
+```
+
+## Step 5: Y-axis transformation to depth 
+Y-values were transformed from position to depth in two ways, depending on the presence of a psi calibration curve at the end of the record. 
+```{r}
+# if psi calibration curve is present:
+df <- transform_y_vals(df, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
+
+# if we just know max depth:
+df_max_dep <- transform_y_vals(df, maxdep = 319)
+
+ggplot2::ggplot(df[1000:18000,], aes(x = date_time, y = depth)) + geom_point(color =  "#39b3b2")
+```
+
+## Step 6: Spline smoothing 
+Finally, the data are smoothed. This spline smoothing method uses dive detection to control the resolution of smoothing. If a dive is detected (i.e., above the rolling mean the user defines), then the resolution of spline smoothing increases to capture relevant behavior. If a dive is not detected, then the resolution decreases to reduce transducer noise at shallow depths. Helper functions to find the best high resolution spar value can be found using the ?find_best_spar(). Here, we use the smooth_trace_dive() function: 
+```{r}
+# smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
+df <- smooth_trace_dive(df, spar_h = 0.22, depth_thresh = 5)
+
+ggplot(df[1000:18000,], aes(x = date_time, y = depth)) + geom_point() + geom_point(aes(y = smooth_depth), color = "#39b3b2", size = 0.8)
+```
+
+Now the data frame can be exported as a csv file and read into dive analysis software. 
