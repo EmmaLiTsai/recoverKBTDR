@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(recoverKBTDR)
+#library(recoverKBTDR)
 ```
 
 # Introduction to recoverKBTDR
@@ -29,8 +29,7 @@ This vignette introduces you to recoverKBTDR's tools and the overall workflow fo
 
 First, we have to load the package into our environment. 
 ```{r}
-install.packages("recoverKBTDR")
-library(recoverKBTDR)
+#library(recoverKBTDR)
 ```
 
 ------------
