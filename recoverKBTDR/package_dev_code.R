@@ -10,8 +10,10 @@ library(usethis)
 library(devtools)
 library(Rcpp)
 library(ggplot2)
-
+################################################################################
 # helpful lines of code for setting up the package #############################
+################################################################################
+
 # crating readme
 use_readme_md()
 # pulling roxygen2 to help with documentation
@@ -37,7 +39,9 @@ use_data(trace, compress = "xz", overwrite = TRUE)
 use_data(time_dots, compress = "xz", overwrite = TRUE)
 use_data(args, compress = "xz", overwrite = TRUE)
 
+################################################################################
 # creating some sample tests for the functions so far: ########################
+################################################################################
 
 # v updating namespace
 devtools::document()
