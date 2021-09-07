@@ -152,6 +152,5 @@ devtools::load_all()
 ?check()
 check("../recoverKBTDR")
 
-
 # this will send the post package to CRAN:
 # ?release()

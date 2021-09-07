@@ -11,7 +11,7 @@ Description: Takes raw csv files of KBTDR records (trace and timing dots) and
     the x-axis into a regular time series, depth transformation, and spline 
     smoothing. The final output of these methods is a continuous csv file that 
     can be easily investigated using dive analysis software. 
-License: GPL-3.0
+License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
