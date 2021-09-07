@@ -12,10 +12,10 @@ There are six main recovery steps that are achieved in this package:
 
 1. Scan centering and zero-offset correction 
 2. Arc removal 
-3. x-axis transformation to dates & times 
+3. X-axis transformation to dates & times 
 4. Interpolation between missing points 
-5. y-axis transformation to depth 
-6. spline smoothing 
+5. Y-axis transformation to depth 
+6. Spline smoothing 
 
 ## Installation
 
@@ -87,10 +87,12 @@ trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 Then, final data frame can be exported and read into dive analysis software. 
 
+Below is an example of the workflow using the sample data in this package: 
 ``` r
 library(recoverKBTDR)
 ## basic example code
 data(trace) 
+data(time_dots)
 
 # or, reading in raw csv file: 
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
@@ -102,7 +104,7 @@ trace <- center_scan(trace, time_dots, 0.9, psi_interval = c(100, 200, 400, 600,
 # arc removal and time assignment 
 trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
 
-# POSIXct date times 
+# POSIXct date times and interpolating
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
 
 # add depths
