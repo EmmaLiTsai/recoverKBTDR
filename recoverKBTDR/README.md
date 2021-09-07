@@ -116,7 +116,6 @@ trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 # export! 
 
 # fast recovery can also be used, where an argument csv file is used to quickly pass arguments to the functions above: 
-
 fast_recovery(filepath)
 
 ```
