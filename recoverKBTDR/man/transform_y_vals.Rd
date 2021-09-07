@@ -6,7 +6,7 @@
 \usage{
 transform_y_vals(
   trace,
-  maxdep = NULL,
+  max_depth = NULL,
   psi_calibration = NULL,
   max_psi = NULL,
   max_position = NULL
@@ -16,6 +16,9 @@ transform_y_vals(
 \item{trace}{tidy trace data frame after arc removal, contains the x and y
 values of the trace.}
 
+\item{max_depth}{maximum depth of trace in meters, if psi calibration curve
+is not present.}
+
 \item{psi_calibration}{data frame containing the centered psi calibration
 curve.}
 
@@ -23,9 +26,6 @@ curve.}
 curve.}
 
 \item{max_position}{position of maximum psi reading for TDR in cm.}
-
-\item{max_depth}{maximum depth of trace in meters, if psi calibration curve
-is not present.}
 }
 \value{
 trace data frame with depth in meters.

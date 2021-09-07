@@ -155,7 +155,7 @@ Y-values were transformed from position to depth in two ways, depending on the p
 df <- transform_y_vals(df, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
 
 # if we just know max depth:
-df_max_dep <- transform_y_vals(df, maxdep = 319)
+df_max_dep <- transform_y_vals(df, max_depth = 319)
 
 ggplot2::ggplot(df[1000:18000,], aes(x = date_time, y = depth)) + ggplot2::geom_point(color =  "#39b3b2")
 ```

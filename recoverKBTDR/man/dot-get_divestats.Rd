@@ -7,7 +7,7 @@
 .get_divestats(folder = "results/WS_25_1981/")
 }
 \arguments{
-\item{filepath}{folder containing the trace, time dots, and argument files.}
+\item{folder}{folder containing the trace, time dots, and argument files.}
 }
 \value{
 data frame of all dive statitics for each dive for all spar value

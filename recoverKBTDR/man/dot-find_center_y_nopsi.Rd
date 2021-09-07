@@ -4,7 +4,7 @@
 \alias{.find_center_y_nopsi}
 \title{Find Center Y, without psi calibration curve}
 \usage{
-.find_center_y_nopsi(x1, y1, x2, y2, r = 21.14, rate, max_depth, df)
+.find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, trace)
 }
 \arguments{
 \item{x1}{x-value of the surface point}

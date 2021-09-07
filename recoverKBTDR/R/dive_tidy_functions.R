@@ -350,10 +350,10 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' # if only the maximum depth is known:
 #' trace <- trace(trace, max_depth = 317)
 #' }
-transform_y_vals <- function(trace, maxdep = NULL, psi_calibration = NULL, max_psi = NULL, max_position = NULL){
+transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, max_psi = NULL, max_position = NULL){
   # if we just know maximum depth
-  if(!is.null(maxdep)){
-    trace <- .transform_todepth(trace, maxdep)
+  if(!is.null(max_depth)){
+    trace <- .transform_todepth(trace, max_depth)
   } else if(is.null(max_psi) | is.null(max_position)){ # if we have a psi calibration curve
     # need both max_psi and max_position -- return error
     print("ERROR: need position and maximum psi values")

@@ -146,7 +146,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 }
 
 #' Get the dive statistics for each spar value iteration
-#' @param filepath folder containing the trace, time dots, and argument files.
+#' @param folder folder containing the trace, time dots, and argument files.
 #' @return data frame of all dive statitics for each dive for all spar value
 #' scenarios.
 #' @importFrom diveMove readTDR calibrateDepth diveStats
@@ -449,10 +449,10 @@ find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
 ################################################################################
 # for records before 1981 without a psi_calibration file, but max depth value
 ################################################################################
-.find_center_y_nopsi <- function(x1, y1, x2, y2, r = 21.14, rate, max_depth, df){
+.find_center_y_nopsi <- function(x1, y1, x2, y2, rate, max_depth, trace){
 
   # finding the depth of y2
-  depth_2 <- ((y2 * max_depth) / max(df$y_val, na.rm = TRUE))
+  depth_2 <- ((y2 * max_depth) / max(trace$y_val, na.rm = TRUE))
 
   # finding time it took for seal to descend to that depth assuming it is
   # descending at 1.1 m/s (Williams et al., 2015) and transforming it to
@@ -465,7 +465,7 @@ find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
 
   if (y1 != 0) {
     ## if the first y value is not = 0:
-    depth_1 <-((y1 * max_depth) / max(df$y_val, na.rm = TRUE))
+    depth_1 <-((y1 * max_depth) / max(trace$y_val, na.rm = TRUE))
 
     # finding time it took for seal to descend to that depth assuming it is
     # descending at 1.1 m/s (Williams et al., 2015) and transforming it to
