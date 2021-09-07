@@ -1,5 +1,11 @@
 #' Correct raw time dots and trace csv files from ImageJ
 #'
+#' This function takes the raw time dots and trace csv files from ImageJ and
+#' applies a series of corrections to them such that they can be used in this
+#' package. This involves correcting the default y-axis values, ordering,
+#' filtering, and adding proper names to the data frames. This function adds
+#' the two data frames to the global environment.
+#'
 #' @param filepath the path to the folder containing both csv files, time dots
 #' and trace, for a single record.
 #' @return Two data frames of the trace and timing dots after correcting

@@ -51,13 +51,14 @@ devtools::document()
 devtools::load_all()
 
 # data can be loaded into global environment using data() feature. This is tidy
-# data.
+# data (i.e., after cleaning the raw ImageJ csv files), but I have other
+# functions below to illustrate the data cleaning process.
 data(trace)
 data(time_dots)
 
 # scan centering -- will also produced centered psi calibration curve
 ?center_scan
-trace <- center_scan(trace, time_dots, 0.9,
+trace <- center_scan(trace, time_dots, center_along_y = 0.9,
                      psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
@@ -92,10 +93,10 @@ trace <- transform_y_vals(trace, maxdep = 319)
 
 # spline smoothing
 ?smooth_trace_dive
-trace <- smooth_trace_dive(trace, spar_h = 0.2, depth_thresh = 5)
+trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 5)
 
 # wow... it works!
-ggplot(trace[1:10000,], aes(x = date_time, y = depth)) +
+ggplot(trace[500:20000,], aes(x = date_time, y = depth)) +
   geom_point(color = "grey") +
   geom_line(aes(y = smooth_depth), color = "blue")
 
@@ -119,7 +120,7 @@ center_scan(trace_tidy, time_dots_tidy, 0.9)  # <- this also works
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 
-# helper functions that are meant to help find the best arguments pass to the
+# helper functions that help find the best arguments pass to the
 # transform_x_vals() function (center_y), and smooth_trace_dive() function
 # (spar_h).
 

@@ -15,7 +15,11 @@ Two data frames of the trace and timing dots after correcting
 ImageJ's default origin placement are added to the global environment
 }
 \description{
-Correct raw time dots and trace csv files from ImageJ
+This function takes the raw time dots and trace csv files from ImageJ and
+applies a series of corrections to them such that they can be used in this
+package. This involves correcting the default y-axis values, ordering,
+filtering, and adding proper names to the data frames. This function adds
+the two data frames to the global environment.
 }
 \examples{
 \dontrun{
