@@ -148,7 +148,7 @@ find_best_spar(filepath)
 devtools::document()
 devtools::load_all()
 
-# this checks and builds the package
+# this checks and builds the package!
 ?check()
 check("../recoverKBTDR")
 
