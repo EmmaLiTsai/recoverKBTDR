@@ -10,6 +10,7 @@
 #' and trace, for a single record.
 #' @return Two data frames of the trace and timing dots after correcting
 #' ImageJ's default origin placement are added to the global environment
+#' @import utils
 #' @export
 #' @examples
 #' \dontrun{
@@ -39,7 +40,7 @@ read_trace <- function(filepath = "data/WS_folder"){
   # file
   names <- names[grep("^t|p|a", names)]
   # reading in all trace files
-  trace_files <- lapply(trace_list, read.csv)
+  trace_files <- lapply(trace_list, utils::read.csv)
   # giving them appropriate names
   names(trace_files) <- paste(names, "tidy", sep = "_")
   # reading them into the global environment... which seems dangerous...

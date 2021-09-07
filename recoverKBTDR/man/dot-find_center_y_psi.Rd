@@ -30,6 +30,7 @@ point if a psi calibration curve is present.
 \dontrun{
 .find_center_y_psi(x1, y1, x2, y2, rate, psi_calibration = psi_calibration)
 
-.find_center_y_psi(x1 = 1142.945, y1 = 0, x2 = 1140.55, y2 = 9.3, rate = 0.16, psi_calibration)
+.find_center_y_psi(x1 = 1142.945, y1 = 0, x2 = 1140.55, y2 = 9.3,
+rate = 0.16, psi_calibration)
 }
 }

@@ -23,6 +23,7 @@ creating regular time series for trace data
 }
 \examples{
 \dontrun{
-trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00",
+off_seal = "1981:01:23 15:30:00")
 }
 }

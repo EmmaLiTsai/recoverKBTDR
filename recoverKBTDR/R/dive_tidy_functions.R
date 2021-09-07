@@ -56,7 +56,7 @@ PSI_TO_DEPTH <- 1.4696
 #' estimate this value.
 #' @param time_period_min minutes elapsed between two time periods.
 #' @return trace data frame after arc removal.
-#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate lead
 #' @importFrom tidyr drop_na
 #' @export
 #' @examples
@@ -136,7 +136,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
   # period... this will be used to cut the data
   tp_df <- data.frame(time_period = seq(1:length(time_dots_zero)),
                       start_x = time_dots_zero,
-                      end_x = lead(time_dots_zero),
+                      end_x = dplyr::lead(time_dots_zero),
                       stringsAsFactors = FALSE)
 
   # adding the scale value for each time period, which will be multiplied by:
@@ -194,7 +194,8 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #' @export
 #' @examples
 #' \dontrun{
-#' trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+#' trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00",
+#' on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
 #' }
 #'
 ###############################################################################
@@ -266,7 +267,8 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' @importFrom lubridate ymd_hms
 #' @examples
 #' \dontrun{
-#' trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+#' trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00",
+#' off_seal = "1981:01:23 15:30:00")
 #' }
 ###############################################################################
 # Function: create_regular_ts(trace, on_seal, off_seal)
@@ -345,7 +347,8 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' @examples
 #' \dontrun{
 #'# if the record has a psi calibration curve at the end:
-#' trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+#' trace <- transform_psitodepth(trace, psi_calibration,
+#' max_psi = 900, max_position = 22.45)
 #'
 #' # if only the maximum depth is known:
 #' trace <- trace(trace, max_depth = 317)
@@ -374,7 +377,7 @@ transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, ma
 #' @param max_position position of maximum psi reading for TDR in cm.
 #' @return trace data frame with depth in meters.
 #' @importFrom tidyr separate
-#' @importFrom dplyr case_when
+#' @importFrom dplyr case_when lead
 #' @examples
 #' \dontrun{
 #' trace <- .transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
@@ -435,7 +438,7 @@ transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, ma
   # combining the breaks and labels for future calculations
   labels_combined <- paste(labels, breaks, sep = ":")
   # combining the labels again to capture the full interval a y_val falls into
-  labels_combined <- paste(labels_combined, lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
+  labels_combined <- paste(labels_combined, dplyr::lead(labels_combined), sep = ":")[1:length(labels_combined)-1]
 
   # cutting the data frame using the above breaks and labels
   psi_interval_both <- as.data.frame(cut(trace$interp_y, breaks = breaks,
@@ -520,7 +523,8 @@ transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, ma
 #' @return data frame with depth_smooth, which is the depth of the record when
 #' smoothed.
 #' @importFrom caTools runmean
-#' @importFrom dplyr case_when mutate
+#' @importFrom dplyr case_when mutate lag
+#' @importFrom stats smooth.spline predict
 #' @export
 #' @examples
 #' \dontrun{
@@ -582,15 +586,15 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   # separating parts of the record in a bout
   trace_bout <- trace[which(trace$bout == 1), ]
   # spline smoothing for the parts of the record not in bout
-  smooth_fit_nobout <- smooth.spline(trace_nobout$date_time, trace_nobout$depth,
+  smooth_fit_nobout <- stats::smooth.spline(trace_nobout$date_time, trace_nobout$depth,
                                      spar = spar[1], nknots = nknots[1])
   # predicting for the parts of the record not in a bout
-  trace_nobout$smooth <- predict(smooth_fit_nobout, unclass(trace_nobout$date_time))$y
+  trace_nobout$smooth <- stats::predict(smooth_fit_nobout, unclass(trace_nobout$date_time))$y
   # spline smoothing for the parts of the record in a bout
-  smooth_fit_bout <- smooth.spline(trace_bout$date_time, trace_bout$depth,
+  smooth_fit_bout <- stats::smooth.spline(trace_bout$date_time, trace_bout$depth,
                                    spar = spar[2], nknots = nknots[2])
   # predicting for the parts of the record in a bout
-  trace_bout$smooth <- predict(smooth_fit_bout, unclass(trace_bout$date_time))$y
+  trace_bout$smooth <- stats::predict(smooth_fit_bout, unclass(trace_bout$date_time))$y
 
   # recombining the two:
   smooth_trace <- rbind(trace_nobout, trace_bout)
@@ -598,15 +602,15 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   smooth_trace <- smooth_trace[order(smooth_trace$date_time),]
 
   # recursive and final smoothing
-  spline_mod_bout <- smooth.spline(smooth_trace$date_time, smooth_trace$smooth,
+  spline_mod_bout <- stats::smooth.spline(smooth_trace$date_time, smooth_trace$smooth,
                                    spar = spar[2], nknots = nknots[2])
   # added final smoothing and dive component assignment -- this can be removed
   # later but I was experimenting with it here
   smooth_trace <- dplyr::mutate(smooth_trace,
-                                smooth_depth = predict(spline_mod_bout, unclass(smooth_trace$date_time))$y,
-                                deriv = predict(spline_mod_bout, unclass(smooth_trace$date_time), deriv=1)$y,
+                                smooth_depth = stats::predict(spline_mod_bout, unclass(smooth_trace$date_time))$y,
+                                deriv = stats::predict(spline_mod_bout, unclass(smooth_trace$date_time), deriv=1)$y,
                                 ascent = deriv < 0,
-                                deriv_diff = lag(sign(deriv)) - sign(deriv),
+                                deriv_diff = dplyr::lag(sign(deriv)) - sign(deriv),
                                 peak = case_when(deriv_diff < 0 ~ "TOP",
                                                  deriv_diff > 0 ~ "BOTTOM"))
   # removing extra column

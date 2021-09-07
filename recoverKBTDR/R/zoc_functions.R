@@ -32,7 +32,9 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 #' @param k_h numeric value, size of the larger window used for the second filter. This default is set to 500, but should be smaller for records with extreme drift.
 #' @param depth_bounds two concatenated numbers restricted search window for where y = 0 should likely be. For the records, this should be in cm. Default set c(-1, 1).
 #' @return trace data frame after it has been zero-offset corrected
-#' @import dplyr caTools
+#' @importFrom dplyr group_by summarize
+#' @importFrom caTools runquantile
+#' @importFrom stats approxfun
 #' @examples
 #' \dontrun{
 #' zoc(trace, k_h = 500, depth_bounds = c(-1, 1))
@@ -117,7 +119,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
     # approximate the position of depth = 0 when the seal is diving at greater
     # depths
     offbounds <- which(!d_in_bounds)
-    offbounds_fun <- approxfun(seq(length(trace$y_val))[d_in_bounds],
+    offbounds_fun <- stats::approxfun(seq(length(trace$y_val))[d_in_bounds],
                                filters[d_in_bounds, i + 1], rule=2)
     filters[offbounds, i + 1] <- offbounds_fun(offbounds)
 
@@ -154,7 +156,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 #' @param k_h numeric value, size of the larger window used for the second filter. This default is set to 500, but should be smaller for records with extreme drift.
 #' @param depth_bounds two concatenated numbers restricted search window for where y = 0 should likely be. For the records, this should be in cm. Default set c(-1, 1).
 #' @return trace data frame after it has been zero-offset corrected
-#' @import dplyr caTools
+#' @importFrom caTools runmin runmean
 #' @examples
 #' \dontrun{
 #' zoc_big_drift(trace, k_h = 500, depth_bounds = c(-1, 2))

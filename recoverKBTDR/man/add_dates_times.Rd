@@ -29,7 +29,8 @@ the x-axis into POSIXct date times.
 }
 \examples{
 \dontrun{
-trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00",
+on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
 }
 
 }

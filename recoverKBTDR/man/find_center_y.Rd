@@ -49,7 +49,8 @@ rate = 0.16, psi_calibration)
 
 # if only maximum depth is known:
 find_center_y(beg_dive, depth_dive, rate, max_depth, trace)
-find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341),
-rate = 0.21, max_depth = 484, df = trace)
+find_center_y(beg_dive = c(65.258, y1 = -0.056), d
+epth_dive = c(63.442, 5.341),
+rate = 0.21, max_depth = 484, trace = trace)
 }
 }

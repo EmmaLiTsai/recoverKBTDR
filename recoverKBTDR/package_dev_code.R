@@ -151,6 +151,13 @@ devtools::load_all()
 # this checks and builds the package!
 ?check()
 check("../recoverKBTDR")
+# NOTES FROM PACKAGE CHECK -- no errors, but 3 warnings and 3 notes
+# - using ggplot in vignette?
+# - \examples lines wider than 100 characters in man/rd files
+# - no visible binding for ...
+# - writing things to global environment?
+# - non-standard license?
+# - undocumented code and data sets
 
 # this will send the post package to CRAN:
 # ?release()

@@ -4,7 +4,7 @@
 \alias{.find_center_y_nopsi}
 \title{Find Center Y, without psi calibration curve}
 \usage{
-.find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, trace)
+.find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, df)
 }
 \arguments{
 \item{x1}{x-value of the surface point}
@@ -19,7 +19,7 @@
 
 \item{max_depth}{maximum depth, if known}
 
-\item{trace}{tidy trace data frame}
+\item{df}{tidy trace data frame}
 }
 \value{
 numeric value of an estimated center_y value to use for arc removal.
@@ -30,9 +30,10 @@ point if only a max depth is known
 }
 \examples{
 \dontrun{
-.find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, trace)
+.find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, df)
 
-.find_center_y_nopsi(x1 = 65.258, y1 = -0.056, x2 = 63.442, y2 = 5.341, rate = 0.21, max_depth = 484, trace)
+.find_center_y_nopsi(x1 = 65.258, y1 = -0.056, x2 = 63.442,
+y2 = 5.341, rate = 0.21, max_depth = 484, df)
 }
 
 }

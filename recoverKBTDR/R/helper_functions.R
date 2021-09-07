@@ -12,6 +12,7 @@
 #' @return folder in /results that contains a csv for all spar scenarios, a
 #' dive_stats data frame containing all dive stats for each spar scenario to the
 #' global environment, and the best spar value to use for this record.
+#' @import utils
 #' @export
 #' @examples
 #' \dontrun{
@@ -131,7 +132,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 
     # writing to csv file in results folder:
     results_filepath <- paste(dir_name, "/", base_name, "_", spar_seq[i],".csv", sep = "")
-    write.csv(trace_i, results_filepath)
+    utils::write.csv(trace_i, results_filepath)
     # just printing to the console so the user can see what iteration of the
     # loop the function is on
     print(paste("on spar value:", spar_seq[i]))
@@ -150,6 +151,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #' @return data frame of all dive statitics for each dive for all spar value
 #' scenarios.
 #' @importFrom diveMove readTDR calibrateDepth diveStats
+#' @import utils
 #' @examples
 #' \dontrun{
 #' filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
@@ -172,7 +174,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
     # getting file name for iteration of the loop
     file_i_name <- paste(folder, file_names[i], sep = "")
     # reading in the file to conver to tdr object
-    file_i <- read.csv(file_i_name)
+    file_i <- utils::read.csv(file_i_name)
     # printing so user can see iteration of that loop
     print(paste("getting dive stats for:", file_i_name))
 
@@ -318,8 +320,9 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #'
 #' # if only maximum depth is known:
 #' find_center_y(beg_dive, depth_dive, rate, max_depth, trace)
-#' find_center_y(beg_dive = c(65.258, y1 = -0.056), depth_dive = c(63.442, 5.341),
-#' rate = 0.21, max_depth = 484, df = trace)
+#' find_center_y(beg_dive = c(65.258, y1 = -0.056), d
+#' epth_dive = c(63.442, 5.341),
+#' rate = 0.21, max_depth = 484, trace = trace)
 #' }
 
 # wrapper function to account for if a psi calibration curve is present or not:
@@ -381,7 +384,8 @@ find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
 #' \dontrun{
 #' .find_center_y_psi(x1, y1, x2, y2, rate, psi_calibration = psi_calibration)
 #'
-#' .find_center_y_psi(x1 = 1142.945, y1 = 0, x2 = 1140.55, y2 = 9.3, rate = 0.16, psi_calibration)
+#' .find_center_y_psi(x1 = 1142.945, y1 = 0, x2 = 1140.55, y2 = 9.3,
+#' rate = 0.16, psi_calibration)
 #' }
 
 .find_center_y_psi <- function(x1, y1, x2, y2, rate, psi_calibration = psi_calibration){
@@ -437,22 +441,23 @@ find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
 #' @param y2 y-value of the point at depth
 #' @param rate rate of film movement, estimated by timing dots
 #' @param max_depth maximum depth, if known
-#' @param trace tidy trace data frame
+#' @param df tidy trace data frame
 #' @return numeric value of an estimated center_y value to use for arc removal.
 #' @examples
 #' \dontrun{
-#' .find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, trace)
+#' .find_center_y_nopsi(x1, y1, x2, y2, rate, max_depth, df)
 #'
-#' .find_center_y_nopsi(x1 = 65.258, y1 = -0.056, x2 = 63.442, y2 = 5.341, rate = 0.21, max_depth = 484, trace)
+#' .find_center_y_nopsi(x1 = 65.258, y1 = -0.056, x2 = 63.442,
+#' y2 = 5.341, rate = 0.21, max_depth = 484, df)
 #' }
 #'
 ################################################################################
 # for records before 1981 without a psi_calibration file, but max depth value
 ################################################################################
-.find_center_y_nopsi <- function(x1, y1, x2, y2, rate, max_depth, trace){
+.find_center_y_nopsi <- function(x1, y1, x2, y2, rate, max_depth, df){
 
   # finding the depth of y2
-  depth_2 <- ((y2 * max_depth) / max(trace$y_val, na.rm = TRUE))
+  depth_2 <- ((y2 * max_depth) / max(df$y_val, na.rm = TRUE))
 
   # finding time it took for seal to descend to that depth assuming it is
   # descending at 1.1 m/s (Williams et al., 2015) and transforming it to
@@ -465,7 +470,7 @@ find_center_y <- function(beg_dive = c(x1, y1), depth_dive = c(x2, y2), rate,
 
   if (y1 != 0) {
     ## if the first y value is not = 0:
-    depth_1 <-((y1 * max_depth) / max(trace$y_val, na.rm = TRUE))
+    depth_1 <-((y1 * max_depth) / max(df$y_val, na.rm = TRUE))
 
     # finding time it took for seal to descend to that depth assuming it is
     # descending at 1.1 m/s (Williams et al., 2015) and transforming it to

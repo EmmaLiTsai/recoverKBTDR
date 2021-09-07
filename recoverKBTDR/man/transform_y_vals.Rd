@@ -38,7 +38,8 @@ for that record.
 \examples{
 \dontrun{
 # if the record has a psi calibration curve at the end:
-trace <- transform_psitodepth(trace, psi_calibration, max_psi = 900, max_position = 22.45)
+trace <- transform_psitodepth(trace, psi_calibration,
+max_psi = 900, max_position = 22.45)
 
 # if only the maximum depth is known:
 trace <- trace(trace, max_depth = 317)

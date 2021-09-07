@@ -17,7 +17,8 @@
 #' @examples
 #' \dontrun{
 #' # if the record has a psi calibration curve at the end:
-#' center_scan(trace, time_dots, center_along_y = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+#' center_scan(trace, time_dots, center_along_y = 0.9,
+#' psi_interval = c(100, 200, 400, 600, 800))
 #'
 #' # if the record does not have a psi calibration curve:
 #' center_scan(trace, time_dots, center_along_y = 0.9)
