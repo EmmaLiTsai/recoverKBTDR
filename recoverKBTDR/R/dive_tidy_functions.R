@@ -340,6 +340,7 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' @param max_psi maximum psi of the TDR, often not captured in psi calibration
 #' curve.
 #' @param max_position position of maximum psi reading for TDR in cm.
+#' @export
 #' @return trace data frame with depth in meters.
 #' @examples
 #' \dontrun{

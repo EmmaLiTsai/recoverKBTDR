@@ -144,9 +144,14 @@ find_best_spar(filepath)
 ################################################################################
 # package checking
 ################################################################################
+# updating namespace and loading package:
 devtools::document()
+devtools::load_all()
+
 # this checks and builds the package
 ?check()
 check("../recoverKBTDR")
+
+
 # this will send the post package to CRAN:
-?release()
+# ?release()
