@@ -140,3 +140,13 @@ find_center_y(beg_dive = c(65.258, 0),
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 find_best_spar(filepath)
 # ^ will return best spar value of 0.22
+
+################################################################################
+# package checking
+################################################################################
+devtools::document()
+# this checks and builds the package
+?check()
+check("../recoverKBTDR")
+# this will send the post package to CRAN:
+?release()
