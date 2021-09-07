@@ -113,8 +113,8 @@ center_scan(trace_tidy, time_dots_tidy, 0.9)  # <- this also works
 # and compare they appear identical, but might be because one is a tibble and
 # the other is a data frame.
 
-# testing out the fast recovery function, which uses an arguments csv file to
-# pass arguments to all functions:
+# testing out the fast recovery function, which uses an arguments csv file
+# (args) to pass arguments to all functions:
 ?fast_recovery
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
@@ -138,4 +138,4 @@ find_center_y(beg_dive = c(65.258, 0),
 ?find_best_spar
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 find_best_spar(filepath)
-# ^ will return best spar value as 0.22
+# ^ will return best spar value of 0.22

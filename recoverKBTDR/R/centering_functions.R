@@ -45,8 +45,8 @@
 #   - time_dots    : tidy time_dots file
 #   - center_along_y: the y-axis the user would like to use to center the scan.
 #                    The trace will be centered such that all time dots will
-#                    fall along y = -dist_timedots. Default is set to 1.1cm from
-#                    my own personal measurements, but this value varies between
+#                    fall along y = -center_along_y. Default is set to 1.1cm
+#                    from my own measurements, but this value varies between
 #                    records.
 #   - psi_interval : numeric vector containing the different psi intervals for
 #                    depth calculations, if present in the record
