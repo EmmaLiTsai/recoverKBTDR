@@ -14,15 +14,18 @@ records, but some of the earlier records that I have were
 magnified by a slightly larger amount, and therefore the scale
 is slightly different.
 \item center_y: height of the pivot point of the transducer arm from depth = 0
-in cm. Changes across all records, but I have helper functions
-to provide estimates (see find_center_y_functions.R).
-\item dist_timedot: distance in cm used for centering the record. All time dots
-will be centered along y = dist_timedot.
+in cm. In other words, the y-value of the center of the circle
+that draws the dive record. This value may change across
+records, but helper functions are available to provide
+estimates (?find_center_y).
+\item center_along_y: distance in cm used for centering the record. All time
+dots will be centered along y = -center_along_y
 \item time_period_min: time elapsed between two time dots.
 \item spar_h  : spar value used for high depths of the records to increase
 resolution for the smooth_trace_dive() function.
-\item depth_bounds_smooth: depth threshold to use for the rolling mean function
-to determine what depths should be considered diving behavior.
+\item depth_thresh: depth threshold to use for the rolling mean function
+to determine what depths should be considered diving
+behavior.
 \item date_start: start of the record in y:m:d h:m:s format.
 \item max_depth: maximum depth to use for depth transformation. Only for records
 without a psi calibration curve.
@@ -45,4 +48,5 @@ arguments to different functions for recovery.
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 fast_recovery(filepath)
 }
+
 }
