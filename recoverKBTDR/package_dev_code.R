@@ -142,7 +142,7 @@ find_best_spar(filepath)
 # ^ will return best spar value of 0.22
 
 ################################################################################
-# package checking
+# package checking!
 ################################################################################
 # updating namespace and loading package:
 devtools::document()
