@@ -100,6 +100,7 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 #' @return data frame containing centered psi calibration curve for future
 #' calculations
 #' @importFrom dplyr group_by case_when summarize
+#' @importFrom stats na.omit
 #' @examples
 #' \dontrun{
 #' .centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
@@ -154,10 +155,10 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 
   # trying to catch values that are close but might not have been grouped in the
   # filters above using the difference between intervals
-  final_psi <- dplyr::case_when(final_filter$diff < 1 && final_filter$segment > 2 ~ mean(c(final_filter$mean, final_filter$lag)),
+  final_psi <- dplyr::case_when(final_filter$diff < 1 & final_filter$segment > 2 ~ mean(c(final_filter$mean, final_filter$lag)),
                                 final_filter$diff > 1 | is.na(final_filter$diff) ~ final_filter$mean)
   # omit if NAs were produced
-  final_psi <- na.omit(final_psi)
+  final_psi <- stats::na.omit(final_psi)
   # making psi data frame
   psi_calibration <- data.frame(psi_interval = psi_interval,
                                 psi_position = final_psi)

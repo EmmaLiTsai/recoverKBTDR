@@ -151,13 +151,12 @@ devtools::load_all()
 # this checks and builds the package!
 ?check()
 check("../recoverKBTDR")
-# NOTES FROM PACKAGE CHECK -- no errors, but 3 warnings and 3 notes
-# - using ggplot in vignette?
-# - \examples lines wider than 100 characters in man/rd files
+# NOTES FROM PACKAGE CHECK -- no errors, but 2 warnings and 1 note
+# - using ggplot in vignette? would like to do this, but unsure if possible
 # - no visible binding for ...
 # - writing things to global environment?
-# - non-standard license?
-# - undocumented code and data sets
+# - what is qpdf??? why do I need it????
+# - undocumented code and data sets -- create rd files for these in man/
 
 # this will send the post package to CRAN:
 # ?release()
