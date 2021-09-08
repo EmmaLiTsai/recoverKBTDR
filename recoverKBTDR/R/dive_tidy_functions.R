@@ -524,7 +524,7 @@ transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, ma
 #' smoothed.
 #' @importFrom caTools runmean
 #' @importFrom dplyr case_when mutate lag
-#' @importFrom stats smooth.spline predict
+#' @importFrom stats smooth.spline predict deriv
 #' @export
 #' @examples
 #' \dontrun{
@@ -586,15 +586,19 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   # separating parts of the record in a bout
   trace_bout <- trace[which(trace$bout == 1), ]
   # spline smoothing for the parts of the record not in bout
-  smooth_fit_nobout <- stats::smooth.spline(trace_nobout$date_time, trace_nobout$depth,
-                                     spar = spar[1], nknots = nknots[1])
+  smooth_fit_nobout <- stats::smooth.spline(trace_nobout$date_time,
+                                            trace_nobout$depth,
+                                            spar = spar[1], nknots = nknots[1])
   # predicting for the parts of the record not in a bout
-  trace_nobout$smooth <- stats::predict(smooth_fit_nobout, unclass(trace_nobout$date_time))$y
+  trace_nobout$smooth <- stats::predict(smooth_fit_nobout,
+                                        unclass(trace_nobout$date_time))$y
   # spline smoothing for the parts of the record in a bout
-  smooth_fit_bout <- stats::smooth.spline(trace_bout$date_time, trace_bout$depth,
-                                   spar = spar[2], nknots = nknots[2])
+  smooth_fit_bout <- stats::smooth.spline(trace_bout$date_time,
+                                          trace_bout$depth,
+                                          spar = spar[2], nknots = nknots[2])
   # predicting for the parts of the record in a bout
-  trace_bout$smooth <- stats::predict(smooth_fit_bout, unclass(trace_bout$date_time))$y
+  trace_bout$smooth <- stats::predict(smooth_fit_bout,
+                                      unclass(trace_bout$date_time))$y
 
   # recombining the two:
   smooth_trace <- rbind(trace_nobout, trace_bout)
@@ -602,8 +606,10 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   smooth_trace <- smooth_trace[order(smooth_trace$date_time),]
 
   # recursive and final smoothing
-  spline_mod_bout <- stats::smooth.spline(smooth_trace$date_time, smooth_trace$smooth,
-                                   spar = spar[2], nknots = nknots[2])
+  spline_mod_bout <- stats::smooth.spline(smooth_trace$date_time,
+                                          smooth_trace$smooth,
+                                          spar = spar[2],
+                                          nknots = nknots[2])
   # added final smoothing and dive component assignment -- this can be removed
   # later but I was experimenting with it here
   smooth_trace <- dplyr::mutate(smooth_trace,
