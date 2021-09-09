@@ -161,7 +161,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
   trace <- dplyr::mutate(trace,
                          diff = .data$new_x - .data$start_x,
                          diff_with_scale = diff * .data$scale,
-                         time = diff_with_scale + (as.numeric(.data$time_period)-1) * time_period_min)
+                         time = .data$diff_with_scale + (as.numeric(.data$time_period)-1) * time_period_min)
 
   # removing extra columns created by the function
   trace <- trace[,!(names(trace) %in% c("start_x", "scale", "end_x", "diff", "diff_with_scale", "time_period"))]

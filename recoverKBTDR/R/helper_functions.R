@@ -275,7 +275,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
   # finding spar value that minimizes bottom distance:
   bot_all <- dplyr::select(dive_stats, c("bottdist", "spar_val"))
   # spar val that gives minimum bottom distance for each WS_id
-  mean_bt <- dplyr::group_by(bot_all, spar_val) %>% dplyr::summarize(mean_bott = mean(.data$bottdist))
+  mean_bt <- dplyr::group_by(bot_all, .data$spar_val) %>% dplyr::summarize(mean_bott = mean(.data$bottdist))
   # finding the spar value that minimizes mean bottom distance, this will give the
   # lower end of the unimodal distribution
   best_spar <- dplyr::group_by(mean_bt) %>% dplyr::summarize(min_spar = mean_bt[which.min(.data$mean_bott),]$spar_val)

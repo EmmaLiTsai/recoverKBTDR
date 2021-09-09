@@ -39,6 +39,10 @@ use_data(trace, compress = "xz", overwrite = TRUE)
 use_data(time_dots, compress = "xz", overwrite = TRUE)
 use_data(args, compress = "xz", overwrite = TRUE)
 
+# adding documentation
+use_r("trace")
+use_r("time_dots")
+use_r("args")
 ################################################################################
 # creating some sample tests for the functions so far: ########################
 ################################################################################
@@ -151,12 +155,10 @@ devtools::load_all()
 # this checks and builds the package!
 ?check()
 check("../recoverKBTDR")
-# NOTES FROM PACKAGE CHECK -- no errors, but 2 warnings and 1 note
+# NOTES FROM PACKAGE CHECK -- no errors, but 1 warning and 1 note
 # - using ggplot in vignette? would like to do this, but unsure if possible
-# - no visible binding for ...
-# - writing things to global environment?
+# - no visible binding for ... global environment issue?
 # - what is qpdf??? why do I need it????
-# - undocumented code and data sets -- create rd files for these in man/
 
 # this will send the post package to CRAN:
 # ?release()
