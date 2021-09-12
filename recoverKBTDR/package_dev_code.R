@@ -15,34 +15,34 @@ library(ggplot2)
 ################################################################################
 
 # crating readme
-use_readme_md()
+# use_readme_md()
 # pulling roxygen2 to help with documentation
-use_roxygen_md()
+# use_roxygen_md()
 # making pipe available internally
-use_pipe()
+# use_pipe()
 # place to put cleaning/data tidying script
 # guessing scan centering, file reading?
-use_data_raw()
+# use_data_raw()
 # folders available to users when installed
-use_directory("inst")
+# use_directory("inst")
 # adding license -- we already have the GNU one
 
 # creating a sample vignette
-use_vignette("recoverKBTDR")
+# use_vignette("recoverKBTDR")
 
 # including data for package -- data are already tidy
-trace <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_trace.csv")
-time_dots <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_time_dots.csv")
-args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
-
-use_data(trace, compress = "xz", overwrite = TRUE)
-use_data(time_dots, compress = "xz", overwrite = TRUE)
-use_data(args, compress = "xz", overwrite = TRUE)
-
+# trace <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_trace.csv")
+# time_dots <- readr::read_csv("../sample_data/WS_25_1981/tidy_files/tidy_time_dots.csv")
+# args <- readr::read_csv("../sample_data/WS_25_1981/WS_25_1981_args.csv")
+#
+# use_data(trace, compress = "xz", overwrite = TRUE)
+# use_data(time_dots, compress = "xz", overwrite = TRUE)
+# use_data(args, compress = "xz", overwrite = TRUE)
+#
 # adding documentation
-use_r("trace")
-use_r("time_dots")
-use_r("args")
+# use_r("trace")
+# use_r("time_dots")
+# use_r("args")
 ################################################################################
 # creating some sample tests for the functions so far: ########################
 ################################################################################
@@ -62,8 +62,9 @@ data(time_dots)
 
 # scan centering -- will also produced centered psi calibration curve
 ?center_scan
-trace <- center_scan(trace, time_dots, center_along_y = 0.9,
-                     psi_interval = c(100, 200, 400, 600, 800))
+centered_trace <- center_scan(trace, time_dots, center_along_y = 0.9)
+# extract the psi calibration curve:
+psi_calibration <- centered_psi_calibration(centered_trace, psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
 ?zoc
@@ -144,6 +145,10 @@ find_center_y(beg_dive = c(65.258, 0),
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 find_best_spar(filepath)
 # ^ will return best spar value of 0.22
+
+# if you want the dive stats for all spar iterations to see the raw data behind
+# the best spar value that was found:
+get_divestats("../results/")
 
 ################################################################################
 # package checking!

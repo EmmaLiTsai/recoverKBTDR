@@ -58,6 +58,7 @@ PSI_TO_DEPTH <- 1.4696
 #' @return trace data frame after arc removal.
 #' @importFrom dplyr mutate lead
 #' @importFrom tidyr drop_na
+#' @importFrom rlang .data
 #' @export
 #' @examples
 #' \dontrun{
@@ -191,6 +192,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #' fill sparse parts of the record.
 #' @importFrom dplyr filter
 #' @importFrom lubridate ymd_hms minutes seconds
+#' @importFrom rlang .data
 #' @export
 #' @examples
 #' \dontrun{

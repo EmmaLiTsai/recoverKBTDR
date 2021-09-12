@@ -84,7 +84,7 @@ fast_recovery <- function(filepath = "../data/WS_folder"){
 
   # getting the centered psi calibration curve, if the record has one
   if (is.na(args_tidy$max_depth)){
-    psi_calibration <- .centered_psi_calibration(trace_tidy)
+    psi_calibration <- centered_psi_calibration(trace_tidy)
   }
 
   # zoc, if needed

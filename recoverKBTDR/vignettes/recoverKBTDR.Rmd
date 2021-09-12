@@ -95,9 +95,13 @@ df <- center_scan(trace, time_dots, center_along_y = 0.9)
 #   ggplot2::geom_point(data = df[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2")
 ```
 
-After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. This function also adds the centered psi calibration curve to the global environment, if present in the record:
+After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. If you have a psi calibration curve, run the centered_psi_calibration function to extract the centered psi calibration curve:
 ```{r}
-df <- center_scan(trace, time_dots, center_along_y = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+# center the data frame:
+df <- center_scan(trace, time_dots, center_along_y = 0.9)
+
+# extract the centered psi calibration curve: 
+psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
 head(psi_calibration)
 ```

@@ -35,6 +35,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 #' @importFrom dplyr group_by summarize
 #' @importFrom caTools runquantile
 #' @importFrom stats approxfun
+#' @importFrom rlang .data
 #' @examples
 #' \dontrun{
 #' zoc(trace, k_h = 500, depth_bounds = c(-1, 1))

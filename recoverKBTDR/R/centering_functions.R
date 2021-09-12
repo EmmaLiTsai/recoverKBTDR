@@ -9,18 +9,12 @@
 #' @param trace data frame containing the xy positions of the dive trace
 #' @param time_dots data frame contains the xy positions of the timing dots
 #' @param center_along_y the horizontal line to center the timing dots along
-#' @param psi_interval optional numeric vector of psi intervals at the end of
-#' the record, if present.
-#' @return Centered trace data frame and centered psi_calibration curve at the
-#' end of the record (printed to global environment).
+#' @return Centered trace data frame
 #' @export
 #' @examples
 #' \dontrun{
-#' # if the record has a psi calibration curve at the end:
-#' center_scan(trace, time_dots, center_along_y = 0.9,
-#' psi_interval = c(100, 200, 400, 600, 800))
-#'
-#' # if the record does not have a psi calibration curve:
+#' # If you'd like to center the timing dots below the record
+#' # along y = -0.9
 #' center_scan(trace, time_dots, center_along_y = 0.9)
 #' }
 
@@ -58,7 +52,7 @@
 #   - psi_calibration: data frame containing centered psi calibration curve,
 #             needed for future depth functions
 ###############################################################################
-center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = NULL) {
+center_scan <- function(trace, time_dots, center_along_y = 1.1) {
   # Replacing slow fuzzy merge with simple cut operation. First step is to find
   # x midpoints between time dots to use for cutting
   cutpoints <- c(0, .rollmean(time_dots$x_val, 2), max(trace$x_val))
@@ -68,10 +62,6 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
   trace$y_val <- trace$y_val - time_dots$y_val[time_dot_indices] - center_along_y
   # if there is a psi curve at the end of the record, return the centered psi
   # calibration curve
-  if (!is.null(psi_interval)){
-    psi_calibration <<- .centered_psi_calibration(trace, psi_interval)
-  }
-
   return(trace)
 }
 
@@ -94,19 +84,21 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 }
 
 #' Centered PSI calibration curve
-#' @param trace data frame containing the xy positions of the dive trace
+#' @param centered_trace data frame containing the xy positions of the dive trace, after centering
 #' @param psi_interval psi readings for the calibration curve, i.e.,
 #' (100, 200, 400, 600, 800)
 #' @return data frame containing centered psi calibration curve for future
 #' calculations
 #' @importFrom dplyr group_by case_when summarize
 #' @importFrom stats na.omit
+#' @importFrom rlang .data
+#' @export
 #' @examples
 #' \dontrun{
-#' .centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+#' centered_psi_calibration(centered_trace, psi_interval = c(100, 200, 400, 600, 800))
 #' }
 ###############################################################################
-# Function: centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+# Function: centered_psi_calibration(centered_trace, psi_interval = c(100, 200, 400, 600, 800))
 # Author:   EmmaLi Tsai
 # Date:     6/09/21
 #
@@ -119,7 +111,7 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 #
 # Input:
 #
-#   - trace       : tidy trace data frame after centering, contains the x and y
+#   - centered_trace: tidy trace data frame after centering, contains the x and y
 #                   values of the trace.
 #
 #   - psi_intervals : a numeric vector of the psi intervals at the end of the
@@ -130,11 +122,11 @@ center_scan <- function(trace, time_dots, center_along_y = 1.1, psi_interval = N
 #   - psi_calibration : data frame that contains the new psi positions after
 #                       the trace had been centered
 ###############################################################################
-.centered_psi_calibration <- function(trace, psi_interval = c(100, 200, 400, 600, 800)){
+centered_psi_calibration <- function(centered_trace, psi_interval = c(100, 200, 400, 600, 800)){
   # grabbing the last chunk of data in the trace
-  start_row <- nrow(trace) - 2000
+  start_row <- nrow(centered_trace) - 2000
   # snipping the tail end of the record to capture the psi calibration
-  trace_snip <- trace[start_row:nrow(trace),]
+  trace_snip <- centered_trace[start_row:nrow(centered_trace),]
   # grouping by rounded y-value and finding the mean
   psi_summary <- dplyr::group_by(trace_snip, round(.data$y_val)) %>% dplyr::summarize(mean = mean(.data$y_val), .groups = "drop")
   # recursive grouping to help handle values between two integers

@@ -80,9 +80,8 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 
   # getting the centered psi calibration curve, if the record has one
   if (is.na(args_tidy$max_depth)){
-    psi_calibration <- .centered_psi_calibration(trace_tidy)
+    psi_calibration <- centered_psi_calibration(trace_tidy)
   }
-
 
   # zoc, if needed
   if (!is.na(args_tidy$k_h)){
@@ -138,9 +137,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
     print(paste("on spar value:", spar_seq[i]))
   }
   # adding dive stats for each spar iteration
-  dive_stats_raw <- .get_divestats(folder = paste(dir_name, "/", sep = ""))
-  # clean the results and add to global environment
-  dive_stats <<- .clean_divestats(dive_stats_raw)
+  dive_stats <- get_divestats(folder = paste(dir_name, "/", sep = ""))
   # return the best spar value
   best_spar <- .best_spar(dive_stats)
   return(best_spar)
@@ -152,6 +149,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #' scenarios.
 #' @importFrom diveMove readTDR calibrateDepth diveStats
 #' @import utils
+#' @export
 #' @examples
 #' \dontrun{
 #' filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
@@ -159,7 +157,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #' }
 # reads in all data for dive analysis, achieves step two of the function
 # described above
-.get_divestats <- function(folder = "results/WS_25_1981/"){
+get_divestats <- function(folder = "results/WS_25_1981/"){
   # getting record ID's in folder
   record_id <- unlist(strsplit(folder, "/"))
   record_id <- record_id[length(record_id)]
@@ -198,6 +196,8 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
     # binding it to data frame
     dive_stats <- rbind(dive_stats, dive_stats_i)
   }
+  # cleaning and reorganizing
+  dive_stats <- .clean_divestats(dive_stats)
   # return the dive_stats
   return(dive_stats)
 }
@@ -263,6 +263,7 @@ find_best_spar <- function(filepath = "../data/WS_folder"){
 #' distance and the best spar value for that record (i.e., spar value with
 #' minimum average bottom distance / 2)
 #' @importFrom dplyr select group_by summarize
+#' @importFrom rlang .data
 #' @examples
 #' \dontrun{
 #' .best_spar(dive_stats)

@@ -23,7 +23,8 @@ Imports:
     dplyr,
     lubridate,
     tidyr,
-    zoo
+    zoo,
+    rlang
 Depends: 
     R (>= 2.10)
 Suggests: 
