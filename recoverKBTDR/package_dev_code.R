@@ -10,6 +10,7 @@ library(usethis)
 library(devtools)
 library(Rcpp)
 library(ggplot2)
+library(qpdf)
 ################################################################################
 # helpful lines of code for setting up the package #############################
 ################################################################################
@@ -156,8 +157,7 @@ devtools::load_all()
 # this checks and builds the package!
 ?check()
 check("../recoverKBTDR")
-# NOTES FROM PACKAGE CHECK -- no errors, but 1 warning and 1 note
-# - no visible binding for ... global environment issue?
+# NOTES FROM PACKAGE CHECK -- no errors, but 1 note
 # - what is qpdf??? why do I need it????
 
 # this will send the post package to CRAN:

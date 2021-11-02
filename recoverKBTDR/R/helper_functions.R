@@ -49,12 +49,12 @@
 #'
 #'  - off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
 #'
-#' @param filepath_results directory where you would like to store results
+#' @param filepath_results directory where you would like to store csv files of
+#' each spar scenario
 #'
 #' @return folder in /results that contains a csv for all spar scenarios, a
 #' dive_stats data frame containing all dive stats for each spar scenario to the
 #' global environment, and the best spar value to use for this record.
-#' @import utils
 #' @export
 #' @examples
 #' \dontrun{
@@ -62,6 +62,7 @@
 #' filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
 #' filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 #' filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+#'
 #' find_best_spar(filepath_trace, filepath_timedots, filepath_args, filepath_results = filepath)
 #' }
 

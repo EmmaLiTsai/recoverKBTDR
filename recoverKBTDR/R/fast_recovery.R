@@ -52,6 +52,7 @@
 #' filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
 #' filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 #' filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+#'
 #' fast_recovery(filepath_trace, filepath_timedots, filepath_args)
 #' }
 #'
