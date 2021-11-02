@@ -4,10 +4,48 @@
 \alias{find_best_spar}
 \title{Find the best spar value for spline smoothing using dive statistics}
 \usage{
-find_best_spar(filepath = "../data/WS_folder")
+find_best_spar(
+  filepath_trace = "WS_25_1981_trace.csv",
+  filepath_timedots = "WS_25_1981_time_dots.csv",
+  filepath_args = "WS_25_1981_args.csv",
+  filepath_results = system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+)
 }
 \arguments{
-\item{filepath}{folder containing the trace, time dots, and argument files.}
+\item{filepath_trace}{file path of raw trace csv file}
+
+\item{filepath_timedots}{file path of raw time dots csv file}
+
+\item{filepath_args}{file path of csv file containing:
+\itemize{
+\item radius  : the length of the radius arm in cm. This is constant across all
+records, but some of the earlier records that I have were
+magnified by a slightly larger amount, and therefore the scale
+is slightly different.
+\item center_y: height of the pivot point of the transducer arm from depth = 0
+in cm. In other words, the y-value of the center of the circle
+that draws the dive record. This value may change across
+records, but helper functions are available to provide
+estimates (?find_center_y).
+\item center_along_y: distance in cm used for centering the record. All time
+dots will be centered along y = -center_along_y
+\item time_period_min: time elapsed between two time dots.
+\item spar_h  : spar value used for high depths of the records to increase
+resolution for the smooth_trace_dive() function.
+\item depth_thresh: depth threshold to use for the rolling mean function
+to determine what depths should be considered diving
+behavior.
+\item date_start: start of the record in y:m:d h:m:s format.
+\item max_depth: maximum depth to use for depth transformation. Only for records
+without a psi calibration curve.
+\item k_h     : larger window to use for zoc() function, if needed.
+\item depth_bounds_l, depth_bounds_h: low and high depth bounds that encapsulate
+where depth = 0 is likely to be. Used for zoc() function.
+\item on_seal : time the tdr was placed on seal. In y:m:d h:m:s format.
+\item off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
+}}
+
+\item{filepath_results}{directory where you would like to store results}
 }
 \value{
 folder in /results that contains a csv for all spar scenarios, a
@@ -26,6 +64,9 @@ is the best method for finding the best spar value.
 \examples{
 \dontrun{
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-find_best_spar(filepath)
+filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
+filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
+filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+find_best_spar(filepath_trace, filepath_timedots, filepath_args, filepath_results = filepath)
 }
 }

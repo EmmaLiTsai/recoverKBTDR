@@ -3,7 +3,9 @@
 #' Recover a single record fast by using an argument csv file that passes
 #' arguments to different functions for recovery.
 #'
-#' @param filepath file path of folder containing at least 3 files (trace, time dots, args). The argument file should contain columns for:
+#' @param filepath_trace file path of raw trace csv file
+#' @param filepath_timedots file path of raw time dots csv file
+#' @param filepath_args file path of csv file containing:
 #'
 #'   - radius  : the length of the radius arm in cm. This is constant across all
 #'               records, but some of the earlier records that I have were
@@ -42,12 +44,15 @@
 #'
 #'  - off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
 #'
-#' @return trace data frame after full recovery, added to global environment.
+#' @return trace data frame after full recovery
 #' @export
 #' @examples
 #' \dontrun{
 #' filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-#' fast_recovery(filepath)
+#' filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
+#' filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
+#' filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+#' fast_recovery(filepath_trace, filepath_timedots, filepath_args)
 #' }
 #'
 # TODO: the radius MIGHT change across records if they xerographed by a
@@ -73,10 +78,14 @@
 #                  depth transformation, smoothed, with POSIXct dates and times
 #                  added)
 ###############################################################################
-fast_recovery <- function(filepath = "../data/WS_folder"){
-
-  # read in the record
-  read_trace(filepath = filepath)
+fast_recovery <- function(filepath_trace = "WS_25_1981_trace.csv",
+                          filepath_timedots = "WS_25_1981_time_dots.csv",
+                          filepath_args = "WS_25_1981_args.csv"){
+  # getting the argument file
+  args_tidy <- read.csv(filepath_args)
+  # tidy the data
+  trace_tidy <- tidy_raw_trace(filepath_trace)
+  time_dots_tidy <- tidy_raw_timedots(filepath_timedots)
 
   # center the scan
   trace_tidy <- center_scan(trace_tidy, time_dots_tidy,
@@ -118,7 +127,7 @@ fast_recovery <- function(filepath = "../data/WS_folder"){
   }
 
   # smooth
-  trace_tidy_recovered <<- smooth_trace_dive(trace_tidy,
+  trace_tidy_recovered <- smooth_trace_dive(trace_tidy,
                                             spar_h = args_tidy$spar_h,
                                             depth_thresh = args_tidy$depth_thresh)
 
@@ -129,4 +138,5 @@ fast_recovery <- function(filepath = "../data/WS_folder"){
   # ^ unsure if this will be added to the package? Might be better to just
   # add it to the global environment
   #
+  return(trace_tidy_recovered)
 }

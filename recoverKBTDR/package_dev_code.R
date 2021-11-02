@@ -109,22 +109,19 @@ ggplot(trace[500:20000,], aes(x = date_time, y = depth)) +
 # example and helper functions
 ################################################################################
 # example of reading in raw csv files and tidying them:
-?read_trace
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-read_trace(filepath)
-identical(trace_tidy, trace)
-identical(time_dots_tidy, time_dots)
-center_scan(trace_tidy, time_dots_tidy, 0.9)  # <- this also works
-# ^ these should be identical, unsure why they aren't. When I cbind them
-# and compare they appear identical, but might be because one is a tibble and
-# the other is a data frame.
+filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
+filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
+
+tidy_raw_trace(filepath_trace)
+tidy_raw_timedots(filepath_timedots)
 
 # testing out the fast recovery function, which uses an arguments csv file
 # (args) to pass arguments to all functions:
 ?fast_recovery
-filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-fast_recovery(filepath)
+filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
 
+recovered <- fast_recovery(filepath_trace, filepath_timedots, filepath_args)
 # helper functions that help find the best arguments pass to the
 # transform_x_vals() function (center_y), and smooth_trace_dive() function
 # (spar_h).
@@ -142,8 +139,7 @@ find_center_y(beg_dive = c(65.258, 0),
 # v this one will take a longer time to run, but I believe this is the best
 # method for objectively finding the right spar value.
 ?find_best_spar
-filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-find_best_spar(filepath)
+find_best_spar(filepath_trace, filepath_timedots, filepath_args)
 # ^ will return best spar value of 0.22
 
 # if you want the dive stats for all spar iterations to see the raw data behind

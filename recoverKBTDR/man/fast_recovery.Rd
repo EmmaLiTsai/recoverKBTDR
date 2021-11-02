@@ -4,10 +4,18 @@
 \alias{fast_recovery}
 \title{Fast recovery of record using argument file}
 \usage{
-fast_recovery(filepath = "../data/WS_folder")
+fast_recovery(
+  filepath_trace = "WS_25_1981_trace.csv",
+  filepath_timedots = "WS_25_1981_time_dots.csv",
+  filepath_args = "WS_25_1981_args.csv"
+)
 }
 \arguments{
-\item{filepath}{file path of folder containing at least 3 files (trace, time dots, args). The argument file should contain columns for:
+\item{filepath_trace}{file path of raw trace csv file}
+
+\item{filepath_timedots}{file path of raw time dots csv file}
+
+\item{filepath_args}{file path of csv file containing:
 \itemize{
 \item radius  : the length of the radius arm in cm. This is constant across all
 records, but some of the earlier records that I have were
@@ -37,7 +45,7 @@ where depth = 0 is likely to be. Used for zoc() function.
 }}
 }
 \value{
-trace data frame after full recovery, added to global environment.
+trace data frame after full recovery
 }
 \description{
 Recover a single record fast by using an argument csv file that passes
@@ -46,7 +54,10 @@ arguments to different functions for recovery.
 \examples{
 \dontrun{
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
-fast_recovery(filepath)
+filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
+filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
+filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+fast_recovery(filepath_trace, filepath_timedots, filepath_args)
 }
 
 }

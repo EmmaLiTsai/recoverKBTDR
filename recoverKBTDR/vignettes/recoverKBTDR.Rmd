@@ -51,8 +51,17 @@ head(time_dots_raw)
 As you can see, the default csv file from ImageJ lacks informative column names, and the y-axis values become more negative as the psi reading progress in the +y direction. The read_trace() function can correct these issues for you: 
 
 ```{r}
-read_trace(filepath)
+# starting with the trace csv file: 
+filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
+#tidying 
+trace_tidy <- tidy_raw_trace(filepath_trace)
 
+# then the time dots csv file: 
+filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
+# tidying:
+time_dots_tidy <- tidy_raw_timedots(filepath_timedots)
+
+# checking out the tidy data frames: 
 head(trace_tidy)
 head(time_dots_tidy)
 ```
