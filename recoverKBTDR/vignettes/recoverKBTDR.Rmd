@@ -78,6 +78,7 @@ data(trace)
 # position of the timing dots: 
 data(time_dots)
 
+# checking them out: 
 head(trace)
 head(time_dots)
 ```
@@ -90,9 +91,9 @@ The records often drifted while being fed into the scanner, which resulted in sl
 # here, we are adjusting the record such that the timing dots would be centered along y = -0.9 cm. 
 df <- center_scan(trace, time_dots, center_along_y = 0.9)
 
-# ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
-#   ggplot2::geom_point() +
-#   ggplot2::geom_point(data = df[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2")
+# visualizing the centered record: 
+plot(trace[1000:11000,], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Scan Centering") 
+points(df[1000:11000,], col = "#39b3b2")
 ```
 
 After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. If you have a psi calibration curve, run the centered_psi_calibration function to extract the centered psi calibration curve:
@@ -114,9 +115,9 @@ Some records present extreme drift and/or level shifts in surface values. This d
 # Here, we are using a larger window size of 500 with surface values usually drift between -1cm and 1cm. Smaller k_h values and larger depth bounds are useful for records with extreme drift, but our sample data doesn't exhibit this degree of drift.  
 df_zoc <- zoc(trace, k_h = 500, depth_bounds = c(-1,1))
 
-# ggplot2::ggplot(trace[1000:11000,], aes(x = x_val, y = y_val)) +
-#   ggplot2::geom_point() +
-#   ggplot2::geom_point(data = df_zoc[1000:11000,], aes(x = x_val, y_val), color = "#39b3b2")
+# visualizing this correction: 
+plot(trace[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
+points(df_zoc[1000:11000,], col = "#39b3b2")
 ```
 
 While our sample data is somewhat free of extreme drift in surface values, this function can be particularly helpful for other records. 
@@ -131,10 +132,9 @@ df <- transform_x_vals(df,
                        center_y = 11.18,
                        time_period_min = 12)
 
-# plotting 
-# ggplot2::ggplot(df[1000:11000,], aes(x = x_val, y = y_val)) +
-#   ggplot2::geom_point() +
-#   ggplot2::geom_point(aes(x = new_x, y = y_val), color = "#39b3b2")
+# plotting the transformed data: 
+plot(df[1000:11000, 1:2], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Arc Removal")
+lines(df[1000:11000, c(3,2)], col = "#39b3b2")
 ```
 
 This function removes the curvilinear nature of the original record, such that it becomes a function. The x-axis is also assigned a time, which can be transformed to a POSIXct object in recovery step number 3. 
@@ -160,7 +160,9 @@ df <- transform_y_vals(df, psi_calibration = psi_calibration, max_psi = 900, max
 # if we just know max depth:
 df_max_dep <- transform_y_vals(df, max_depth = 319)
 
-# ggplot2::ggplot(df[1000:18000,], aes(x = date_time, y = depth)) + ggplot2::geom_point(color =  "#39b3b2")
+
+# visualizing this transformation: 
+plot(df[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth Transformation")
 ```
 
 ## Step 6: Spline Smoothing 
@@ -168,8 +170,9 @@ Finally, the data are smoothed. This spline smoothing method uses dive detection
 ```{r}
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
 df <- smooth_trace_dive(df, spar_h = 0.22, depth_thresh = 5)
- 
-# ggplot2::ggplot(df[1000:18000,], aes(x = date_time, y = depth)) + ggplot2::geom_line() + ggplot2::geom_point(aes(y = smooth_depth), color = "#39b3b2", size = 0.8)
+
+plot(df[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth Transformation", lwd = 3)
+lines(df[1000:18000, c(1,10)], col = "#39b3b2")
 ```
 
 Now the data frame can be exported as a csv file and read into dive analysis software. 
