@@ -4,7 +4,13 @@
 \alias{add_dates_times}
 \title{Add POSIXct date times and create a regular time series}
 \usage{
-add_dates_times(trace, start_time, on_seal, off_seal)
+add_dates_times(
+  trace,
+  start_time,
+  on_seal,
+  off_seal,
+  tz = "Antarctica/McMurdo"
+)
 }
 \arguments{
 \item{trace}{tidy trace data frame after arc removal, contains the x and y
@@ -15,6 +21,8 @@ values of the trace.}
 \item{on_seal}{time TDR was placed on the seal, in y:m:d h:m:s format.}
 
 \item{off_seal}{time TDR taken off the seal, in y:m:d h:m:s format.}
+
+\item{tz}{time zone to use for POSIXct date times.}
 }
 \value{
 trace data frame with POSIXct date times and interpolated points to
@@ -30,7 +38,8 @@ the x-axis into POSIXct date times.
 \examples{
 \dontrun{
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00",
-on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00",
+tz = "Antarctica/McMurdo")
 }
 
 }

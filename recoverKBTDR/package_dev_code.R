@@ -163,7 +163,6 @@ check("../recoverKBTDR")
 # NOTES FROM PACKAGE CHECK -- no errors, but 1 warning and 1 note
 # - no visible binding for ... global environment issue?
 # - what is qpdf??? why do I need it????
-# - using ggplot in vignette? would like to do this, but unsure if possible
 
 # this will send the post package to CRAN:
 # ?release()

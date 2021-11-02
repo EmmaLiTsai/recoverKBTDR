@@ -103,7 +103,8 @@ fast_recovery <- function(filepath = "../data/WS_folder"){
   trace_tidy <- add_dates_times(trace_tidy,
                                 start_time = args_tidy$date_start,
                                 on_seal = args_tidy$on_seal,
-                                off_seal = args_tidy$off_seal)
+                                off_seal = args_tidy$off_seal,
+                                tz = "Antarctica/McMurdo")
 
   if(!is.na(args_tidy$max_depth)){
     trace_tidy <- transform_y_vals(trace_tidy, args_tidy$max_depth)

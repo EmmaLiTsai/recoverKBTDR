@@ -4,7 +4,7 @@
 \alias{.create_regular_ts}
 \title{creating regular time series for trace data}
 \usage{
-.create_regular_ts(trace, on_seal, off_seal)
+.create_regular_ts(trace, on_seal, off_seal, tz = "Antarctica/McMurdo")
 }
 \arguments{
 \item{trace}{tidy trace data frame after arc removal, contains the x and y
@@ -13,6 +13,8 @@ values of the trace.}
 \item{on_seal}{time TDR was placed on the seal.}
 
 \item{off_seal}{time TDR taken off the seal.}
+
+\item{tz}{time zone for calculating date/times}
 }
 \value{
 trace data frame with POSIXct date times and interpolated points to
@@ -24,6 +26,6 @@ creating regular time series for trace data
 \examples{
 \dontrun{
 trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00",
-off_seal = "1981:01:23 15:30:00")
+off_seal = "1981:01:23 15:30:00", tz = "Antarctica/McMurdo")
 }
 }

@@ -145,7 +145,8 @@ The seal often moved faster than the LED arm could document the dive during the 
 df <- add_dates_times(df,
                       start_time = "1981:01:16 15:10:00",
                       on_seal = "1981:01:16 17:58:00",
-                      off_seal = "1981:01:23 15:30:00")
+                      off_seal = "1981:01:23 15:30:00", 
+                      tz = "Antarctica/McMurdo")
 
 # now, the record is complete with POSIXct date times: 
 head(df)

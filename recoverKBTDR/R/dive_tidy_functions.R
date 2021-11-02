@@ -188,6 +188,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #' @param start_time time TDR was turned on, in y:m:d h:m:s format.
 #' @param on_seal time TDR was placed on the seal, in y:m:d h:m:s format.
 #' @param off_seal time TDR taken off the seal, in y:m:d h:m:s format.
+#' @param tz time zone to use for POSIXct date times.
 #' @return trace data frame with POSIXct date times and interpolated points to
 #' fill sparse parts of the record.
 #' @importFrom dplyr filter
@@ -197,7 +198,8 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #' @examples
 #' \dontrun{
 #' trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00",
-#' on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+#' on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00",
+#' tz = "Antarctica/McMurdo")
 #' }
 #'
 ###############################################################################
@@ -230,9 +232,9 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #   - trace       : trace data frame complete with POSIXct dates, times, and a
 #                   regular time series containing interpolayed y-values.
 ###############################################################################
-add_dates_times <- function(trace, start_time, on_seal, off_seal){
+add_dates_times <- function(trace, start_time, on_seal, off_seal, tz = "Antarctica/McMurdo"){
   # adding dates and times from lubridate package
-  trace$date_time <- lubridate::ymd_hms(start_time, tz = "Antarctica/McMurdo") +
+  trace$date_time <- lubridate::ymd_hms(start_time, tz = tz) +
     lubridate::minutes(as.integer(trace$time)) +
     lubridate::seconds(as.integer((trace$time %% 1) * 60))
 
@@ -242,15 +244,15 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
   trace <- trace[!duplicated(trace$date_time),]
 
   # need to convert to ymd_hms format
-  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
+  on_seal <- lubridate::ymd_hms(on_seal, tz = tz)
+  off_seal <- lubridate::ymd_hms(off_seal, tz = tz)
 
   # filtering the data based on the time the TDR was placed on the seal to when
   # it was taken off
   trace <- trace %>% dplyr::filter(.data$date_time >= on_seal & .data$date_time <= off_seal)
   # transforming to regular time series, this will probably be an internal
   # function (see function below-- achieves step 4 of the recovery process)
-  trace <- .create_regular_ts(trace, on_seal, off_seal)
+  trace <- .create_regular_ts(trace, on_seal, off_seal, tz = tz)
   # returning the trace
   return(trace)
 }
@@ -263,6 +265,7 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' values of the trace.
 #' @param on_seal time TDR was placed on the seal.
 #' @param off_seal time TDR taken off the seal.
+#' @param tz time zone for calculating date/times
 #' @return trace data frame with POSIXct date times and interpolated points to
 #' fill sparse parts of the record.
 #' @importFrom zoo na.approx
@@ -270,7 +273,7 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #' @examples
 #' \dontrun{
 #' trace <- .create_regular_ts(trace, on_seal = "1981:01:16 17:58:00",
-#' off_seal = "1981:01:23 15:30:00")
+#' off_seal = "1981:01:23 15:30:00", tz = "Antarctica/McMurdo")
 #' }
 ###############################################################################
 # Function: create_regular_ts(trace, on_seal, off_seal)
@@ -303,10 +306,10 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal){
 #   - trace       : trace data frame complete with POSIXct dates, times, and a
 #                   regular time series containing interpolayed y-values.
 ###############################################################################
-.create_regular_ts <- function(trace, on_seal, off_seal){
+.create_regular_ts <- function(trace, on_seal, off_seal, tz = "Antarctica/McMurdo"){
   # convert to ymd_hms format, if needed
-  on_seal <- lubridate::ymd_hms(on_seal, tz = "Antarctica/McMurdo")
-  off_seal <- lubridate::ymd_hms(off_seal, tz = "Antarctica/McMurdo")
+  on_seal <- lubridate::ymd_hms(on_seal, tz = tz)
+  off_seal <- lubridate::ymd_hms(off_seal, tz = tz)
   # creating regular time series
   reg_time <- seq(on_seal, off_seal, by = "sec")
   # transform to data frame
