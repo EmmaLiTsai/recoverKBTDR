@@ -57,7 +57,8 @@
 #' filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 #' filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
 #'
-#' fast_recovery(filepath_trace, col_x_trace = 1, col_y_trace = 2, filepath_timedots, col_x_timedots = 1, col_y_timedots =2, filepath_args)
+#' fast_recovery(filepath_trace, col_x_trace = 1, col_y_trace = 2,
+#' # filepath_timedots, col_x_timedots = 1, col_y_timedots =2, filepath_args)
 #' }
 #'
 # TODO: the radius MIGHT change across records if they xerographed by a

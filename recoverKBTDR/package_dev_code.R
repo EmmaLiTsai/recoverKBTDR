@@ -84,6 +84,8 @@ trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
 # in future commits. It also just felt like too many arguments to add to one
 # function, which seems like a common problem that I'm having.
 ?add_dates_times
+# CAREFUL WITH THIS-- IT CANNOT HANDLE DST, so GMT time zone might be a better
+# default?
 trace <- add_dates_times(trace,
                          start_time = "1981:01:16 15:10:00",
                          on_seal = "1981:01:16 17:58:00",
