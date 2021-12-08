@@ -4,11 +4,15 @@
 \alias{tidy_raw_timedots}
 \title{Correct raw time dots csv file from ImageJ}
 \usage{
-tidy_raw_timedots(filepath_timedots)
+tidy_raw_timedots(filepath_timedots, col_x = 1, col_y = 2)
 }
 \arguments{
 \item{filepath_timedots}{the path to the csv file containing the raw time dots
 data from ImageJ}
+
+\item{col_x}{column number of the x values, default is set to first column.}
+
+\item{col_y}{column number of the y values, default is set to second column.}
 }
 \value{
 One trace data frame after correcting ImageJ's default origin
@@ -24,7 +28,7 @@ adding proper names to the data frame.
 \dontrun{
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
-tidy_raw_timedots(filepath_timedots)
+tidy_raw_timedots(filepath_timedots, col_x = 1, col_y = 2)
 }
 
 }

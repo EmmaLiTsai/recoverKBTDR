@@ -4,6 +4,10 @@
 #' arguments to different functions for recovery.
 #'
 #' @param filepath_trace file path of raw trace csv file
+#' @param col_x_trace position of trace x values column
+#' @param col_y_trace posiiton of trace y values column
+#' @param col_x_timedots posiiton of timedots x values column
+#' @param col_y_timedots position of timedots y values column
 #' @param filepath_timedots file path of raw time dots csv file
 #' @param filepath_args file path of csv file containing:
 #'
@@ -53,7 +57,7 @@
 #' filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 #' filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
 #'
-#' fast_recovery(filepath_trace, filepath_timedots, filepath_args)
+#' fast_recovery(filepath_trace, col_x_trace = 1, col_y_trace = 2, filepath_timedots, col_x_timedots = 1, col_y_timedots =2, filepath_args)
 #' }
 #'
 # TODO: the radius MIGHT change across records if they xerographed by a
@@ -80,13 +84,19 @@
 #                  added)
 ###############################################################################
 fast_recovery <- function(filepath_trace = "WS_25_1981_trace.csv",
+                          col_x_trace = 1, col_y_trace = 2,
                           filepath_timedots = "WS_25_1981_time_dots.csv",
+                          col_x_timedots = 1, col_y_timedots = 2,
                           filepath_args = "WS_25_1981_args.csv"){
   # getting the argument file
   args_tidy <- read.csv(filepath_args)
-  # tidy the data
-  trace_tidy <- tidy_raw_trace(filepath_trace)
-  time_dots_tidy <- tidy_raw_timedots(filepath_timedots)
+  # tidy the data - both timedots and trace files
+  trace_tidy <- tidy_raw_trace(filepath_trace,
+                               col_x = col_x_trace,
+                               col_y = col_y_trace)
+  time_dots_tidy <- tidy_raw_timedots(filepath_timedots,
+                                      col_x = col_x_timedots,
+                                      col_y = col_y_timedots)
 
   # center the scan
   trace_tidy <- center_scan(trace_tidy, time_dots_tidy,

@@ -45,7 +45,8 @@ where depth = 0 is likely to be. Used for zoc() function.
 \item off_seal: time the tdr was taken off seal. In y:m:d h:m:s format.
 }}
 
-\item{filepath_results}{directory where you would like to store results}
+\item{filepath_results}{directory where you would like to store csv files of
+each spar scenario}
 }
 \value{
 folder in /results that contains a csv for all spar scenarios, a
@@ -67,6 +68,7 @@ filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
 filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
+
 find_best_spar(filepath_trace, filepath_timedots, filepath_args, filepath_results = filepath)
 }
 }

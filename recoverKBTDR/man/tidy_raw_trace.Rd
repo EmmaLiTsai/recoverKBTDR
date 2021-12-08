@@ -4,11 +4,15 @@
 \alias{tidy_raw_trace}
 \title{Correct raw trace csv file from ImageJ}
 \usage{
-tidy_raw_trace(filepath_trace)
+tidy_raw_trace(filepath_trace, col_x = 1, col_y = 2)
 }
 \arguments{
 \item{filepath_trace}{the path to the csv file containing the raw trace data
 from ImageJ}
+
+\item{col_x}{column of the x values, default is set to first column.}
+
+\item{col_y}{column of the y values, default is set to second column.}
 }
 \value{
 One trace data frame after correcting ImageJ's default origin
@@ -24,7 +28,7 @@ adding proper names to the data frame.
 \dontrun{
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
-tidy_raw_trace(filepath_trace)
+tidy_raw_trace(filepath_trace, col_x = 1, col_y = 2)
 }
 
 }

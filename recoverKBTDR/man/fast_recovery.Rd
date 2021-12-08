@@ -6,14 +6,26 @@
 \usage{
 fast_recovery(
   filepath_trace = "WS_25_1981_trace.csv",
+  col_x_trace = 1,
+  col_y_trace = 2,
   filepath_timedots = "WS_25_1981_time_dots.csv",
+  col_x_timedots = 1,
+  col_y_timedots = 2,
   filepath_args = "WS_25_1981_args.csv"
 )
 }
 \arguments{
 \item{filepath_trace}{file path of raw trace csv file}
 
+\item{col_x_trace}{position of trace x values column}
+
+\item{col_y_trace}{posiiton of trace y values column}
+
 \item{filepath_timedots}{file path of raw time dots csv file}
+
+\item{col_x_timedots}{posiiton of timedots x values column}
+
+\item{col_y_timedots}{position of timedots y values column}
 
 \item{filepath_args}{file path of csv file containing:
 \itemize{
@@ -57,7 +69,8 @@ filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
 filepath_trace <- paste(filepath, "WS_25_1981_trace.csv", sep = "/")
 filepath_timedots <- paste(filepath, "WS_25_1981_time_dots.csv", sep = "/")
 filepath_args <- paste(filepath, "WS_25_1981_args.csv", sep = "/")
-fast_recovery(filepath_trace, filepath_timedots, filepath_args)
+
+fast_recovery(filepath_trace, col_x_trace = 1, col_y_trace = 2, filepath_timedots, col_x_timedots = 1, col_y_timedots =2, filepath_args)
 }
 
 }

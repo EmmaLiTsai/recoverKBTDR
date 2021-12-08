@@ -90,6 +90,8 @@ data(time_dots)
 # checking them out: 
 head(trace)
 head(time_dots)
+
+# Default csv files exported from ImageJ can be tidied to this format using the tidy_raw_timedots() function and tidy_raw_trace() function. 
 ```
 
 ## Step 1: Scan Centering and Zero-Offset Correction 
