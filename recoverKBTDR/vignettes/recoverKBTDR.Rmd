@@ -174,7 +174,7 @@ df_max_dep <- transform_y_vals(df, max_depth = 319)
 
 
 # visualizing this transformation: 
-plot(df[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth Transformation")
+plot(df[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
 ## Step 6: Spline Smoothing 

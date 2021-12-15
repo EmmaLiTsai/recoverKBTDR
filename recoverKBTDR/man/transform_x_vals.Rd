@@ -14,7 +14,7 @@ values of the trace.}
 of the timing dots.}
 
 \item{center_y}{height of transducer arm pivot point. This value is usually
-close to 11 cm, but there is slight variaton (<1 mm) at the scale of the
+close to 11 cm, but there is slight variation (<1 mm) at the scale of the
 KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
 estimate this value.}
 
