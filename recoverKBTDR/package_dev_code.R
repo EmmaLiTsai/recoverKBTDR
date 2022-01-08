@@ -101,7 +101,7 @@ trace <- transform_y_vals(trace, maxdep = 319)
 
 # spline smoothing
 ?smooth_trace_dive
-trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 5)
+trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 10)
 
 # wow... it works!
 ggplot(trace[500:20000,], aes(x = date_time, y = depth)) +
