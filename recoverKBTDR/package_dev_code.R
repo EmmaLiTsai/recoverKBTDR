@@ -63,9 +63,9 @@ data(time_dots)
 
 # scan centering -- will also produced centered psi calibration curve
 ?center_scan
-centered_trace <- center_scan(trace, time_dots, center_along_y = 0.9)
+trace <- center_scan(trace, time_dots, center_along_y = 0.9)
 # extract the psi calibration curve:
-psi_calibration <- centered_psi_calibration(centered_trace, psi_interval = c(100, 200, 400, 600, 800))
+psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
 # zero offset correction, if needed:
 ?zoc
