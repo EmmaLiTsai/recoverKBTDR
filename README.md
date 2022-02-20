@@ -4,14 +4,11 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-B
 
 Contains: 
 
- (1) recoverKBTDR - R package development folder. Contains all sample data (/inst), documentation(/vignettes), package development 
-			code (/R), and function documentation (/man). Package checks and development workflow can be found within 
-		      package_dev_code.R.
-
-The package passes check, aside from the one 'qpdf' warning for large file sizes. No errors or notes. 
-
-The /vignettes/recoverKBTDR.Rmd file and the README walks through the whole dive record recovery process with plots
-to illustrate the output of each recovery function. 
+recoverKBTDR - R package development folder. Contains all sample data (/inst), documentation(/vignettes), package development 
+	         code (/R), and function documentation (/man). Package checks and development workflow can be found within 
+		   package_dev_code.R. The package passes check, aside from the one 'qpdf' warning for large file sizes. 
+               No errors or notes. The /vignettes/recoverKBTDR.Rmd file and the README walks through the whole dive record 
+		   recovery process with plots to illustrate the output of each recovery function. 
  
 Within the /R folder, you can a series of .R scripts that fixes various issues with the KBTDR traces:
 
@@ -29,19 +26,15 @@ Within the /R folder, you can a series of .R scripts that fixes various issues w
 			   useful to include. This file also includes an extra function (zoc_big_drift) to help zoc 
 			   records that have extreme drift in depth = 0 such that zoc was usually difficult. 
 
- - dive_tidy_functions.R -- contains organized production code that can be broken up into six main steps: 
+ - dive_tidy_functions.R -- contains organized production code that can be broken up into five main steps: 
 
-    (1) Re-centering and fixing misalignment: this mainly focuses on tidying the trace and time_dots csv files after
-	  image processing steps in ImageJ. This code also aims to center the scan. Since this code is mainly related 
-	  to image processing, I moved code for this step to the read_trace.R file, and fixing misalignment code to 
-	  centering_functions.R file. 
-  (2-3) Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
+  (1-2) Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
 	  using the timing dots. 
-    (4) Creating a regular time series using linear interpolation. This helps with records that are discontinuous 
+    (3) Creating a regular time series using linear interpolation. This helps with records that are discontinuous 
 	  which makes future dive analysis challenging.
-    (5) Transform y axis to depth: this step will transform interpolated y values to psi using the psi calibration 
+    (4) Transform y axis to depth: this step will transform interpolated y values to psi using the psi calibration 
 	  at the end of the trace, and transform these psi values to depth. 
-    (6) Smoothing: this step smooths these data to simplify the trace. This is needed to help remove noise 
+    (5) Smoothing: this step smooths these data to simplify the trace. This is needed to help remove noise 
 	  and extract the main trace from the thickness of the line, and for future dive analysis. 
 
   - fast_recovery.R  -- contains a non-essentail wrapper function that uses an argument file to pass trace-specific 

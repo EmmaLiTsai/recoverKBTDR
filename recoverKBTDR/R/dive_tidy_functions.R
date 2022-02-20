@@ -5,12 +5,11 @@
 
 # STEPS
 
-# 1. Recenter and fix misalignment (both data inputs)
-# 2. Transform coordinates by radius arm eqn
-# 3. Transform x axis to dates & times
-# 4. Interpolate between missing time points
-# 5. Transform y axis to depth
-# 6. Smoothing
+# 1. Transform coordinates by radius arm eqn
+# 2. Transform x axis to dates & times
+# 3. Interpolate between missing time points
+# 4. Transform y axis to depth
+# 5. Smoothing
 
 ###############################################################################
 # Global constants:
