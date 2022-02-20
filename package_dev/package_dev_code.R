@@ -158,7 +158,7 @@ devtools::load_all()
 
 # this checks and builds the package!
 ?check()
-check("../recoverKBTDR")
+check("../package_dev")
 # NOTES FROM PACKAGE CHECK -- no errors, but 1 note
 # - what is qpdf??? why do I need it????
 

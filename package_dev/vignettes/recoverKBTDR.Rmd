@@ -183,7 +183,7 @@ Finally, the data are smoothed. This spline smoothing method uses dive detection
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
 df <- smooth_trace_dive(df, spar_h = 0.22, depth_thresh = 5)
 
-plot(df[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth Transformation", lwd = 3)
+plot(df[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
 lines(df[1000:18000, c(1,10)], col = "#39b3b2")
 ```
 
