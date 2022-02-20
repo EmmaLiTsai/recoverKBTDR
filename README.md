@@ -4,7 +4,7 @@ Repo for recovering 1970s - 1980s Weddell seal paper dive records from Kooyman-B
 
 Contains: 
 
- recoverKBTDR   - R package development folder. Contains all sample data (/inst), documentation(/vignettes), package development 
+ (1) recoverKBTDR   - R package development folder. Contains all sample data (/inst), documentation(/vignettes), package development 
 			code (/R), and function documentation (/man). Package checks and development workflow can be found within 
 		      package_dev_code.R.
 
