@@ -25,7 +25,7 @@ You can install the released version of recoverKBTDR from [CRAN](https://CRAN.R-
 install.packages("recoverKBTDR")
 ```
 
-## Example
+## Example of workflow
 
 This is a basic example of the intended workflow: 
 
