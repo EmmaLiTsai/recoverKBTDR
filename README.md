@@ -26,16 +26,14 @@ Within the /R folder, you can a series of .R scripts that fixes various issues w
 			   useful to include. This file also includes an extra function (zoc_big_drift) to help zoc 
 			   records that have extreme drift in depth = 0 such that zoc was usually difficult. 
 
- 4. dive_tidy_functions.R -- contains organized production code that can be broken up into five main steps: 
-
-        -(1-2) Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
-	  using the timing dots. 
-        -(3) Creating a regular time series using linear interpolation. This helps with records that are discontinuous 
-	  which makes future dive analysis challenging.
-        -(4) Transform y axis to depth: this step will transform interpolated y values to psi using the psi calibration 
-	  at the end of the trace, and transform these psi values to depth. 
-        -(5) Smoothing: this step smooths these data to simplify the trace. This is needed to help remove noise 
-	  and extract the main trace from the thickness of the line, and for future dive analysis. 
+ 4. dive_tidy_functions.R -- contains organized production code that can be broken up into five main steps: (1-2) 
+        Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
+	  using the timing dots; (3) Creating a regular time series using linear interpolation. This helps with 
+	  records that are discontinuous which makes future dive analysis challenging; (4) Transform y axis to depth: 
+        this step will transform interpolated y values to psi using the psi calibration at the end of the trace, 
+	  and transform these psi values to depth; (5) Smoothing: this step smooths these data to simplify the trace. 
+        This is needed to help remove noise and extract the main trace from the thickness of the line, and for 
+ 	  future dive analysis. 
 
   5. fast_recovery.R  -- contains a non-essentail wrapper function that uses an argument file to pass trace-specific 
 			   arguments to all functions in this repository. Intended to make recovery faster instead of having to  
