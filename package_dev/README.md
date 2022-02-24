@@ -23,6 +23,10 @@ You can install the released version of recoverKBTDR from [CRAN](https://CRAN.R-
 
 ``` r
 install.packages("recoverKBTDR")
+
+# alternatively: 
+devtools::install_github("EmmaLiTsai/recoverKBTDR/package_dev")
+library(recoverKBTDR)
 ```
 
 ## Example of workflow
