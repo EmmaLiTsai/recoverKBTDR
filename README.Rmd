@@ -9,12 +9,11 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# recoverKBTDR
-
 <!-- badges: start -->
 `r badger::badge_license("GPL-3.0")`
 `r badger::badge_last_commit("EmmaLiTsai/recoverKBTDR")`
-[![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions)
+`r badger::badge_github_actions("EmmaLiTsai/recoverKBTDR")` 
+<!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
 <!-- badges: end -->
 
 ## Overview

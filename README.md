@@ -10,7 +10,9 @@ recoverKBTDR
 [![License:
 GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://cran.r-project.org/web/licenses/GPL-3.0)
 [![](https://img.shields.io/github/last-commit/EmmaLiTsai/recoverKBTDR.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/commits/main)
-[![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions)
+[![R build
+status](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions)
+<!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
 <!-- badges: end -->
 
 ## Overview
@@ -44,8 +46,23 @@ You can install the released version of recoverKBTDR from
 devtools::install_github("EmmaLiTsai/recoverKBTDR")
 ```
 
-    ## Skipping install of 'recoverKBTDR' from a github remote, the SHA1 (79f9f3b1) has not changed since last install.
-    ##   Use `force = TRUE` to force installation
+    ## Downloading GitHub repo EmmaLiTsai/recoverKBTDR@HEAD
+
+    ## 
+    ## * checking for file 'C:\Users\emmal\AppData\Local\Temp\RtmpuyQlPf\remotes824331f7016\EmmaLiTsai-recoverKBTDR-ffded7f/DESCRIPTION' ... OK
+    ## * preparing 'recoverKBTDR':
+    ## * checking DESCRIPTION meta-information ... OK
+    ## * excluding invalid files
+    ## Subdirectory 'R' contains invalid file names:
+    ##   'README_Rscripts.md' 'proposed_steps_and_functions.md'
+    ## * checking for LF line-endings in source and make files and shell scripts
+    ## * checking for empty or unneeded directories
+    ## Removed empty directory 'recoverKBTDR/results'
+    ## * building 'recoverKBTDR_0.1.0.tar.gz'
+    ## 
+
+    ## Installing package into 'C:/Users/emmal/OneDrive/Documents/R/win-library/4.0'
+    ## (as 'lib' is unspecified)
 
 ``` r
 library(recoverKBTDR)
