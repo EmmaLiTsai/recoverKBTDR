@@ -1,3 +1,4 @@
+inst/doc
 # ignore R data and history files
 .Rhistory
 .RData
