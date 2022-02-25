@@ -112,7 +112,7 @@ plot(tidy_trace[1000:11000,], xlab = "x position (cm)", ylab = "y position (cm)"
 points(trace[1000:11000,], col = "#39b3b2")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](README_files/figure-gfm/centering-data-1.png)<!-- -->
 
 ``` r
 # also extract the centered psi calibration curve: 
@@ -142,7 +142,7 @@ plot(trace[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type
 points(trace_zoc[1000:11000,], col = "#39b3b2")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](README_files/figure-gfm/zoc-1.png)<!-- -->
 
 Transform the x-axis into minutes using the timing dots, and remove the
 arc in the data by defining the height of the pivot point above y = 0
@@ -160,7 +160,7 @@ plot(trace[1000:11000, 1:2], xlab = "x position (cm)", ylab = "y position (cm)",
 lines(trace[1000:11000, c(3,2)], col = "#39b3b2")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/transform-x-axis-1.png)<!-- -->
 
 ``` r
 # to find the center_y value for arc removal, check out the helper function ?find_center_y() 
@@ -203,7 +203,7 @@ trace_maxdep <- transform_y_vals(trace, max_dep = 319)
 plot(trace[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/transform-to-depth-1.png)<!-- -->
 
 Spline smoothing to reduce noise in the data by passing the spar value
 and depth threshold (in meters) to use when a dive is detected:
@@ -217,7 +217,7 @@ plot(trace[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "
 lines(trace[1000:18000, c(1,10)], col = "#39b3b2")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/smoothing-data-1.png)<!-- -->
 
 ``` r
 # to find the best spar value for spline smoothing, check out the helper function ?find_best_spar() 
@@ -226,7 +226,7 @@ lines(trace[1000:18000, c(1,10)], col = "#39b3b2")
 Then, final data frame can be exported and read into dive analysis
 software.
 
-## Below is an example of the workflow using the sample data in this package:
+## Overall summary of workflow:
 
 ``` r
 library(recoverKBTDR)
