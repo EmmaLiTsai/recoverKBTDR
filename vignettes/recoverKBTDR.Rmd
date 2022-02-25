@@ -30,9 +30,10 @@ This vignette introduces you to recoverKBTDR's tools and the overall workflow fo
 First, we have to load the package into our environment. 
 ```{r}
 library(recoverKBTDR)
+
 # alternatively: 
-devtools::install_github("EmmaLiTsai/recoverKBTDR/package_dev")
-library(recoverKBTDR)
+# devtools:::install_github("EmmaLiTsai/recoverKBTDR/package_dev")
+# library(recoverKBTDR)
 ```
 
 ------------

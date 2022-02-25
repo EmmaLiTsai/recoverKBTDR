@@ -1,48 +1,125 @@
+
 # recoverKBTDR
-R package for recovering 1970s - 1980s dive records from Kooyman-Billups TDRs
 
+<!-- badges: start -->
+<!-- badges: end -->
 
-Contains: 
+## Overview
 
-package_dev - R package development folder. Contains all sample data (/inst), documentation(/vignettes), package development 
-	         code (/R), and function documentation (/man). Package checks and development workflow can be found within 
-		   package_dev_code.R. The package passes check, aside from the one 'qpdf' warning for large file sizes. 
-               No errors or notes. The /vignettes/recoverKBTDR.Rmd file and the README walks through the whole dive record 
-		   recovery process with plots to illustrate the output of each recovery function. 
- 
-Within the /R folder, you can a series of .R scripts that fixes various issues with the KBTDR traces:
+This package contains a suite of functions for recovering dive records from 1970's film-based Kooyman-Billups Time Depth Records (KBTDRs). This TDR was among the first placed on a free-ranging marine organism, but the film-based format of the behavioral data makes long-term comparisons exceptionally challenging. This package returns a corrected, continuous, and digitized file of a KBTDR record complete with dates, times, and depth that can be easily read into dive analysis software. 
 
- 1. read_trace.R 	-- contains two functions to read and tidy the sample trace data (time dots and dive trace) into the 
-			   global environment. 
+There are six main recovery steps that are achieved in this package: 
 
- 2. centering_functions.R -- contains methods for centering records and another function, centered_psi_calibration, that 
-			   extracts the psi calibration curve after centering. It creates a data frame and was intended 
-			   to make future depth calculations more accurate after centering. 
+1. Scan centering and zero-offset correction 
+2. Arc removal 
+3. X-axis transformation to dates & times 
+4. Interpolation between missing points 
+5. Y-axis transformation to depth 
+6. Spline smoothing 
 
- 3. zoc_functions.R -- contains functions for zero offset correction (zoc) of the trace before arc removal. This 
-		         file is modeled after code that can be found in the diveMove package. The sample trace
-			   in this repo doesn't require zoc before arc removal, but some of the other records have
-			   extreme level shifts and/or drift in depth = 0 within a bout, so I thought this file may be 
-			   useful to include. This file also includes an extra function (zoc_big_drift) to help zoc 
-			   records that have extreme drift in depth = 0 such that zoc was usually difficult. 
+## Installation
 
- 4. dive_tidy_functions.R -- contains organized production code that can be broken up into five main steps: (1-2) 
-        Transform coordinates: this aims to remove the arc in these data and also transform the x axis into time
-	  using the timing dots; (3) Creating a regular time series using linear interpolation. This helps with 
-	  records that are discontinuous which makes future dive analysis challenging; (4) Transform y axis to depth: 
-        this step will transform interpolated y values to psi using the psi calibration at the end of the trace, 
-	  and transform these psi values to depth; (5) Smoothing: this step smooths these data to simplify the trace. 
-        This is needed to help remove noise and extract the main trace from the thickness of the line, and for 
- 	  future dive analysis. 
+You can install the released version of recoverKBTDR from [CRAN](https://CRAN.R-project.org) with:
 
-  5. fast_recovery.R  -- contains a non-essentail wrapper function that uses an argument file to pass trace-specific 
-			   arguments to all functions in this repository. Intended to make recovery faster instead of having to  
-			   run each function individually, but it is up to the user. This is likely more helpful if you have
-			   many KBTDR records to recover. 
+``` r
+install.packages("recoverKBTDR")
 
-  6. helper_functions.R -- non-essential functions intended to help with finding the best spar smoothing penalty and 
-		         the height of the transducer arm for arc removal. 
+# alternatively: 
+devtools::install_github("EmmaLiTsai/recoverKBTDR/package_dev")
+library(recoverKBTDR)
+```
 
-			  
+## Example of workflow
 
-All other files within this folder are for documentation purposes. 
+This is a basic example of the intended workflow: 
+
+First, read in data:
+```{r}
+# tidy data 
+data(trace)
+data(time_dots)
+
+# examples of data tidying from raw ImageJ csv files: 
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+read_trace(filepath)
+
+# example of fast recovery of a record using an argument csv file 
+fast_recovery(filepath)
+```
+
+Center the scan using the timing dots, such that all timing dots will be centered along  y = -center_along_y. Also return the centered psi calibration curve, if present: 
+```{r}
+# if psi calibration curve: 
+trace <- center_scan(trace, time_dots, center_along_y = 0.9, psi_interval = c(100, 200, 400, 600, 800))
+
+# without psi calibration curve: 
+trace <- center_scan(trace, time_dots, center_along_y = 0.9)
+```
+
+Perform zero-offset correction if needed for the record using recursive filtering methods and larger window size of k_h, modeled after "diveMove" package. Position of drift in surface values defined from depth_bounds in centimeters. 
+```{r}
+trace <- zoc(trace, k_h  = 500, depth_bounds = c(-1, 1))
+```
+
+Transform the x-axis into minutes using the timing dots, and remove the arc in the data by defining the height of the pivot point above y = 0 (center_y, in cm). 
+```{r}
+trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
+
+# to find the center_y value for arc removal, check out the helper function find_center_y() 
+```
+
+Add POSIXct date times and create a regular time series using the time the TDR was turned on (start_time), and the times it was placed on and off the seal: 
+```{r}
+trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+```
+
+Transform y-axis to depth either using the maximum depth, or psi calibration curve: 
+```{r}
+# If psi calibration curve is present:
+trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
+
+# If we just know max depth:
+trace <- transform_y_vals(trace, maxdep = 319)
+```
+
+Spline smoothing to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
+```{r}
+trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+
+# to find the best spar value for spline smoothing, check out the helper function find_best_spar() 
+```
+
+Then, final data frame can be exported and read into dive analysis software. 
+
+Below is an example of the workflow using the sample data in this package: 
+``` r
+library(recoverKBTDR)
+## basic example code
+data(trace) 
+data(time_dots)
+
+# or, reading in raw csv file: 
+filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
+read_trace(filepath)
+
+# center
+trace <- center_scan(trace, time_dots, 0.9, psi_interval = c(100, 200, 400, 600, 800))
+
+# arc removal and time assignment 
+trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
+
+# POSIXct date times and interpolating
+trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00")
+
+# add depths
+trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
+
+# spline smoothing 
+trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
+
+# export! 
+
+# fast recovery can also be used, where an argument csv file is used to quickly pass arguments to the functions above: 
+fast_recovery(filepath)
+
+```
