@@ -166,6 +166,10 @@ check("../recoverKBTDR")
 # ?release()
 
 # in the future, would like to add license and package check badges
+# `r badger::badge_github_actions("EmmaLiTsai/recoverKBTDR")` 
+# will require YAML programming and a .GitHub folder, but I'm sure I can figure
+# it out... 
+
 
 # checking to see whether package can be loaded via github: 
 devtools:::install_github("EmmaLiTsai/recoverKBTDR")
