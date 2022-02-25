@@ -164,3 +164,5 @@ check("../package_dev")
 
 # this will send the post package to CRAN:
 # ?release()
+
+# in the future, would like to add license and package check badges
