@@ -166,3 +166,13 @@ check("../recoverKBTDR")
 # ?release()
 
 # in the future, would like to add license and package check badges
+
+# checking to see whether package can be loaded via github: 
+devtools:::install_github("EmmaLiTsai/recoverKBTDR")
+library(recoverKBTDR)
+# great! it works! So people can use this package, but will just have to load 
+# the development version 
+
+# minor note about invalid file names, but these are just .md files within my 
+# /R folder to describe the development workflow and how the files are 
+# organized. 

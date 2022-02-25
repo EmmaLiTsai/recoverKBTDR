@@ -32,7 +32,7 @@ First, we have to load the package into our environment.
 library(recoverKBTDR)
 
 # alternatively: 
-# devtools:::install_github("EmmaLiTsai/recoverKBTDR/package_dev")
+# devtools:::install_github("EmmaLiTsai/recoverKBTDR")
 # library(recoverKBTDR)
 ```
 
