@@ -33,7 +33,7 @@ There are six main recovery steps that are achieved in this package:
 
 You can install the released version of recoverKBTDR from [CRAN](https://CRAN.R-project.org) with:
 
-```{r}
+```{r,  message  = FALSE, results = 'hide'}
 # install.packages("recoverKBTDR")
 
 # alternatively, load the development version: 

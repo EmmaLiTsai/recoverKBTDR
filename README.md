@@ -2,9 +2,6 @@ recoverKBTDR
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit this file -->
-
-# recoverKBTDR
-
 <!-- badges: start -->
 
 [![License:
@@ -44,27 +41,6 @@ You can install the released version of recoverKBTDR from
 
 # alternatively, load the development version: 
 devtools::install_github("EmmaLiTsai/recoverKBTDR")
-```
-
-    ## Downloading GitHub repo EmmaLiTsai/recoverKBTDR@HEAD
-
-    ## 
-    ## * checking for file 'C:\Users\emmal\AppData\Local\Temp\RtmpuyQlPf\remotes824331f7016\EmmaLiTsai-recoverKBTDR-ffded7f/DESCRIPTION' ... OK
-    ## * preparing 'recoverKBTDR':
-    ## * checking DESCRIPTION meta-information ... OK
-    ## * excluding invalid files
-    ## Subdirectory 'R' contains invalid file names:
-    ##   'README_Rscripts.md' 'proposed_steps_and_functions.md'
-    ## * checking for LF line-endings in source and make files and shell scripts
-    ## * checking for empty or unneeded directories
-    ## Removed empty directory 'recoverKBTDR/results'
-    ## * building 'recoverKBTDR_0.1.0.tar.gz'
-    ## 
-
-    ## Installing package into 'C:/Users/emmal/OneDrive/Documents/R/win-library/4.0'
-    ## (as 'lib' is unspecified)
-
-``` r
 library(recoverKBTDR)
 ```
 
