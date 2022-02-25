@@ -2,6 +2,7 @@
 # recoverKBTDR
 
 <!-- badges: start -->
+`r badger::badge_license("Artistic-2.0")`
 <!-- badges: end -->
 
 ## Overview
