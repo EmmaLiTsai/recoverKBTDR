@@ -169,6 +169,7 @@ check("../recoverKBTDR")
 # `r badger::badge_github_actions("EmmaLiTsai/recoverKBTDR")` 
 # will require YAML programming and a .GitHub folder, but I'm sure I can figure
 # it out... 
+usethis::use_github_action_check_standard()
 
 
 # checking to see whether package can be loaded via github: 

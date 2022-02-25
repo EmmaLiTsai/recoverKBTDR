@@ -1,7 +1,5 @@
-README
+recoverKBTDR
 ================
-EmmaLi Tsai
-2/25/2022
 
 <!-- README.md is generated from README.Rmd. Please edit this file -->
 
@@ -12,6 +10,7 @@ EmmaLi Tsai
 [![License:
 GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://cran.r-project.org/web/licenses/GPL-3.0)
 [![](https://img.shields.io/github/last-commit/EmmaLiTsai/recoverKBTDR.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/commits/main)
+[![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions)
 <!-- badges: end -->
 
 ## Overview
@@ -45,7 +44,7 @@ You can install the released version of recoverKBTDR from
 devtools::install_github("EmmaLiTsai/recoverKBTDR")
 ```
 
-    ## Skipping install of 'recoverKBTDR' from a github remote, the SHA1 (a7948a08) has not changed since last install.
+    ## Skipping install of 'recoverKBTDR' from a github remote, the SHA1 (79f9f3b1) has not changed since last install.
     ##   Use `force = TRUE` to force installation
 
 ``` r

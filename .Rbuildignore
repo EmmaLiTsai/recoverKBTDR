@@ -3,3 +3,4 @@
 ^data-raw$
 ^LICENSE.md
 ^package_dev_code.R
+^\.github$
