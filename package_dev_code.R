@@ -61,7 +61,13 @@ devtools::load_all()
 data(trace)
 data(time_dots)
 
-# scan centering -- will also produced centered psi calibration curve
+# library(ggplot2) # this plot shows the drift in timing dots throughout the 
+# record
+# ggplot(trace, aes(x = x_val, y = y_val)) + geom_point(color = "grey") + 
+#   geom_point(data = time_dots, aes(x = x_val, y  = y_val), color = "grey") + 
+#   theme_bw()
+
+# scan centering 
 ?center_scan
 trace <- center_scan(trace, time_dots, center_along_y = 0.9)
 # extract the psi calibration curve:
@@ -78,6 +84,14 @@ zoc(trace, 500, c(-1, 2))
 ?transform_x_vals
 trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
                           time_period_min = 12)
+
+# plotting to see the transformation:
+# ggplot(trace[179600:198300,], aes(x = new_x, y = y_val)) +
+#   geom_point(color = "grey") +
+#   geom_line(aes(x = new_x)) +
+#   theme_bw() +
+#   labs(x = "X (cm)", y = "Y (cm)") +
+#   geom_point(data = time_dots[791:820,], aes(x = x_val, y = y_val), color = "blue", size = 2)
 
 # add posixct date/times -- I kept these functions separate because it takes
 # longer to run, but might be able to wrap this in the transform_x_vals function
@@ -96,12 +110,24 @@ trace <- add_dates_times(trace,
 # if psi calibration curve is present:
 trace <- transform_y_vals(trace, psi_calibration = psi_calibration,
                           max_psi = 900, max_position = 22.45)
+
+# ggplot(trace, aes(x = date_time, y = depth)) + 
+#   geom_line() + 
+#   theme_bw() +
+#   labs(x = "Date Time", y = "Depth (m)")
+
 # if we just know max depth:
 trace <- transform_y_vals(trace, maxdep = 319)
 
 # spline smoothing
 ?smooth_trace_dive
 trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 10)
+
+# ggplot(trace, aes(x = date_time, y = depth)) +
+#   geom_point(color = "grey") +
+#   geom_line(aes(y = smooth_depth)) + 
+#   labs(x = "Date Time", y = "Depth (m)") + 
+#   theme_bw() 
 
 # wow... it works!
 ggplot(trace[500:20000,], aes(x = date_time, y = depth)) +
