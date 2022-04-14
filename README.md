@@ -210,7 +210,7 @@ and depth threshold (in meters) to use when a dive is detected:
 
 ``` r
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
-trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 5)
+trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 # seeing how smoothing preformed: 
 plot(trace[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
