@@ -37,9 +37,7 @@ You can install the released version of recoverKBTDR from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-# install.packages("recoverKBTDR")
-
-# alternatively, load the development version: 
+# load the development version: 
 devtools::install_github("EmmaLiTsai/recoverKBTDR")
 library(recoverKBTDR)
 ```
@@ -100,8 +98,8 @@ head(time_dots)
     ## 6  8.91 -0.354
 
 Center the scan using the timing dots, such that all timing dots will be
-centered along y = -center_along_y. This helps remove drift in alignment
-due to record scanning:
+centered along y = -center\_along\_y. This helps remove drift in
+alignment due to record scanning:
 
 ``` r
 # centering along y = -0.9: 
@@ -146,7 +144,7 @@ points(trace_zoc[1000:11000,], col = "#39b3b2")
 
 Transform the x-axis into minutes using the timing dots, and remove the
 arc in the data by defining the height of the pivot point above y = 0
-(center_y, in cm).
+(center\_y, in cm).
 
 ``` r
 # removing the data frame and also transform the x-axis to time in minutes from the origin. 
@@ -167,7 +165,7 @@ lines(trace[1000:11000, c(3,2)], col = "#39b3b2")
 ```
 
 The seal often moved faster than the LED arm could document the dive
-during the descent and ascent phases. The function add_dates_times()
+during the descent and ascent phases. The function add\_dates\_times()
 uses the trace data frame to add a POSIXct date time object, and also
 interpolates between missing values to create a regular time series.
 
@@ -209,7 +207,7 @@ Spline smoothing to reduce noise in the data by passing the spar value
 and depth threshold (in meters) to use when a dive is detected:
 
 ``` r
-# smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
+# smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.3 when a dive is detected: 
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 # seeing how smoothing preformed: 
@@ -250,7 +248,7 @@ trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1
 trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
 
 # spline smoothing 
-trace <- smooth_trace_dive(trace, spar_h = 0.22, depth_thresh = 5)
+trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 # export! 
 
