@@ -117,7 +117,7 @@ After centering, you can see how the original record was shifted down such that 
 df <- center_scan(trace, time_dots, center_along_y = 0.9)
 
 # extract the centered psi calibration curve: 
-psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
+psi_calibration <- centered_psi_calibration(df, psi_interval = c(100, 200, 400, 600, 800))
 
 head(psi_calibration)
 ```
@@ -128,10 +128,10 @@ This centered psi calibration curve will be useful in transforming the y-values 
 Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
 ```{r}
 # Here, we are using a larger window size of 500 with surface values usually drift between -1cm and 1cm. Smaller k_h values and larger depth bounds are useful for records with extreme drift, but our sample data doesn't exhibit this degree of drift.  
-df_zoc <- zoc(trace, k_h = 500, depth_bounds = c(-1,1))
+df_zoc <- zoc(df, k_h = 500, depth_bounds = c(-1,1))
 
 # visualizing this correction: 
-plot(trace[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
+plot(df[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
 points(df_zoc[1000:11000,], col = "#39b3b2")
 ```
 
@@ -185,10 +185,10 @@ plot(df[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", 
 Finally, the data are smoothed. This spline smoothing method uses dive detection to control the resolution of smoothing. If a dive is detected (i.e., above the rolling mean depth threshold the user defines), then the resolution of spline smoothing increases to capture relevant behavior. If a dive is not detected, then the resolution decreases to reduce transducer noise at shallow depths. Helper functions to find the best high resolution spar value can be found using the ?find_best_spar(). Here, we use the smooth_trace_dive() function: 
 ```{r}
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
-df <- smooth_trace_dive(df, spar_h = 0.22, depth_thresh = 5)
+df <- smooth_trace_dive(df, spar_h = 0.3, depth_thresh = 5)
 
 plot(df[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
-lines(df[1000:18000, c(1,10)], col = "#39b3b2")
+lines(df[1000:18000, c(1,9)], col = "#39b3b2")
 ```
 
 Now the data frame can be exported as a csv file and read into dive analysis software. 

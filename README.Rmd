@@ -31,18 +31,17 @@ There are six main recovery steps that are achieved in this package:
 
 ## Installation
 
-You can install the released version of recoverKBTDR from [CRAN](https://CRAN.R-project.org) with:
-
+You can install the package from GitHub:
 ```{r,  load-data, message  = FALSE, results = 'hide'}
 # load the development version: 
-devtools::install_github("EmmaLiTsai/recoverKBTDR")
+# devtools::install_github("EmmaLiTsai/recoverKBTDR")
 library(recoverKBTDR)
 ```
 ## Example of workflow
 
 This is a basic example of the intended workflow for historic record recovery: 
 
-First, read in data after scan image processing:
+First, read in data (trace and time dots) after scan image processing, which contains the X and Y values of the record in centimeters from the origin:
 ```{r reading-data}
 # examples of data tidying from raw ImageJ csv files: 
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
@@ -58,7 +57,7 @@ data(time_dots)
 head(time_dots)
 ```
 
-Center the scan using the timing dots, such that all timing dots will be centered along  y = -center_along_y. This helps remove drift in alignment due to record scanning:
+Center the record using the timing dots, such that all timing dots will be centered along  y = -center_along_y. After centering, it is recommended that you also extract the centered psi calibration curve (if available) such that the data correctly align with the centered dive record. This helps remove drift in alignment due to record scanning: 
 ```{r centering-data}
 # centering along y = -0.9: 
 trace <- center_scan(trace, time_dots, center_along_y = 0.9)
@@ -82,7 +81,7 @@ plot(trace[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type
 points(trace_zoc[1000:11000,], col = "#39b3b2")
 ```
 
-Transform the x-axis into minutes using the timing dots, and remove the arc in the data by defining the height of the pivot point above y = 0 (center_y, in cm). 
+Transform the x-axis into minutes using the timing dots (often placed 12 minutes apart), and remove the arc in the data by defining the height of the pivot point above y = 0 (center_y, in cm). 
 ```{r transform-x-axis}
 # removing the data frame and also transform the x-axis to time in minutes from the origin. 
 trace <- transform_x_vals(trace, 
@@ -97,18 +96,18 @@ lines(trace[1000:11000, c(3,2)], col = "#39b3b2")
 # to find the center_y value for arc removal, check out the helper function ?find_center_y() 
 ```
 
-The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. The function add_dates_times() uses the trace data frame to add a POSIXct date time object, and also interpolates between missing values to create a regular time series. 
+The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. The function add_dates_times() uses the trace data frame to create POSIXct date time objects, and also interpolates between missing values to create a more regular time series. This helps with future spline smoothing and dive analysis. 
 ```{r regular-time-series}
 trace <- add_dates_times(trace,
-                      start_time = "1981:01:16 15:10:00",
-                      on_seal = "1981:01:16 17:58:00",
-                      off_seal = "1981:01:23 15:30:00", 
-                      tz = "Antarctica/McMurdo")
+                         start_time = "1981:01:16 15:10:00",
+                         on_seal = "1981:01:16 17:58:00",
+                         off_seal = "1981:01:23 15:30:00", 
+                         tz = "Antarctica/McMurdo")
 # now, the record is complete with POSIXct date times: 
 head(trace)
 ```
 
-Transform y-axis to depth either using the maximum depth, or psi calibration curve: 
+Transform y-axis to depth either using the maximum depth or psi calibration curve (if available): 
 ```{r transform-to-depth}
 # If psi calibration curve is present:
 trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
@@ -120,18 +119,17 @@ trace_maxdep <- transform_y_vals(trace, max_dep = 319)
 plot(trace[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
-Spline smoothing to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
+Spline smoothing is done to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
 ```{r smoothing-data}
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.3 when a dive is detected: 
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
 
 # seeing how smoothing preformed: 
-plot(trace[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
-lines(trace[1000:18000, c(1,10)], col = "#39b3b2")
-
+{plot(trace[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
+lines(trace[1000:18000, c(1,9)], col = "#39b3b2")
+}
 # to find the best spar value for spline smoothing, check out the helper function ?find_best_spar() 
 ```
-
 Then, final data frame can be exported and read into dive analysis software. 
 
 ## Overall summary of workflow:

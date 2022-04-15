@@ -566,8 +566,7 @@ transform_y_vals <- function(trace, max_depth = NULL, psi_calibration = NULL, ma
 #
 # Output:
 #
-#   - smooth_trace : trace data frame with smoothed values (smooth_depth), and
-#                    also with dive component assignment.
+#   - smooth_trace : trace data frame with smoothed values (smooth_depth).
 ###############################################################################
 smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
   # defining spar, nknots, and window values:
@@ -630,6 +629,6 @@ smooth_trace_dive <- function(trace, spar_h = 0.3, depth_thresh = 5){
     smooth_trace[smooth_trace$smooth_depth < 0,]$smooth_depth <- 0
   }
 
-  # final return
-  return(smooth_trace)
+  # final return, removing extra columns that were produced for testing:
+  return(smooth_trace[, !(names(smooth_trace) %in% c("bout", "deriv", "ascent", "deriv_diff", "peak"))])
 }
