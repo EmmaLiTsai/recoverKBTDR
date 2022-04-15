@@ -37,7 +37,7 @@ You can install the package from GitHub:
 
 ``` r
 # load the development version: 
-# devtools::install_github("EmmaLiTsai/recoverKBTDR")
+devtools::install_github("EmmaLiTsai/recoverKBTDR")
 library(recoverKBTDR)
 ```
 
