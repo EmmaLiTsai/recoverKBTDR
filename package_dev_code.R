@@ -191,7 +191,7 @@ check("../recoverKBTDR")
 # this will send the post package to CRAN:
 # ?release()
 
-# in the future, would like to add license and package check badges
+# Added alicense and package check badges:
 # `r badger::badge_github_actions("EmmaLiTsai/recoverKBTDR")` 
 # will require YAML programming and a .GitHub folder, but I'm sure I can figure
 # it out... 
