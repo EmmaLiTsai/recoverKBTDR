@@ -9,6 +9,7 @@ GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://cran.r
 [![](https://img.shields.io/github/last-commit/EmmaLiTsai/recoverKBTDR.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/commits/main)
 [![R build
 status](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions)
+[![DOI](https://zenodo.org/badge/320380488.svg)](https://zenodo.org/badge/latestdoi/320380488)
 <!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
 <!-- badges: end -->
 
@@ -38,6 +39,65 @@ You can install the package from GitHub:
 ``` r
 # load the development version: 
 devtools::install_github("EmmaLiTsai/recoverKBTDR")
+```
+
+    ## Warning: cannot remove prior installation of package 'rlang'
+
+    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
+    ## problem copying C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\00LOCK\rlang\libs\x64\rlang.dll to C:
+    ## \Users\emmal\OneDrive\Documents\R\win-library\4.0\rlang\libs\x64\rlang.dll:
+    ## Permission denied
+
+    ## Warning: restored 'rlang'
+
+    ## Warning: cannot remove prior installation of package 'magrittr'
+
+    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
+    ## problem copying C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\00LOCK\magrittr\libs\x64\magrittr.dll
+    ## to C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\magrittr\libs\x64\magrittr.dll: Permission denied
+
+    ## Warning: restored 'magrittr'
+
+    ## Warning: cannot remove prior installation of package 'fansi'
+
+    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
+    ## problem copying C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\00LOCK\fansi\libs\x64\fansi.dll to C:
+    ## \Users\emmal\OneDrive\Documents\R\win-library\4.0\fansi\libs\x64\fansi.dll:
+    ## Permission denied
+
+    ## Warning: restored 'fansi'
+
+    ## Warning: cannot remove prior installation of package 'vctrs'
+
+    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
+    ## problem copying C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\00LOCK\vctrs\libs\x64\vctrs.dll to C:
+    ## \Users\emmal\OneDrive\Documents\R\win-library\4.0\vctrs\libs\x64\vctrs.dll:
+    ## Permission denied
+
+    ## Warning: restored 'vctrs'
+
+    ## Warning: cannot remove prior installation of package 'openssl'
+
+    ## Warning in file.copy(savedcopy, lib, recursive = TRUE):
+    ## problem copying C:\Users\emmal\OneDrive\Documents\R\win-
+    ## library\4.0\00LOCK\openssl\libs\x64\openssl.dll to C:
+    ## \Users\emmal\OneDrive\Documents\R\win-library\4.0\openssl\libs\x64\openssl.dll:
+    ## Permission denied
+
+    ## Warning: restored 'openssl'
+
+    ## Warning in i.p(...): installation of package 'cli' had non-zero exit status
+
+    ## Warning in i.p(...): installation of package 'tibble' had non-zero exit status
+
+    ## Warning in i.p(...): installation of package 'dplyr' had non-zero exit status
+
+``` r
 library(recoverKBTDR)
 ```
 
