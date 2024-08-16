@@ -34,12 +34,13 @@ There are six main recovery steps that are achieved in this package:
 6. Y-axis transformation to depth 
 7. Spline smoothing 
 
+# TODO - point this to the main branch when done w/ dev stage, fix badges, and fix function help pages not rendering, figure out verisioning 
+
 ## Installation
 
 You can install the package from GitHub:
 ```{r,  load-data, message  = FALSE, results = 'hide'}
 # load the development version: 
-# TODO - point this to the main branch when done w/ dev stage 
 devtools::install_github("EmmaLiTsai/recoverKBTDR",
                          ref = "reorg-steps")
 library(recoverKBTDR)
