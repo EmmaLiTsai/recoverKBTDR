@@ -25,34 +25,73 @@ RADIUS <- 21.14
 PSI_TO_DEPTH <- 1.4696
 
 ################################################################################
-# STEP ONE: Recenter and fix misalignment (both data inputs) ###################
+# STEP ONE: Recenter dive trace from scanning 
 ################################################################################
 
 # Code here is absent because this is really more related to image processing
 # methods, but can be found in r/centering_functions (to center the scan, and
-# center the psi calibration curve), and r/zoc_functions to zero-offset correct
-# the data.
+# center the psi calibration curve)
 
 ################################################################################
-## STEP TWO AND THREE: Apply radius arm transformation and transform to time ###
+## STEP TWO: Apply radius arm transformation
 ################################################################################
-
-#' Remove arc in record and transform x-axis to time
+#' Remove left leaning arc in KBTDR records
 #'
 #' This function removes the characteristic left-leaning arc in the record by
-#' using the equation of the circle the KBTDR arm makes. It also uses the timing
-#' dots the transform the x-axis to time, in minutes from the start. This can
-#' later be transformed to POSIXct date times and transformed into a regular
-#' time series in the add_dates_times function.
+#' using the equation of the circle the KBTDR arm makes.
+#' 
+#' @param trace tidy trace data frame after centering, contains the x and y
+#' values of the trace.
+#' @param center_y height of transducer arm pivot point. This value is usually
+#' close to 11 cm, but there is slight variation (<1 mm) at the scale of the
+#' KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
+#' estimate this value.
+#' @return trace data frame after arc removal.
+#' @export
+#' @examples
+#' \dontrun{
+#' # if the height of the transducer arm pivot point is 11.1 cm above depth = 0:
+#' remove_arc(trace, time_dots, center_y = 11.1)
+#' }
+#'
+# Function added for methods reorg 
+remove_arc <- function(trace, center_y) {
+  ## Start Step Two: Transform Coordinates by Radius Arc Eqns #################
+  
+  # applying my new equation, basically just the equation of a circle but takes
+  # the original x/y and calculates where the center of the circle would be
+  # (h), and uses this new center to find the x value when depth = 0. I did
+  # some algebra to fit this math into one line of code, but it should be noted
+  # that points close to the origin and < 0 will often get transformed in the
+  # -x direction and placed before the origin. This is likely unimportant
+  # because this would be exactly when the TDR was was turned on and therefore
+  # not attached to the animal yet.
+  trace$new_x <- -sqrt((RADIUS^2) - (center_y^2)) +
+    (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - center_y)^2))
+  
+  return(trace)
+  
+  }
+
+################################################################################
+# STEP THREE: Zero offset correct the data 
+################################################################################
+# code here can be found in zoc_functions.R, which are a series of functions 
+# to zero-offset correct the record
+
+################################################################################
+## STEP FOUR: Transformation x-axis to time ###
+################################################################################
+#' Transform x-axis to time
+#'
+#' This function uses the timing dots the transform the x-axis to time, in 
+#' minutes from the start. This can later be transformed to POSIXct date times 
+#' and transformed into a regular time series in the add_dates_times function.
 #'
 #' @param trace tidy trace data frame after centering, contains the x and y
 #' values of the trace.
 #' @param time_dots tidy time dots data frame, contains the x and y positions
 #' of the timing dots.
-#' @param center_y height of transducer arm pivot point. This value is usually
-#' close to 11 cm, but there is slight variation (<1 mm) at the scale of the
-#' KBTDR. Two functions (find_center_y_psi, find_center_y_nopsi) can be used to
-#' estimate this value.
 #' @param time_period_min minutes elapsed between two time periods.
 #' @return trace data frame after arc removal.
 #' @importFrom dplyr mutate lead
@@ -61,21 +100,16 @@ PSI_TO_DEPTH <- 1.4696
 #' @export
 #' @examples
 #' \dontrun{
-#' # if the height of the transducer arm pivot point is 11.1 cm above depth = 0:
-#' transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
+#' transform_x_vals(trace, time_dots, time_period_min = 12)
 #' }
 #'
 ###############################################################################
-# Function: transform_x_vals(trace, time_dots, center_y = 11.1, time_period_min = 12)
+# Function: transform_x_vals(trace, time_dots, time_period_min = 12)
 # Author:   EmmaLi Tsai
 # Date:     3/30/21
 #
-# Function takes the tidy trace and time dots files to complete two steps:
-#
-#   (2) - apply radius arm transformation using the geometry of the KBTDR device
-#         which uses the globally defined constants above.
-#
-#   (3) - transform the x axis from time using the timing dots. To do this, I
+# Function takes the tidy trace and time dots files to:
+#         transform the x axis from time using the timing dots. To do this, I
 #         created a helper data frame with the start and end points of a
 #         time period and the corresponding scale value. This data frame is
 #         needed to help make the cut() function easier, so I can break
@@ -94,11 +128,6 @@ PSI_TO_DEPTH <- 1.4696
 #   - trace       : tidy trace data frame, contains the x and y values of the
 #                   trace
 #
-#   - center_y    : height of the pivot point of the transducer arm from depth
-#                   = 0. This varies slightly across traces, but sample
-#                   calculations can be found in the r_scripts/find_center_y.R
-#                   file. This value also needs to be visually confirmed (i.e.,
-#                   no abnormal skew across the record)
 #
 #   - time_period_min : minutes between each time period. This is 12 minutes for
 #                       most traces.
@@ -110,19 +139,7 @@ PSI_TO_DEPTH <- 1.4696
 #                  gathering data. I kept all columns to ensure that the
 #                  function was working properly.
 ###############################################################################
-transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min = 12) {
-  ## Start Step Two: Transform Coordinates by Radius Arc Eqns #################
-
-  # applying my new equation, basically just the equation of a circle but takes
-  # the original x/y and calculates where the center of the circle would be
-  # (h), and uses this new center to find the x value when depth = 0. I did
-  # some algebra to fit this math into one line of code, but it should be noted
-  # that points close to the origin and < 0 will often get transformed in the
-  # -x direction and placed before the origin. This is likely unimportant
-  # because this would be exactly when the TDR was was turned on and therefore
-  # not attached to the animal yet.
-  trace$new_x <- -sqrt((RADIUS^2) - (center_y^2)) +
-    (trace$x_val + sqrt(RADIUS^2 - (trace$y_val - center_y)^2))
+transform_x_vals <- function(trace, time_dots, time_period_min = 12) {
 
   # ordering the file based on new_x value-- this is needed to create accurate
   # time periods in step three below
@@ -190,7 +207,7 @@ transform_x_vals <- function(trace, time_dots, center_y = 11.1, time_period_min 
 #' @param tz time zone to use for POSIXct date times.
 #' @return trace data frame with POSIXct date times and interpolated points to
 #' fill sparse parts of the record.
-#' @importFrom dplyr filter
+#' @importFrom dplyr filter mutate 
 #' @importFrom lubridate ymd_hms minutes seconds
 #' @importFrom rlang .data
 #' @export
@@ -236,11 +253,19 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal, tz = "Antarcti
   trace$date_time <- lubridate::ymd_hms(start_time, tz = tz) +
     lubridate::minutes(as.integer(trace$time)) +
     lubridate::seconds(as.integer((trace$time %% 1) * 60))
-
+  
   # removing duplicated times -- this happened when two points were very close
   # together and got assigned the same time. Dive analysis packages cannot
   # handle duplicated times
   trace <- trace[!duplicated(trace$date_time),]
+  
+  # fix midnight values, which are missing time stamp - this was only an 
+  # error I encountered when reading/writing the data, since the 00:00:00 are 
+  # still there 
+  # trace <- trace %>%
+  #   dplyr::mutate(
+  #     date_time_test = format(as.POSIXct(date_time),"%Y-%m-%d %H:%M:%S")
+  #   )
 
   # need to convert to ymd_hms format
   on_seal <- lubridate::ymd_hms(on_seal, tz = tz)
@@ -252,6 +277,7 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal, tz = "Antarcti
   # transforming to regular time series, this will probably be an internal
   # function (see function below-- achieves step 4 of the recovery process)
   trace <- .create_regular_ts(trace, on_seal, off_seal, tz = tz)
+
   # returning the trace
   return(trace)
 }
@@ -324,6 +350,7 @@ add_dates_times <- function(trace, start_time, on_seal, off_seal, tz = "Antarcti
   trace_reg$interp_y <- interp
   # removing NA values at the tail end of the record
   trace_reg <- trace_reg[which(!is.na(trace_reg$interp_y)),]
+
   # final return
   return(trace_reg)
 }

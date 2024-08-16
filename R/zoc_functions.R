@@ -88,14 +88,14 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 #   - zoc_trace   : trace data frame after it has been zero-offset corrected
 ###############################################################################
 .zoc_small_drift <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
-
+  
   # defining the window sizes. k_h is the larger window, and needs to be smaller
   # for records with extreme drift
   k = c(2, k_h)
   # probabilities to use for the first and second quantiles. This is constant
   # across all records.
   probs = c(0.5, 0.02)
-
+  
   # logical vector if there is an NA depth
   d_na <- is.na(trace$y_val)
   # seeing if the depth is in the bounds of where y = 0 should likely be:
@@ -104,7 +104,7 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
   d_ok <- which(d_in_bounds | is.na(trace$y_val)) # numeric
   # creating a matrix of y_values for each filter:
   filters <- matrix(trace$y_val, ncol = 1)
-
+  
   # for each k window:
   for (i in seq(length(k))) {
     # add a column of y values from the trace df
@@ -115,39 +115,44 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
     # window. This function also relies of the EndRule function which takes the
     # result of runquantile and transforms it into a vector.
     filters[d_ok, i + 1] <- caTools::runquantile(dd, k=k[i], probs=probs[i])
-
+    
     ## Linear interpolation for depths out of bounds-- in other words,
     # approximate the position of depth = 0 when the seal is diving at greater
     # depths
     offbounds <- which(!d_in_bounds)
     offbounds_fun <- stats::approxfun(seq(length(trace$y_val))[d_in_bounds],
-                               filters[d_in_bounds, i + 1], rule=2)
+                                      filters[d_in_bounds, i + 1], rule=2)
     filters[offbounds, i + 1] <- offbounds_fun(offbounds)
-
+    
     ## NA input should be NA output regardless of na.rm
     filters[d_na, i + 1] <- NA
   }
-
+  
   # finding the depth adjustment by taking the y value and subtracting by the
   # filters
   depth_adj <- trace$y_val - filters[, ncol(filters)]
   # binding new depth adjustment with original trace data
   # in the future, may need to subtract the depth adjustment by a small amount
   # to account for the thickness of the trace.
-  zoc_trace <- cbind(trace$x_val, depth_adj)
+  # zoc_trace <- cbind(trace$x_val, depth_adj) ##### edit for reorg: #####
+  zoc_trace <- cbind(trace$x_val, trace$y_val, trace$new_x, depth_adj)
   # transforming to df
   zoc_trace <- as.data.frame(zoc_trace)
   # changing names for future functions:
-  names(zoc_trace) <- c("x_val", "y_val")
-
+  names(zoc_trace) <- c("x_val", "y_val", "new_x", "zoc_y") 
+  ##### edit for reorg: #####
+  
   # adding small amount to account for thickness of the trace:
-  shallow <- zoc_trace[which(zoc_trace$y_val < 0.5),]
-  shallow_diff_y <- dplyr::group_by(shallow, .data$x_val) %>% summarize(diff_y = diff(.data$y_val), .groups = "drop")
-  zoc_offset <- mean(shallow_diff_y$diff_y)
-
+  # shallow <- zoc_trace[which(zoc_trace$zoc_y < 0.5),]
+  # shallow_diff_y <- dplyr::group_by(shallow, new_x) %>%
+  #   summarize(diff_y = diff(y_val), .groups = "drop")
+  # zoc_offset <- mean(shallow_diff_y$diff_y)
+  # 
   # adding the offset
-  zoc_trace$y_val <- zoc_trace$y_val + zoc_offset
-
+  # zoc_trace$zoc_y <- zoc_trace$y_val  + zoc_offset
+  
+  # zoc_trace <- merge(trace, zoc_trace, by = c("time", "y_val"), all.x = T)
+  
   # returning the final output
   return(zoc_trace)
 }
@@ -173,20 +178,25 @@ zoc <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
 # y-val correction (similar to the centering scan process). Then, the centered
 # record is corrected using the original zoc function.
 .zoc_big_drift <- function(trace, k_h = 500, depth_bounds = c(-1, 1)){
-
+  
   # detecting drift line across the record
   min <- caTools::runmin(trace$y_val, k = 2000)
   mean <- caTools::runmean(min, k = 2000)
-  # creating a data frame that has the needed y_val correction
-  drift_correct <- data.frame(x_val = trace$x_val, y_val = trace$y_val, zoc_y = mean)
+  # creating a data frame that has the needed y_val correction 
+
+  drift_correct <- data.frame(x_val = trace$x_val, y_val = trace$y_val, 
+                              new_x = trace$new_x, zoc_y = mean) 
+  
   drift_correct$corr <- drift_correct$y_val - drift_correct$zoc_y
   # changing names for zoc
-  drift_correct <- drift_correct[, names(drift_correct) %in% c("x_val", "corr")]
-  names(drift_correct) <- c("x_val", "y_val")
-
+  drift_correct <- drift_correct[, names(drift_correct) %in% c("new_x", "corr")]
+  drift_correct <- cbind(drift_correct, trace$x_val)
+  names(drift_correct) <- c("new_x", "y_val", "x_val")
+  
   # final zoc
   zoc_trace <- .zoc_small_drift(drift_correct, k_h = k_h, depth_bounds = depth_bounds)
-
+  
   # final return
   return(zoc_trace)
 }
+

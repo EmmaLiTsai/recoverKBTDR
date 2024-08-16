@@ -73,16 +73,21 @@ trace <- center_scan(trace, time_dots, center_along_y = 0.9)
 # extract the psi calibration curve:
 psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
+
+# removing arc: 
+?remove_arc
+trace <- remove_arc(trace, center_y = 11.1)
+
 # zero offset correction, if needed:
 ?zoc
 # small drift
-zoc(trace, 500, c(-1, 1))
+# trace <- zoc(trace, 500, c(-1, 1))
 # big drift
-zoc(trace, 500, c(-1, 2))
+trace <- zoc(trace, 500, c(-1, 2))
 
 # remove arc and transform x to minutes
 ?transform_x_vals
-trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
+trace <- transform_x_vals(trace, time_dots,
                           time_period_min = 12)
 
 # plotting to see the transformation:
@@ -103,7 +108,8 @@ trace <- transform_x_vals(trace, time_dots, center_y = 11.18,
 trace <- add_dates_times(trace,
                          start_time = "1981:01:16 15:10:00",
                          on_seal = "1981:01:16 17:58:00",
-                         off_seal = "1981:01:23 15:30:00")
+                         off_seal = "1981:01:23 15:30:00", 
+                         tz = "Antarctica/McMurdo")
 
 # transform psi to depth
 ?transform_y_vals
@@ -117,7 +123,7 @@ trace <- transform_y_vals(trace, psi_calibration = psi_calibration,
 #   labs(x = "Date Time", y = "Depth (m)")
 
 # if we just know max depth:
-trace <- transform_y_vals(trace, maxdep = 319)
+trace <- transform_y_vals(trace, max_depth = 319)
 
 # spline smoothing
 ?smooth_trace_dive

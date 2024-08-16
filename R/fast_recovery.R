@@ -108,6 +108,9 @@ fast_recovery <- function(filepath_trace = "WS_25_1981_trace.csv",
     psi_calibration <- centered_psi_calibration(trace_tidy)
   }
 
+  # remove left-leaning arc
+  trace_tidy <- remove_arc(trace_tidy, center_y = args_tidy$center_y)
+  
   # zoc, if needed
   if (!is.na(args_tidy$k_h)){
     trace_tidy <- zoc(trace_tidy,
@@ -117,7 +120,7 @@ fast_recovery <- function(filepath_trace = "WS_25_1981_trace.csv",
 
   # transforming x-axis to time (minutes from the start)
   trace_tidy <- transform_x_vals(trace_tidy, time_dots_tidy,
-                                 center_y = args_tidy$center_y,
+                                 # center_y = args_tidy$center_y,
                                  time_period_min = args_tidy$time_period_min)
 
   # dates and times with interpolated points

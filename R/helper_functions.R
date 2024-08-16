@@ -135,7 +135,10 @@ find_best_spar <- function(filepath_trace = "WS_25_1981_trace.csv",
   if (is.na(args_tidy$max_depth)){
     psi_calibration <- centered_psi_calibration(trace_tidy)
   }
-
+  
+  # remove left-leaning arc
+  trace_tidy <- remove_arc(trace_tidy, center_y = args_tidy$center_y)
+  
   # zoc, if needed
   if (!is.na(args_tidy$k_h)){
     trace_tidy <- zoc(trace_tidy,
@@ -146,7 +149,7 @@ find_best_spar <- function(filepath_trace = "WS_25_1981_trace.csv",
 
   # transforming x-axis to time (minutes from the start)
   trace_tidy <- transform_x_vals(trace_tidy, time_dots_tidy,
-                                 center_y = args_tidy$center_y,
+                                 # center_y = args_tidy$center_y,
                                  time_period_min = args_tidy$time_period_min)
 
   # dates and times with interpolated points
@@ -201,6 +204,7 @@ find_best_spar <- function(filepath_trace = "WS_25_1981_trace.csv",
 #' @return data frame of all dive statitics for each dive for all spar value
 #' scenarios.
 #' @importFrom diveMove readTDR calibrateDepth diveStats
+#' @importFrom dplyr mutate
 #' @import utils
 #' @export
 #' @examples
@@ -226,6 +230,15 @@ get_divestats <- function(folder = "results/WS_25_1981/"){
     file_i_name <- paste(folder, file_names[i], sep = "")
     # reading in the file to conver to tdr object
     file_i <- utils::read.csv(file_i_name)
+    
+    # fix midnight values, which are missing time stamp - this was only an 
+    # error I encountered when reading/writing the data, since the 00:00:00 are 
+    # still there 
+    # file_i <- file_i %>%
+    #   dplyr::mutate(
+    #     date_time = format(as.POSIXct(date_time),"%Y-%m-%d %H:%M:%S")
+    #   )
+    
     # printing so user can see iteration of that loop
     print(paste("getting dive stats for:", file_i_name))
 

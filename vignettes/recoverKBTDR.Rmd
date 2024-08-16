@@ -77,12 +77,13 @@ Now, the trace and time dots data fames are fully tidy. They contain more inform
 
 There are six main recovery steps: 
 
-1. Scan centering and zero-offset correction 
+1. Scan centering 
 1. Arc removal 
-1. x-axis transformation to dates & times 
+1. Zero offset correction
+1. X-axis transformation to dates & times 
 1. Interpolation between missing points 
-1. y-axis transformation to depth 
-1. spline smoothing 
+1. Y-axis transformation to depth 
+1. Spline smoothing 
 
 To illustrate the workflow of this package, we will use our tidy sample data, which contains the positions of our trace and time dots in centimeters from the origin: 
 ```{r}
@@ -99,7 +100,6 @@ head(time_dots)
 ```
 
 ## Step 1: Scan Centering and Zero-Offset Correction 
-
 ### Scan Centering: 
 The records often drifted while being fed into the scanner, which resulted in slight drift throughout our files. To ensure that any drift in the record would be from the device and not from scanning, we use the center_scan function: 
 ```{r}
@@ -113,50 +113,47 @@ points(df[1000:11000,], col = "#39b3b2")
 
 After centering, you can see how the original record was shifted down such that y = 0 aligns better with surface values. If you have a psi calibration curve, run the centered_psi_calibration function to extract the centered psi calibration curve:
 ```{r}
-# center the data frame:
-df <- center_scan(trace, time_dots, center_along_y = 0.9)
-
 # extract the centered psi calibration curve: 
 psi_calibration <- centered_psi_calibration(df, psi_interval = c(100, 200, 400, 600, 800))
 
 head(psi_calibration)
 ```
-
 This centered psi calibration curve will be useful in transforming the y-values of the record into depth. 
 
+## Step 2: Arc Removal 
+### Remove left-leaning arc from the records: 
+This function removes the characteristic left-leaning arc in the record by using the equation of the circle the KBTDR arm makes. This function removes the curvilinear nature of the original record, such that it becomes a function. 
+```{r}
+# Here, center_y is the height of transducer arm pivot point. This value is usually close to 11 cm, but there is slight variation between devices 
+df_arc <- remove_arc(df, center_y = 11.1)
+# visualizing this correction: 
+plot(df[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Arc Removal")
+points(df_arc[1000:11000,3:2], col = "#39b3b2")
+```
+
+## Step 3: Zero Offset Correction 
 ### Zero-Offset Correction: 
 Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
 ```{r}
 # Here, we are using a larger window size of 500 with surface values usually drift between -1cm and 1cm. Smaller k_h values and larger depth bounds are useful for records with extreme drift, but our sample data doesn't exhibit this degree of drift.  
-df_zoc <- zoc(df, k_h = 500, depth_bounds = c(-1,1))
+df <- zoc(df_arc, k_h = 500, depth_bounds = c(-1,1))
 
 # visualizing this correction: 
-plot(df[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
-points(df_zoc[1000:11000,], col = "#39b3b2")
+plot(df[1000:11000,3:2],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
+points(df[1000:11000,3:4], col = "#39b3b2")
 ```
-
 While our sample data is somewhat free of extreme drift in surface values, this function can be particularly helpful for other records. 
 
-## Step 2: Arc Removal  
-The KBTDR documented the diving behavior of an animal by using a pressure sensitive transducer arm that rotated an LED light along a rolling spool of film. From this design, the original records exhibit a characteristic left leaning arc. This function transform_x_vals() removes the arc in the record (new x-values are stored in the column: new_x) and also uses the timing dots to create a time scale. Helper functions are also available to estimate center_y. For more information, type ?find_center_y()
+## Step 4: X-axis transformation to dates & times 
+This step can be completed in two parts. The first function transform_x_vals() and uses the timing dots to create a time scale. The x-axis is also assigned a time, which can be transformed to a POSIXct object. 
 
-```{r}
-# removing the data frame and also transform the x-axis to time in minutes from the origin. The center_y value is an estimated height of the transducer arm pivot point in centimeters. In other words, it is the height of the circle that the transducer arm makes. 
-df <- transform_x_vals(df, 
-                       time_dots, 
-                       center_y = 11.18,
-                       time_period_min = 12)
-
-# plotting the transformed data: 
-plot(df[1000:11000, 1:2], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Arc Removal")
-lines(df[1000:11000, c(3,2)], col = "#39b3b2")
-```
-
-This function removes the curvilinear nature of the original record, such that it becomes a function. The x-axis is also assigned a time, which can be transformed to a POSIXct object in recovery step number 3. 
-
-## Step 3 & 4: Interpolated Date Times 
 The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. As a result, the KBTDR records often exhibit gaps between the during the descent/ascent phases of the dive. The function add_dates_times() uses the trace data frame to add a POSIXct date time object, and also interpolates between missing values to create a regular time series. Creating a regular time series wouldn't just benefit future spline smoothing, but is also often an assumption in dive analysis packages. 
 ```{r}
+# Transform the x-axis to time in minutes from the origin. The center_y value is an estimated height of the transducer arm pivot point in centimeters. In other words, it is the height of the circle that the transducer arm makes. 
+df <- transform_x_vals(df, 
+                       time_dots, 
+                       time_period_min = 12)
+
 df <- add_dates_times(df,
                       start_time = "1981:01:16 15:10:00",
                       on_seal = "1981:01:16 17:58:00",
@@ -173,12 +170,11 @@ Y-values were transformed from position to depth in two ways, depending on the p
 # if psi calibration curve is present, you can use the centered psi_calibration curve from scan centering: 
 df <- transform_y_vals(df, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
 
-# if we just know max depth:
+# alternatively, you can just use this function if we just know max depth:
 df_max_dep <- transform_y_vals(df, max_depth = 319)
 
-
 # visualizing this transformation: 
-plot(df[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
+plot(df[1000:18000, c(1,8)] ,xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
 ## Step 6: Spline Smoothing 
@@ -187,8 +183,8 @@ Finally, the data are smoothed. This spline smoothing method uses dive detection
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
 df <- smooth_trace_dive(df, spar_h = 0.3, depth_thresh = 5)
 
-plot(df[1000:18000, c(1,8)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
-lines(df[1000:18000, c(1,9)], col = "#39b3b2")
+plot(df[1000:18000, c(1,9)], xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Smoothing Transformation", lwd = 3)
+lines(df[1000:18000, c(1,10)], col = "#39b3b2")
 ```
 
 Now the data frame can be exported as a csv file and read into dive analysis software. 
