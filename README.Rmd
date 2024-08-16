@@ -5,18 +5,20 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit this file -->
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
-```
-
 <!-- badges: start -->
 `r badger::badge_license("GPL-3.0")`
 `r badger::badge_last_commit("EmmaLiTsai/recoverKBTDR")`
 `r badger::badge_github_actions("EmmaLiTsai/recoverKBTDR")` 
 [![DOI](https://zenodo.org/badge/320380488.svg)](https://zenodo.org/badge/latestdoi/320380488)
 <!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
+[![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
 
 ## Overview
 
@@ -24,26 +26,29 @@ This package contains a suite of functions for recovering dive records from 1970
 
 There are six main recovery steps that are achieved in this package: 
 
-1. Scan centering and zero-offset correction 
+1. Scan centering 
 2. Arc removal 
-3. X-axis transformation to dates & times 
-4. Interpolation between missing points 
-5. Y-axis transformation to depth 
-6. Spline smoothing 
+3. Zero offset correction 
+4. X-axis transformation to dates & times 
+5. Interpolation between missing points 
+6. Y-axis transformation to depth 
+7. Spline smoothing 
 
 ## Installation
 
 You can install the package from GitHub:
 ```{r,  load-data, message  = FALSE, results = 'hide'}
 # load the development version: 
-devtools::install_github("EmmaLiTsai/recoverKBTDR")
+# TODO - point this to the main branch when done w/ dev stage 
+devtools::install_github("EmmaLiTsai/recoverKBTDR",
+                         ref = "reorg-steps")
 library(recoverKBTDR)
 ```
 ## Example of workflow
 
 This is a basic example of the intended workflow for historic record recovery: 
 
-First, read in data (trace and time dots) after scan image processing, which contains the X and Y values of the record in centimeters from the origin:
+Prep: read in data (trace and time dots) after scan image processing, which contains the X and Y values of the record in centimeters from the origin:
 ```{r reading-data}
 # examples of data tidying from raw ImageJ csv files: 
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
@@ -59,7 +64,7 @@ data(time_dots)
 head(time_dots)
 ```
 
-Center the record using the timing dots, such that all timing dots will be centered along  y = -center_along_y. After centering, it is recommended that you also extract the centered psi calibration curve (if available) such that the data correctly align with the centered dive record. This helps remove drift in alignment due to record scanning: 
+Step one: center the record using the timing dots, such that all timing dots will be centered along  y = -center_along_y. After centering, it is recommended that you also extract the centered psi calibration curve (if available) such that the data correctly align with the centered dive record. This helps remove drift in alignment due to record scanning: 
 ```{r centering-data}
 # centering along y = -0.9: 
 trace <- center_scan(trace, time_dots, center_along_y = 0.9)
@@ -74,31 +79,36 @@ psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 40
 head(psi_calibration)
 ```
 
-Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
+Step two: Remove the left-leaning arc across the record created by the KBTDR arm. This function removes the curvilinear nature of the original record, such that it becomes a function. 
+```{r}
+# Here, center_y is the height of transducer arm pivot point. This value is usually close to 11 cm, but there is slight variation between devices 
+trace <- remove_arc(trace, center_y = 11.1)
+# to find the center_y value for arc removal, check out the helper function ?find_center_y() 
+
+# visualizing this correction: 
+plot(trace[1000:11000, 1:2], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Arc Removal")
+points(trace[1000:11000, c(3,2)], col = "#39b3b2")
+```
+
+Step three: some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
 ```{r zoc}
 trace_zoc <- zoc(trace, k_h  = 500, depth_bounds = c(-1, 1))
 
 # visualizing this correction: 
-plot(trace[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
-points(trace_zoc[1000:11000,], col = "#39b3b2")
+plot(trace[1000:11000,c(3,2)],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
+points(trace_zoc[1000:11000,c(3,4)], col = "#39b3b2")
 ```
 
-Transform the x-axis into minutes using the timing dots (often placed 12 minutes apart), and remove the arc in the data by defining the height of the pivot point above y = 0 (center_y, in cm). 
+Step four: transform the x-axis into minutes using the timing dots (often placed 12 minutes apart)
 ```{r transform-x-axis}
 # removing the data frame and also transform the x-axis to time in minutes from the origin. 
 trace <- transform_x_vals(trace, 
                           time_dots, 
-                          center_y = 11.18,
                           time_period_min = 12)
-
-# visualizing:
-plot(trace[1000:11000, 1:2], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Arc Removal")
-lines(trace[1000:11000, c(3,2)], col = "#39b3b2")
-
-# to find the center_y value for arc removal, check out the helper function ?find_center_y() 
+head(trace)
 ```
 
-The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. The function add_dates_times() uses the trace data frame to create POSIXct date time objects, and also interpolates between missing values to create a more regular time series. This helps with future spline smoothing and dive analysis. 
+Step five: the seal often moved faster than the LED arm could document the dive during the descent and ascent phases. The function add_dates_times() uses the trace data frame to create POSIXct date time objects, and also interpolates between missing values to create a more regular time series. This helps with future spline smoothing and dive analysis. 
 ```{r regular-time-series}
 trace <- add_dates_times(trace,
                          start_time = "1981:01:16 15:10:00",
@@ -109,7 +119,7 @@ trace <- add_dates_times(trace,
 head(trace)
 ```
 
-Transform y-axis to depth either using the maximum depth or psi calibration curve (if available): 
+Step six: transform y-axis to depth either using the maximum depth or psi calibration curve (if available): 
 ```{r transform-to-depth}
 # If psi calibration curve is present:
 trace <- transform_y_vals(trace, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
@@ -121,7 +131,7 @@ trace_maxdep <- transform_y_vals(trace, max_dep = 319)
 plot(trace[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
-Spline smoothing is done to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
+Step seven: spline smoothing is done to reduce noise in the data by passing the spar value and depth threshold (in meters) to use when a dive is detected: 
 ```{r smoothing-data}
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.3 when a dive is detected: 
 trace <- smooth_trace_dive(trace, spar_h = 0.3, depth_thresh = 5)
@@ -147,8 +157,11 @@ trace <- center_scan(trace, time_dots, center_along_y = 0.9)
 # extracting the centered psi calibration curve, if needed: 
 psi_calibration <- centered_psi_calibration(trace, psi_interval = c(100, 200, 400, 600, 800))
 
-# arc removal and time assignment 
-trace <- transform_x_vals(trace, time_dots, center_y = 11.18, time_period_min = 12)
+# remove the arc: 
+trace <- remove_arc(trace, center_y = 11.1)
+
+# time assignment 
+trace <- transform_x_vals(trace, time_dots, time_period_min = 12)
 
 # POSIXct date times and interpolating
 trace <- add_dates_times(trace, start_time = "1981:01:16 15:10:00", on_seal = "1981:01:16 17:58:00", off_seal = "1981:01:23 15:30:00", tz = "Antarctica/McMurdo")
