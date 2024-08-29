@@ -40,9 +40,9 @@ library(recoverKBTDR)
 This is a basic example of the intended workflow for historic record
 recovery:
 
-Prep: read in data (trace and time dots) after scan image processing,
-which contains the X and Y values of the record in centimeters from the
-origin:
+Step one: read in data (trace and time dots) after scan image
+processing, which contains the X and Y values of the record in
+centimeters from the origin:
 
 ``` r
 # examples of data tidying from raw ImageJ csv files: 

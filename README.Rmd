@@ -41,7 +41,7 @@ library(recoverKBTDR)
 
 This is a basic example of the intended workflow for historic record recovery: 
 
-Prep: read in data (trace and time dots) after scan image processing, which contains the X and Y values of the record in centimeters from the origin:
+Step one: read in data (trace and time dots) after scan image processing, which contains the X and Y values of the record in centimeters from the origin:
 ```{r reading-data}
 # examples of data tidying from raw ImageJ csv files: 
 filepath <- system.file("extdata", "WS_25_1981", package = "recoverKBTDR")
