@@ -10,34 +10,36 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", 
+  fig.width=7, 
+  fig.height=5
 )
+
 ```
 
 ```{r setup}
 library(recoverKBTDR)
 ```
 
-# Introduction to recoverKBTDR
+## Introduction to recoverKBTDR
 
-This package provides a suite of functions for recovering dive data from Kooyman-Billups Time Depth Recorders (KBTDRs). This film-based TDR was among the first TDRs invented in the late 1960s, but the format of this historic data makes long-term comparisons exceptionally challenging. Dive records are stored on paper scrolls and present issues due to the inner mechanics of the device. After image processing, this package takes the csv files of the record and creates a continuous dive trace complete with depth and time axes, which is comparable with modern dive data. 
+This package provides a suite of functions for recovering dive data from Kooyman-Billups Time Depth Recorders (KBTDRs). This film-based TDR was among the first TDRs invented in the late 1960s, but the format of this historic data makes long-term comparisons exceptionally challenging. These older dive records are stored on paper scrolls and contain data artifacts that make digitization complicated. After image processing, this package takes the csv files of the record and creates a continuous dive trace complete with depth and time axes, which is comparable with modern dive data. 
 
-This vignette introduces you to recoverKBTDR's tools and the overall workflow for recovering historic dive data. It is our hope that these functions will assist others in gaining access to the rich behavioral data contained in paper dive records. 
+This vignette introduces you to recoverKBTDR's tools and the overall workflow for recovering historic dive data. It is our hope that these functions will assist others in gaining access to the rich behavioral data contained in historic dive records. 
 
------------
-# Installation 
+## Installation 
 
-First, we have to load the package into our environment. 
+First, we have to load the package (currently only available on GitHub) into our environment. 
 ```{r}
-library(recoverKBTDR)
-
 # alternatively: 
 # devtools:::install_github("EmmaLiTsai/recoverKBTDR")
 # library(recoverKBTDR)
+
+library(recoverKBTDR)
 ```
 
-------------
-# Data Structure
+
+## Data Structure
 
 recoverKBTDR uses two csv files from a single record: (1) the dive trace, which contains the behavior of the seal, and (2) the time-keeping dots below the record. These files are obtained using image processing methods in ImageJ. Here, we will use our sample dataset to illustrate the data tidying process using raw files from a record using ImageJ. 
 
@@ -52,7 +54,7 @@ head(trace_raw)
 head(time_dots_raw)
 ```
 
-As you can see, the default csv file from ImageJ lacks informative column names, and the y-axis values become more negative as the psi reading progress in the +y direction. The read_trace() function can correct these issues for you: 
+As you can see, the default csv file from ImageJ just contains the positions of the x & y positions of the trace, and the y-axis values become more negative as the psi reading progress in the +y direction. The read_trace() function can correct these issues for you: 
 
 ```{r}
 # starting with the trace csv file: 
@@ -70,20 +72,20 @@ head(trace_tidy)
 head(time_dots_tidy)
 ```
 
-Now, the trace and time dots data fames are fully tidy. They contain more informative column names, duplicated points are removed, and the y-axis has been swapped such that values in the +y direction are positive. These data frames have been stored as sample data for you in this package. Now, we can proceed with the recovery process. 
+Now, the trace and time dots data frames are fully tidy. They contain more informative column names, duplicated points are removed, and the y-axis has been swapped such that values in the +y direction are positive. These data frames have been stored as sample data for you in this package. Now, we can proceed with the recovery process. 
 
---------------
-# Workflow of recoverKBTDR
+## Workflow of recoverKBTDR
 
-There are six main recovery steps: 
+There are eight main recovery steps: 
 
-1. Scan centering 
-1. Arc removal 
-1. Zero offset correction
+1. Record digitization (manual process described above in ImageJ)
+1. Record centering 
+1. Removal of left-leaning arc
+1. Zero-offset correction
 1. X-axis transformation to dates & times 
-1. Interpolation between missing points 
+1. Linear interpolation between missing points 
 1. Y-axis transformation to depth 
-1. Spline smoothing 
+1. Spline smoothing to remove device noise
 
 To illustrate the workflow of this package, we will use our tidy sample data, which contains the positions of our trace and time dots in centimeters from the origin: 
 ```{r}
@@ -99,15 +101,14 @@ head(time_dots)
 # Default csv files exported from ImageJ can be tidied to this format using the tidy_raw_timedots() function and tidy_raw_trace() functions. 
 ```
 
-## Step 1: Scan Centering and Zero-Offset Correction 
-### Scan Centering: 
-The records often drifted while being fed into the scanner, which resulted in slight drift throughout our files. To ensure that any drift in the record would be from the device and not from scanning, we use the center_scan function: 
+### Step 2: Record Centering
+The records often drifted while being fed into the scanner, which resulted in slight drift throughout our digitized record. To ensure that any drift in the record would be from the device and not from scanning, we can use the center_scan function: 
 ```{r}
 # here, we are adjusting the record such that the timing dots would be centered along y = -0.9 cm. 
 df <- center_scan(trace, time_dots, center_along_y = 0.9)
 
 # visualizing the centered record: 
-plot(trace[1000:11000,], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Scan Centering") 
+plot(trace[1000:11000,], xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "Record Centering") 
 points(df[1000:11000,], col = "#39b3b2")
 ```
 
@@ -120,8 +121,7 @@ head(psi_calibration)
 ```
 This centered psi calibration curve will be useful in transforming the y-values of the record into depth. 
 
-## Step 2: Arc Removal 
-### Remove left-leaning arc from the records: 
+### Step 3: Removal of left-leaning arc
 This function removes the characteristic left-leaning arc in the record by using the equation of the circle the KBTDR arm makes. This function removes the curvilinear nature of the original record, such that it becomes a function. 
 ```{r}
 # Here, center_y is the height of transducer arm pivot point. This value is usually close to 11 cm, but there is slight variation between devices 
@@ -131,9 +131,8 @@ plot(df[1000:11000,],xlab = "x position (cm)", ylab = "y position (cm)", type = 
 points(df_arc[1000:11000,3:2], col = "#39b3b2")
 ```
 
-## Step 3: Zero Offset Correction 
-### Zero-Offset Correction: 
-Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle the uncorrected trace data frame. These methods can be used with the zoc() function: 
+### Step 4: Zero Offset Correction 
+Some records present extreme drift and/or level shifts in surface values. This drift is common with modern TDRs and can be resolved using zero-offset correction methods modeled after the "diveMove" package. Code had to be modified from this package to handle raw data. These methods can be used with the zoc() function: 
 ```{r}
 # Here, we are using a larger window size of 500 with surface values usually drift between -1cm and 1cm. Smaller k_h values and larger depth bounds are useful for records with extreme drift, but our sample data doesn't exhibit this degree of drift.  
 df <- zoc(df_arc, k_h = 500, depth_bounds = c(-1,1))
@@ -142,17 +141,22 @@ df <- zoc(df_arc, k_h = 500, depth_bounds = c(-1,1))
 plot(df[1000:11000,3:2],xlab = "x position (cm)", ylab = "y position (cm)", type = "p", main = "ZOC")
 points(df[1000:11000,3:4], col = "#39b3b2")
 ```
+
 While our sample data is somewhat free of extreme drift in surface values, this function can be particularly helpful for other records. 
 
-## Step 4: X-axis transformation to dates & times 
-This step can be completed in two parts. The first function transform_x_vals() and uses the timing dots to create a time scale. The x-axis is also assigned a time, which can be transformed to a POSIXct object. 
-
-The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. As a result, the KBTDR records often exhibit gaps between the during the descent/ascent phases of the dive. The function add_dates_times() uses the trace data frame to add a POSIXct date time object, and also interpolates between missing values to create a regular time series. Creating a regular time series wouldn't just benefit future spline smoothing, but is also often an assumption in dive analysis packages. 
+### Step 5: X-axis transformation to dates & times 
+This step can be completed in two parts. The first function transform_x_vals() and uses the timing dots to create a column we can use to transform the x-axis to time. 
 ```{r}
-# Transform the x-axis to time in minutes from the origin. The center_y value is an estimated height of the transducer arm pivot point in centimeters. In other words, it is the height of the circle that the transducer arm makes. 
+# Transform the x-axis to time in minutes from the origin. 
 df <- transform_x_vals(df, 
                        time_dots, 
                        time_period_min = 12)
+head(df)
+```
+
+### Step 6: Linear interpolation between missing points
+The seal often moved faster than the LED arm could document the dive during the descent and ascent phases. As a result, the KBTDR records often exhibit gaps between the during the descent/ascent phases of the dive. The function add_dates_times() uses the trace data frame to add a date time object, and also interpolates between missing values to create a regular time series. Creating a regular time series wouldn't just benefit future spline smoothing, but is also often an assumption in dive analysis packages. 
+```{r}
 
 df <- add_dates_times(df,
                       start_time = "1981:01:16 15:10:00",
@@ -160,12 +164,12 @@ df <- add_dates_times(df,
                       off_seal = "1981:01:23 15:30:00", 
                       tz = "Antarctica/McMurdo")
 
-# now, the record is complete with POSIXct date times: 
+# now, the record is complete with normal date times: 
 head(df)
 ```
 
-## Step 5: Y-axis Transformation to Depth 
-Y-values were transformed from position to depth in two ways, depending on the presence of a psi calibration curve at the end of the record. 
+### Step 7: Y-axis Transformation to Depth 
+Y-values were transformed from position to depth in two ways, depending on the presence of a psi calibration curve at the end of the record. Functions are provided to handle both methods: 
 ```{r}
 # if psi calibration curve is present, you can use the centered psi_calibration curve from scan centering: 
 df <- transform_y_vals(df, psi_calibration = psi_calibration, max_psi = 900, max_position = 22.45)
@@ -177,7 +181,7 @@ df_max_dep <- transform_y_vals(df, max_depth = 319)
 plot(df[1000:18000, c(1,8)] ,xlab = "Date Time", ylab = "Depth (m)", type = "l", main = "Depth & Time Transformation")
 ```
 
-## Step 6: Spline Smoothing 
+### Step 8: Spline Smoothing 
 Finally, the data are smoothed. This spline smoothing method uses dive detection to control the resolution of smoothing. If a dive is detected (i.e., above the rolling mean depth threshold the user defines), then the resolution of spline smoothing increases to capture relevant behavior. If a dive is not detected, then the resolution decreases to reduce transducer noise at shallow depths. Helper functions to find the best high resolution spar value can be found using the ?find_best_spar(). Here, we use the smooth_trace_dive() function: 
 ```{r}
 # smoothing the data frame with a rolling mean depth threshold of 5, and a spar value of 0.22 when a dive is detected: 
