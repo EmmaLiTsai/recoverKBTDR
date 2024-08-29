@@ -13,15 +13,16 @@ exceptionally challenging. This package returns a corrected, continuous,
 and digitized file of a KBTDR record complete with dates, times, and
 depth that can be easily read into dive analysis software.
 
-There are six main recovery steps that are achieved in this package:
+There are eight main recovery steps that are achieved in this package:
 
-1.  Scan centering
-2.  Arc removal
-3.  Zero offset correction
-4.  X-axis transformation to dates & times
-5.  Interpolation between missing points
-6.  Y-axis transformation to depth
-7.  Spline smoothing
+1.  Record digitization (completed manually in ImageJ)
+2.  Scan centering
+3.  Arc removal
+4.  Zero offset correction
+5.  X-axis transformation to dates & times
+6.  Interpolation between missing points
+7.  Y-axis transformation to depth
+8.  Spline smoothing
 
 ## Installation
 
@@ -29,7 +30,6 @@ You can install the package from GitHub:
 
 ``` r
 # load the development version: 
-# TODO - point this to the main branch when done w/ dev stage 
 devtools::install_github("EmmaLiTsai/recoverKBTDR",
                          ref = "reorg-steps")
 library(recoverKBTDR)
@@ -92,7 +92,7 @@ head(time_dots)
     ## 5  7.50 -0.331
     ## 6  8.91 -0.354
 
-Step one: center the record using the timing dots, such that all timing
+Step two: center the record using the timing dots, such that all timing
 dots will be centered along y = -center_along_y. After centering, it is
 recommended that you also extract the centered psi calibration curve (if
 available) such that the data correctly align with the centered dive
@@ -123,7 +123,7 @@ head(psi_calibration)
     ## 4          600    13.440813
     ## 5          800    18.414504
 
-Step two: Remove the left-leaning arc across the record created by the
+Step three: Remove the left-leaning arc across the record created by the
 KBTDR arm. This function removes the curvilinear nature of the original
 record, such that it becomes a function.
 
@@ -139,7 +139,7 @@ points(trace[1000:11000, c(3,2)], col = "#39b3b2")
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
-Step three: some records present extreme drift and/or level shifts in
+Step four: some records present extreme drift and/or level shifts in
 surface values. This drift is common with modern TDRs and can be
 resolved using zero-offset correction methods modeled after the
 “diveMove” package. Code had to be modified from this package to handle
@@ -156,7 +156,7 @@ points(trace_zoc[1000:11000,c(3,4)], col = "#39b3b2")
 
 ![](README_files/figure-gfm/zoc-1.png)<!-- -->
 
-Step four: transform the x-axis into minutes using the timing dots
+Step five: transform the x-axis into minutes using the timing dots
 (often placed 12 minutes apart)
 
 ``` r
@@ -175,7 +175,7 @@ head(trace)
     ## 5 0.353 -0.146 0.2621015 1.818045
     ## 6 0.353 -0.132 0.2708894 1.879001
 
-Step five: the seal often moved faster than the LED arm could document
+Step six: the seal often moved faster than the LED arm could document
 the dive during the descent and ascent phases. The function
 add_dates_times() uses the trace data frame to create POSIXct date time
 objects, and also interpolates between missing values to create a more
@@ -200,7 +200,7 @@ head(trace)
     ## 5 1981-01-16 17:58:04 19.710  0.023 19.72417 168.0756  0.02300000
     ## 6 1981-01-16 17:58:05     NA     NA       NA       NA  0.01866667
 
-Step six: transform y-axis to depth either using the maximum depth or
+Step seven: transform y-axis to depth either using the maximum depth or
 psi calibration curve (if available):
 
 ``` r
@@ -216,7 +216,7 @@ plot(trace[1000:18000, c(1,8)],xlab = "Date Time", ylab = "Depth (m)", type = "l
 
 ![](README_files/figure-gfm/transform-to-depth-1.png)<!-- -->
 
-Step seven: spline smoothing is done to reduce noise in the data by
+Step eight: spline smoothing is done to reduce noise in the data by
 passing the spar value and depth threshold (in meters) to use when a
 dive is detected:
 
