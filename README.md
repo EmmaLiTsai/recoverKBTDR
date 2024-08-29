@@ -2,6 +2,16 @@ recoverKBTDR
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit this file -->
+<!-- badges: start -->
+
+[![License:
+GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://cran.r-project.org/web/licenses/GPL-3.0)
+[![](https://img.shields.io/github/last-commit/EmmaLiTsai/recoverKBTDR.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/commits/main)
+<!-- [![R build status](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
+<!-- [![DOI](https://zenodo.org/badge/320380488.svg)](https://zenodo.org/badge/latestdoi/320380488) -->
+<!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/workflows/R-CMD-check/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions) -->
+<!-- [![R-CMD-check](https://github.com/EmmaLiTsai/recoverKBTDR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/EmmaLiTsai/recoverKBTDR/actions/workflows/R-CMD-check.yaml) -->
+<!-- badges: end -->
 
 ## Overview
 
